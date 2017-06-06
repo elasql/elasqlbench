@@ -12,11 +12,14 @@ public class MicroBenchPartitionMetaMgr extends PartitionMetaMgr {
 		return false;
 	}
 
-	public int getPartition(RecordKey key) {
+
+	public int getLocation(RecordKey key) {
 		/*
 		 * Hard code the partitioning rules for Micro-benchmark testbed.
 		 * Partitions each item id through mod.
 		 */
+		
+		
 		Constant iidCon = key.getKeyVal("i_id");
 		if (iidCon != null) {
 			int iid = (int) iidCon.asJavaVal();
@@ -25,5 +28,7 @@ public class MicroBenchPartitionMetaMgr extends PartitionMetaMgr {
 			// Fully replicated
 			return Elasql.serverId();
 		}
+		
+		//return key.hashCode() % NUM_PARTITIONS;
 	}
 }
