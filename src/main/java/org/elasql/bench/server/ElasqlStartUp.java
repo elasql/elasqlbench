@@ -68,17 +68,59 @@ public class ElasqlStartUp implements SutStartUp {
 	
 	private DdStoredProcedureFactory getStoredProcedureFactory() {
 		DdStoredProcedureFactory factory = null;
+		switch (Elasql.SERVICE_TYPE) {
+		case NAIVE:
+			factory = getNaiveSpFactory();
+			break;
+		case CALVIN:
+			factory = getCalvinSpFactory();
+			break;
+		case TPART:
+			factory = getTPartSpFactory();
+			break;
+		}
+		return factory;
+	}
+	
+	private DdStoredProcedureFactory getNaiveSpFactory() {
+		DdStoredProcedureFactory factory = null;
+		switch (BenchmarkerParameters.BENCH_TYPE) {
+		case MICRO:
+			throw new UnsupportedOperationException("No Micro for now");
+		case TPCC:
+			throw new UnsupportedOperationException("No TPC-C for now");
+		case TPCE:
+			throw new UnsupportedOperationException("No TPC-E for now");
+		}
+		return factory;
+	}
+	
+	private DdStoredProcedureFactory getCalvinSpFactory() {
+		DdStoredProcedureFactory factory = null;
 		switch (BenchmarkerParameters.BENCH_TYPE) {
 		case MICRO:
 			if (logger.isLoggable(Level.INFO))
-				logger.info("using Micro-benchmark stored procedures");
+				logger.info("using Micro-benchmark stored procedures for Calvin");
 			factory = new MicrobenchStoredProcFactory();
 			break;
 		case TPCC:
 			if (logger.isLoggable(Level.INFO))
-				logger.info("using TPC-C stored procedures");
+				logger.info("using TPC-C stored procedures for Calvin");
 			factory = new TpccStoredProcFactory();
 			break;
+		case TPCE:
+			throw new UnsupportedOperationException("No TPC-E for now");
+		}
+		return factory;
+	}
+	
+	private DdStoredProcedureFactory getTPartSpFactory() {
+		DdStoredProcedureFactory factory = null;
+		switch (BenchmarkerParameters.BENCH_TYPE) {
+		case MICRO:
+			throw new UnsupportedOperationException("No Micro for now");
+		case TPCC:
+			throw new UnsupportedOperationException("No TPC-C for now");
 		case TPCE:
 			throw new UnsupportedOperationException("No TPC-E for now");
 		}
