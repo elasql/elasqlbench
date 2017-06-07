@@ -5,8 +5,6 @@ import java.util.logging.Logger;
 
 import org.elasql.bench.server.metadata.MicroBenchPartitionMetaMgr;
 import org.elasql.bench.server.metadata.TpccPartitionMetaMgr;
-import org.elasql.bench.server.procedure.calvin.micro.MicrobenchStoredProcFactory;
-import org.elasql.bench.server.procedure.calvin.tpcc.TpccStoredProcFactory;
 import org.elasql.procedure.DdStoredProcedureFactory;
 import org.elasql.server.Elasql;
 import org.elasql.storage.metadata.PartitionMetaMgr;
@@ -101,12 +99,12 @@ public class ElasqlStartUp implements SutStartUp {
 		case MICRO:
 			if (logger.isLoggable(Level.INFO))
 				logger.info("using Micro-benchmark stored procedures for Calvin");
-			factory = new MicrobenchStoredProcFactory();
+			factory = new org.elasql.bench.server.procedure.calvin.micro.MicrobenchStoredProcFactory();
 			break;
 		case TPCC:
 			if (logger.isLoggable(Level.INFO))
 				logger.info("using TPC-C stored procedures for Calvin");
-			factory = new TpccStoredProcFactory();
+			factory = new org.elasql.bench.server.procedure.calvin.tpcc.TpccStoredProcFactory();
 			break;
 		case TPCE:
 			throw new UnsupportedOperationException("No TPC-E for now");
@@ -118,9 +116,15 @@ public class ElasqlStartUp implements SutStartUp {
 		DdStoredProcedureFactory factory = null;
 		switch (BenchmarkerParameters.BENCH_TYPE) {
 		case MICRO:
-			throw new UnsupportedOperationException("No Micro for now");
+			if (logger.isLoggable(Level.INFO))
+				logger.info("using Micro-benchmark stored procedures for T-Part");
+			factory = new org.elasql.bench.server.procedure.tpart.micro.MicrobenchStoredProcFactory();
+			break;
 		case TPCC:
-			throw new UnsupportedOperationException("No TPC-C for now");
+			if (logger.isLoggable(Level.INFO))
+				logger.info("using TPC-C stored procedures for T-Part");
+			factory = new org.elasql.bench.server.procedure.calvin.tpcc.TpccStoredProcFactory();
+			break;
 		case TPCE:
 			throw new UnsupportedOperationException("No TPC-E for now");
 		}
