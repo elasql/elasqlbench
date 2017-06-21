@@ -53,6 +53,9 @@ public class App {
 			break;
 		}
 	}
+	public static int getNodeId(){
+		return nodeId;
+	}
 	
 	private static void parseArguments(String[] args) throws IllegalArgumentException {
 		if (args.length < 2) {
