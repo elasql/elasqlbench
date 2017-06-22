@@ -44,6 +44,7 @@ public class MicroMigrationManager extends MigrationManager {
 	
 	/**
 	 * This should only be executed on the sequencer node.
+	 * Currently not use!!
 	 */
 	@Override
 	public void onReceiveAnalysisReq(Object[] metadata) {
