@@ -4,14 +4,12 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.Benchmarker;
 import org.vanilladb.bench.StatisticMgr;
 import org.vanilladb.bench.TransactionType;
 import org.vanilladb.bench.remote.SutConnection;
 import org.vanilladb.bench.remote.SutDriver;
 import org.vanilladb.bench.rte.RemoteTerminalEmulator;
-import org.vanilladb.bench.tpce.TpceConstants;
 import org.vanilladb.bench.tpce.TpceTransactionType;
 import org.vanilladb.bench.tpce.data.TpceDataManager;
 import org.vanilladb.bench.tpce.rte.TpceRte;
@@ -20,11 +18,9 @@ public class ElasqlTpceBenchmarker extends Benchmarker {
 	
 	private TpceDataManager dataMgr;
 
-	public ElasqlTpceBenchmarker(SutDriver sutDriver) {
+	public ElasqlTpceBenchmarker(SutDriver sutDriver, int nodeId) {
 		super(sutDriver);
-		dataMgr = new TpceDataManager(TpceConstants.CUSTOMER_COUNT * PartitionMetaMgr.NUM_PARTITIONS, 
-				TpceConstants.COMPANY_COUNT * PartitionMetaMgr.NUM_PARTITIONS,
-				TpceConstants.SECURITY_COUNT * PartitionMetaMgr.NUM_PARTITIONS);
+		dataMgr = new ElasqlTpceDataManager(nodeId);
 	}
 
 	public Set<TransactionType> getBenchmarkingTxTypes() {

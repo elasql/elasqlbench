@@ -42,7 +42,7 @@ public class App {
 			benchmarker = new ElasqlTpccBenchmarker(driver);
 			break;
 		case TPCE:
-			benchmarker = new ElasqlTpceBenchmarker(driver);
+			benchmarker = new ElasqlTpceBenchmarker(driver, nodeId);
 			break;
 		}
 		

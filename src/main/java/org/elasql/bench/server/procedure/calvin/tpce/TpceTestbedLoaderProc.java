@@ -1,6 +1,7 @@
 package org.elasql.bench.server.procedure.calvin.tpce;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -236,7 +237,7 @@ public class TpceTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 		
 		BufferedReader br = null;
 		try {
-			br = new BufferedReader(new FileReader(TpceDataManager.DATA_DIR + "\\" + fileName));
+			br = new BufferedReader(new FileReader(new File(TpceDataManager.DATA_DIR, fileName)));
 			String line = null;
 			while ((line = br.readLine()) != null) {
 				// replace ' with (nothing) to prevent SQL syntax error 
