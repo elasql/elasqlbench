@@ -15,10 +15,10 @@ import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
 import org.vanilladb.core.storage.tx.recovery.CheckpointTask;
 import org.vanilladb.core.storage.tx.recovery.RecoveryMgr;
 
-public class TestbedLoaderProc extends AllExecuteProcedure<StoredProcedureParamHelper> {
-	private static Logger logger = Logger.getLogger(TestbedLoaderProc.class.getName());
+public class MicroTestbedLoaderProc extends AllExecuteProcedure<StoredProcedureParamHelper> {
+	private static Logger logger = Logger.getLogger(MicroTestbedLoaderProc.class.getName());
 
-	public TestbedLoaderProc(long txNum) {
+	public MicroTestbedLoaderProc(long txNum) {
 		super(txNum, StoredProcedureParamHelper.DefaultParamHelper());
 	}
 

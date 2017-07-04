@@ -1,17 +1,17 @@
-package org.elasql.bench.server.procedure.calvin.micro;
+package org.elasql.bench.server.procedure.calvin.tpcc;
 
 import java.util.Map;
 
+import org.elasql.bench.server.param.tpcc.TpccSchemaBuilderProcParamHelper;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.AllExecuteProcedure;
 import org.elasql.sql.RecordKey;
-import org.vanilladb.bench.server.param.micro.SchemaBuilderProcParamHelper;
 import org.vanilladb.core.server.VanillaDb;
 
-public class SchemaBuilderProc extends AllExecuteProcedure<SchemaBuilderProcParamHelper> {
+public class TpccSchemaBuilderProc extends AllExecuteProcedure<TpccSchemaBuilderProcParamHelper> {
 
-	public SchemaBuilderProc(long txNum) {
-		super(txNum, new SchemaBuilderProcParamHelper());
+	public TpccSchemaBuilderProc(long txNum) {
+		super(txNum, new TpccSchemaBuilderProcParamHelper());
 	}
 
 	@Override
@@ -27,5 +27,6 @@ public class SchemaBuilderProc extends AllExecuteProcedure<SchemaBuilderProcPara
 			VanillaDb.newPlanner().executeUpdate(cmd, tx);
 		for (String cmd : paramHelper.getIndexSchemas())
 			VanillaDb.newPlanner().executeUpdate(cmd, tx);
+
 	}
 }

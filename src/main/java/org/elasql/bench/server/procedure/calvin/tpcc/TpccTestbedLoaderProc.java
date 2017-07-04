@@ -18,12 +18,12 @@ import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
 import org.vanilladb.core.storage.tx.recovery.CheckpointTask;
 import org.vanilladb.core.storage.tx.recovery.RecoveryMgr;
 
-public class TestbedLoaderProc extends AllExecuteProcedure<StoredProcedureParamHelper> {
-	private static Logger logger = Logger.getLogger(TestbedLoaderProc.class.getName());
+public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedureParamHelper> {
+	private static Logger logger = Logger.getLogger(TpccTestbedLoaderProc.class.getName());
 
 	private TpccValueGenerator rg = new TpccValueGenerator();
 
-	public TestbedLoaderProc(long txNum) {
+	public TpccTestbedLoaderProc(long txNum) {
 		super(txNum, StoredProcedureParamHelper.DefaultParamHelper());
 	}
 

@@ -13,10 +13,10 @@ public class TpccStoredProcFactory implements CalvinStoredProcedureFactory {
 		CalvinStoredProcedure<?> sp;
 		switch (TpccTransactionType.fromProcedureId(pid)) {
 		case SCHEMA_BUILDER:
-			sp = new SchemaBuilderProc(txNum);
+			sp = new TpccSchemaBuilderProc(txNum);
 			break;
 		case TESTBED_LOADER:
-			sp = new TestbedLoaderProc(txNum);
+			sp = new TpccTestbedLoaderProc(txNum);
 			break;
 		case START_PROFILING:
 			sp = new StartProfilingProc(txNum);
