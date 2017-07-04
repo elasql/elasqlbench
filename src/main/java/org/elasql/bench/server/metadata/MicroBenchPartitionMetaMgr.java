@@ -19,8 +19,7 @@ public class MicroBenchPartitionMetaMgr extends PartitionMetaMgr {
 	public static int getRangeIndex(int id) {
 		return (id - 1) / ElasqlMicrobenchConstants.NUM_ITEMS_PER_NODE;
 	}
-	
-	
+
 	public int getLocation(RecordKey key) {
 		/*
 		 * Hard code the partitioning rules for Micro-benchmark testbed.
@@ -28,24 +27,36 @@ public class MicroBenchPartitionMetaMgr extends PartitionMetaMgr {
 		 */
 
 		// For a special type of record
+
 		if (key.getTableName().equals("notification"))
 			return -1;
 
 		Constant iidCon = key.getKeyVal("i_id");
-		
+
 		if (iidCon != null) {
-			
+
 			if (Elasql.migrationMgr().keyIsInMigrationRange(key)) {
-				if (Elasql.migrationMgr().isMigrated() || Elasql.migrationMgr().isMigrating())
+				if (Elasql.migrationMgr().isMigrated())
 					return Elasql.migrationMgr().getDestPartition();
-				else
-					return Elasql.migrationMgr().getSourcePartition();
+				else {
+					//before migrated
+					if (!Elasql.migrationMgr().isMigrating())
+						return Elasql.migrationMgr().getSourcePartition();
+					else {
+						if (Elasql.migrationMgr().isRecordMigrated(key))
+							return Elasql.migrationMgr().getDestPartition();
+						else
+							return Elasql.migrationMgr().getSourcePartition();
+					}
+
+				}
 			}
 
 		} else {
 			// Fully replicated
 			return Elasql.serverId();
 		}
+
 		return getRangeIndex(key);
 		// return key.hashCode() % NUM_PARTITIONS;
 	}

@@ -163,7 +163,7 @@ public class ElasqlMiroChangingbenchmarkParamGen implements TxParamGenerator {
 				mainPartition = rvg.number(0, NUM_PARTITIONS - 1);
 			else{
 				mainPartition = skewParirion;
-				System.out.println("Hit on Skew"+skewParirion);
+				//System.out.println("Hit on Skew"+skewParirion);
 			}
 			
 		} else {
