@@ -49,6 +49,7 @@ public class ElasqlMiroChangingbenchmarkParamGen implements TxParamGenerator {
 	private static final long BENCH_START_TIME;
 	private static final long CHANGE_PREIOD;
 	private static final double SKEW_RATIO;
+	private static final long SKEW_DELAY;
 
 	static {
 		DIST_TX_RATE = ElasqlBenchProperties.getLoader()
@@ -81,7 +82,8 @@ public class ElasqlMiroChangingbenchmarkParamGen implements TxParamGenerator {
 		COLD_DATA_SIZE_PER_PART = DATA_SIZE_PER_PART - HOT_DATA_SIZE_PER_PART;
 
 		BENCH_START_TIME = System.currentTimeMillis();
-		CHANGE_PREIOD = 3 * 60000;
+		CHANGE_PREIOD = 10 * 60000;
+		SKEW_DELAY = 30*60000;
 		SKEW_RATIO = 0.6;
 	}
 
@@ -141,7 +143,11 @@ public class ElasqlMiroChangingbenchmarkParamGen implements TxParamGenerator {
 		boolean isLongReadTx = (rvg.randomChooseFromDistribution(LONG_READ_TX_RATE, 1 - LONG_READ_TX_RATE) == 0) ? true
 				: false;
 
-		boolean isChanging = true;
+		boolean isChanging = false;
+		
+		
+		if(System.currentTimeMillis()> SKEW_DELAY)
+			isChanging = true;
 
 		if (NUM_PARTITIONS < 2)
 			isDistributedTx = false;
