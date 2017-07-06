@@ -33,26 +33,7 @@ public class MicroBenchPartitionMetaMgr extends PartitionMetaMgr {
 
 		Constant iidCon = key.getKeyVal("i_id");
 
-		if (iidCon != null) {
-
-			if (Elasql.migrationMgr().keyIsInMigrationRange(key)) {
-				if (Elasql.migrationMgr().isMigrated())
-					return Elasql.migrationMgr().getDestPartition();
-				else {
-					//before migrated
-					if (!Elasql.migrationMgr().isMigrating())
-						return Elasql.migrationMgr().getSourcePartition();
-					else {
-						if (Elasql.migrationMgr().isRecordMigrated(key))
-							return Elasql.migrationMgr().getDestPartition();
-						else
-							return Elasql.migrationMgr().getSourcePartition();
-					}
-
-				}
-			}
-
-		} else {
+		if (iidCon == null) {
 			// Fully replicated
 			return Elasql.serverId();
 		}
