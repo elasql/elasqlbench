@@ -26,12 +26,18 @@ public class MicroMigrationManager extends MigrationManager {
 	@Override
 	public boolean keyIsInMigrationRange(RecordKey key) {
 
-		int id = (int) key.getKeyVal("i_id").asJavaVal()
-				- (Elasql.migrationMgr().getSourcePartition() * ElasqlMicrobenchConstants.NUM_ITEMS_PER_NODE + 1);
-		if (Elasql.partitionMetaMgr().isFullyReplicated(key))
-			return false;
+		// int id = (int) key.getKeyVal("i_id").asJavaVal()
+		// - (Elasql.migrationMgr().getSourcePartition() *
+		// ElasqlMicrobenchConstants.NUM_ITEMS_PER_NODE + 1);
+		// if (Elasql.partitionMetaMgr().isFullyReplicated(key))
+		// return false;
+		//
+		// return id >= 0 && id <= (ElasqlMicrobenchConstants.NUM_ITEMS_PER_NODE
+		// / 2 - 1);
 
-		return id >= 0 && id <= (ElasqlMicrobenchConstants.NUM_ITEMS_PER_NODE / 2 - 1);
+		int vetxId = ((int) key.getKeyVal("i_id").asJavaVal() - 1) / this.dataRange;
+		return this.migrateRanges.contains(vetxId);
+
 	}
 
 	/**
@@ -117,15 +123,34 @@ public class MicroMigrationManager extends MigrationManager {
 		// Generate record keys
 		// XXX: For Micro and migration
 		// Hard code migrate half data
-		int startId = Elasql.migrationMgr().getSourcePartition() * ElasqlMicrobenchConstants.NUM_ITEMS_PER_NODE + 1;
-		int endId = startId + ElasqlMicrobenchConstants.NUM_ITEMS_PER_NODE / 2 - 1;
+		// int startId = Elasql.migrationMgr().getSourcePartition() *
+		// ElasqlMicrobenchConstants.NUM_ITEMS_PER_NODE + 1;
+		// int endId = startId + ElasqlMicrobenchConstants.NUM_ITEMS_PER_NODE /
+		// 2 - 1;
+		//
+		// System.out.println("Migrate from ycsb_id = " + startId + " to " +
+		// endId);
+		//
+		// for (int id = startId; id <= endId; id++) {
+		// keyEntryMap = new HashMap<String, Constant>();
+		// keyEntryMap.put("i_id", new IntegerConstant(id));
+		// addOrSleep(dataSet, new RecordKey("item", keyEntryMap));
+		// }
+		//
+		int startId, endId;
+		// Convert Migration Range to RecordKeys
+		
+		for (Integer vertexId : this.migrateRanges) {
 
-		System.out.println("Migrate from ycsb_id = " + startId + " to " + endId);
+			// vertrxId 0 : 1 ~ 100
+			startId = vertexId * this.dataRange + 1;
+			endId = (vertexId + 1) * this.dataRange;
+			for (int id = startId; id <= endId; id++) {
+				keyEntryMap = new HashMap<String, Constant>();
+				keyEntryMap.put("i_id", new IntegerConstant(id));
+				addOrSleep(dataSet, new RecordKey("item", keyEntryMap));
+			}
 
-		for (int id = startId; id <= endId; id++) {
-			keyEntryMap = new HashMap<String, Constant>();
-			keyEntryMap.put("i_id", new IntegerConstant(id));
-			addOrSleep(dataSet, new RecordKey("item", keyEntryMap));
 		}
 
 		return dataSet;
