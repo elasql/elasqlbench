@@ -83,13 +83,11 @@ public class MicroMigrationManager extends MigrationManager {
 	 * This should only be executed on the Sequence node.
 	 */
 	@Override
-	public void broadcastMigrateKeys(Object[] metadata) {
-
-		Object[] params = getAsyncPushingParameters();
+	public void broadcastMigrateKeys(Object[] migratekeys) {
 
 		Object[] call;
 		call = new Object[] {
-				new StoredProcedureCall(-1, -1, MicroTransactionType.BROADCAST_MIGRAKEYS.ordinal(), params) };
+				new StoredProcedureCall(-1, -1, MicroTransactionType.BROADCAST_MIGRAKEYS.ordinal(), migratekeys) };
 		System.out.println("I am going to send the keys");
 		// Call not from appia thread
 		Elasql.connectionMgr().sendBroadcastRequest(call, false);
