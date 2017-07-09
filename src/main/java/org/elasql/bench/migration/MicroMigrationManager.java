@@ -61,7 +61,7 @@ public class MicroMigrationManager extends MigrationManager {
 	 */
 	@Override
 	public void onReceiveAsyncMigrateReq(Object[] metadata) {
-		
+
 		System.out.println("Revoive Async at source");
 		Object[] params = getAsyncPushingParameters();
 
@@ -78,18 +78,21 @@ public class MicroMigrationManager extends MigrationManager {
 					new StoredProcedureCall(-1, -1, MicroTransactionType.STOP_MIGRATION.ordinal(), (Object[]) null) };
 		Elasql.connectionMgr().sendBroadcastRequest(call, true);
 	}
+
 	/**
 	 * This should only be executed on the Sequence node.
 	 */
 	@Override
 	public void broadcastMigrateKeys(Object[] metadata) {
-		
+
 		Object[] params = getAsyncPushingParameters();
-		
-		Object[] call = {
-				new StoredProcedureCall(-1, -1, MicroTransactionType.BROADCAST_MIGRAKEYS.ordinal(), params )};
+
+		Object[] call;
+		call = new Object[] {
+				new StoredProcedureCall(-1, -1, MicroTransactionType.BROADCAST_MIGRAKEYS.ordinal(), params) };
+		System.out.println("I am going to send the keys");
 		Elasql.connectionMgr().sendBroadcastRequest(call, true);
-		
+
 	}
 
 	@Override
@@ -152,6 +155,5 @@ public class MicroMigrationManager extends MigrationManager {
 			throw new IllegalArgumentException("No such table for TPCC");
 		}
 	}
-
 
 }
