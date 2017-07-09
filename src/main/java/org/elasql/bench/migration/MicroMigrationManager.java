@@ -85,7 +85,8 @@ public class MicroMigrationManager extends MigrationManager {
 		// Send a store procedure call
 		Object[] call = {
 				new StoredProcedureCall(-1, -1, MicroTransactionType.LAUNCH_CLAY.ordinal(), (Object[]) null) };
-		Elasql.connectionMgr().sendBroadcastRequest(call, true);
+		// Call not from appia thread
+		Elasql.connectionMgr().sendBroadcastRequest(call, false);
 
 	}
 
