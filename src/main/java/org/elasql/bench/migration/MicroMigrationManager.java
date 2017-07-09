@@ -78,6 +78,19 @@ public class MicroMigrationManager extends MigrationManager {
 					new StoredProcedureCall(-1, -1, MicroTransactionType.STOP_MIGRATION.ordinal(), (Object[]) null) };
 		Elasql.connectionMgr().sendBroadcastRequest(call, true);
 	}
+	/**
+	 * This should only be executed on the Sequence node.
+	 */
+	@Override
+	public void broadcastMigrateKeys(Object[] metadata) {
+		
+		Object[] params = getAsyncPushingParameters();
+		
+		Object[] call = {
+				new StoredProcedureCall(-1, -1, MicroTransactionType.BROADCAST_MIGRAKEYS.ordinal(), params )};
+		Elasql.connectionMgr().sendBroadcastRequest(call, true);
+		
+	}
 
 	@Override
 	// XXX: Not used for now
@@ -139,4 +152,6 @@ public class MicroMigrationManager extends MigrationManager {
 			throw new IllegalArgumentException("No such table for TPCC");
 		}
 	}
+
+
 }
