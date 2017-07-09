@@ -26,16 +26,7 @@ public class MicroMigrationManager extends MigrationManager {
 	@Override
 	public boolean keyIsInMigrationRange(RecordKey key) {
 
-		// int id = (int) key.getKeyVal("i_id").asJavaVal()
-		// - (Elasql.migrationMgr().getSourcePartition() *
-		// ElasqlMicrobenchConstants.NUM_ITEMS_PER_NODE + 1);
-		// if (Elasql.partitionMetaMgr().isFullyReplicated(key))
-		// return false;
-		//
-		// return id >= 0 && id <= (ElasqlMicrobenchConstants.NUM_ITEMS_PER_NODE
-		// / 2 - 1);
-
-		int vetxId = ((int) key.getKeyVal("i_id").asJavaVal() - 1) / this.dataRange;
+		int vetxId = ((int) key.getKeyVal("i_id").asJavaVal() - 1) / MigrationManager.dataRange;
 		return this.migrateRanges.contains(vetxId);
 
 	}
@@ -88,6 +79,19 @@ public class MicroMigrationManager extends MigrationManager {
 	/**
 	 * This should only be executed on the Sequence node.
 	 */
+
+	@Override
+	public void onReceieveLaunchClayReq(Object[] metadata) {
+		// Send a store procedure call
+		Object[] call = {
+				new StoredProcedureCall(-1, -1, MicroTransactionType.LAUNCH_CLAY.ordinal(), (Object[]) null) };
+		Elasql.connectionMgr().sendBroadcastRequest(call, true);
+
+	}
+
+	/**
+	 * This should only be executed on the Sequence node.
+	 */
 	@Override
 	public void broadcastMigrateKeys(Object[] migratekeys) {
 
@@ -121,25 +125,11 @@ public class MicroMigrationManager extends MigrationManager {
 		Map<String, Constant> keyEntryMap;
 
 		// Generate record keys
-		// XXX: For Micro and migration
-		// Hard code migrate half data
-		// int startId = Elasql.migrationMgr().getSourcePartition() *
-		// ElasqlMicrobenchConstants.NUM_ITEMS_PER_NODE + 1;
-		// int endId = startId + ElasqlMicrobenchConstants.NUM_ITEMS_PER_NODE /
-		// 2 - 1;
-		//
-		// System.out.println("Migrate from ycsb_id = " + startId + " to " +
-		// endId);
-		//
-		// for (int id = startId; id <= endId; id++) {
-		// keyEntryMap = new HashMap<String, Constant>();
-		// keyEntryMap.put("i_id", new IntegerConstant(id));
-		// addOrSleep(dataSet, new RecordKey("item", keyEntryMap));
-		// }
-		//
+		// XXX: For Micro and Clay migration plan
+
 		int startId, endId;
 		// Convert Migration Range to RecordKeys
-		
+
 		for (Integer vertexId : this.migrateRanges) {
 
 			// vertrxId 0 : 1 ~ 100
@@ -152,8 +142,7 @@ public class MicroMigrationManager extends MigrationManager {
 			}
 
 		}
-		System.out.println("Migrate from Total "+dataSet.size() + "Keys");
-		
+		System.out.println("Migrate from Total " + dataSet.size() + "Keys");
 
 		return dataSet;
 	}

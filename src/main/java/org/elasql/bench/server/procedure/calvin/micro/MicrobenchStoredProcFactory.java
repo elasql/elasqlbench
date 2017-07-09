@@ -5,7 +5,7 @@ import org.elasql.bench.server.procedure.calvin.StopProfilingProc;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.procedure.calvin.CalvinStoredProcedureFactory;
 import org.elasql.server.migration.procedure.AsyncMigrateProc;
-import org.elasql.server.migration.procedure.BroadcastMigrationKeysProc;
+import org.elasql.server.migration.procedure.LaunchClayProc;
 import org.elasql.server.migration.procedure.MigrationAnalysisProc;
 import org.elasql.server.migration.procedure.StartMigrationProc;
 import org.elasql.server.migration.procedure.StopMigrationProc;
@@ -44,11 +44,15 @@ public class MicrobenchStoredProcFactory implements CalvinStoredProcedureFactory
 		case MIGRATION_ANALYSIS:
 			sp = new MigrationAnalysisProc(txNum);
 			break;
+		case LAUNCH_CLAY:
+			sp = new MigrationAnalysisProc(txNum);
+			break;
 		case BROADCAST_MIGRAKEYS:
-			sp = new BroadcastMigrationKeysProc(txNum);
+			sp = new LaunchClayProc(txNum);
 			break;
 		default:
-			throw new UnsupportedOperationException("Procedure " + MicroTransactionType.fromProcedureId(pid) + " is not supported for now");
+			throw new UnsupportedOperationException(
+					"Procedure " + MicroTransactionType.fromProcedureId(pid) + " is not supported for now");
 		}
 		return sp;
 	}
