@@ -143,8 +143,8 @@ public class MicroMigrationManager extends MigrationManager {
 		for (Integer vertexId : this.migrateRanges) {
 
 			// vertrxId 0 : 1 ~ 100
-			startId = vertexId * this.dataRange + 1;
-			endId = (vertexId + 1) * this.dataRange;
+			startId = vertexId * MigrationManager.dataRange + 1;
+			endId = (vertexId + 1) * MigrationManager.dataRange;
 			for (int id = startId; id <= endId; id++) {
 				keyEntryMap = new HashMap<String, Constant>();
 				keyEntryMap.put("i_id", new IntegerConstant(id));
@@ -152,6 +152,8 @@ public class MicroMigrationManager extends MigrationManager {
 			}
 
 		}
+		System.out.println("Migrate from Total "+dataSet.size() + "Keys");
+		
 
 		return dataSet;
 	}
