@@ -5,6 +5,7 @@ import org.elasql.bench.server.procedure.calvin.StopProfilingProc;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.procedure.calvin.CalvinStoredProcedureFactory;
 import org.elasql.server.migration.procedure.AsyncMigrateProc;
+import org.elasql.server.migration.procedure.BroadcastMigrationKeysProc;
 import org.elasql.server.migration.procedure.LaunchClayProc;
 import org.elasql.server.migration.procedure.MigrationAnalysisProc;
 import org.elasql.server.migration.procedure.StartMigrationProc;
@@ -45,10 +46,10 @@ public class MicrobenchStoredProcFactory implements CalvinStoredProcedureFactory
 			sp = new MigrationAnalysisProc(txNum);
 			break;
 		case LAUNCH_CLAY:
-			sp = new MigrationAnalysisProc(txNum);
+			sp = new LaunchClayProc(txNum);
 			break;
 		case BROADCAST_MIGRAKEYS:
-			sp = new LaunchClayProc(txNum);
+			sp = new BroadcastMigrationKeysProc(txNum);
 			break;
 		default:
 			throw new UnsupportedOperationException(
