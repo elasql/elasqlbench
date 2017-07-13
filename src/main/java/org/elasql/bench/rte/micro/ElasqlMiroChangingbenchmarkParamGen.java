@@ -14,7 +14,6 @@ import org.vanilladb.bench.rte.TxParamGenerator;
 import org.vanilladb.bench.tpcc.TpccValueGenerator;
 import org.vanilladb.bench.util.RandomNonRepeatGenerator;
 
-
 public class ElasqlMiroChangingbenchmarkParamGen implements TxParamGenerator {
 
 	// Transaaction Type
@@ -49,6 +48,7 @@ public class ElasqlMiroChangingbenchmarkParamGen implements TxParamGenerator {
 	private static final long BENCH_START_TIME;
 	private static final long CHANGE_PREIOD;
 	private static final double SKEW_RATIO;
+	private static final long SKEW_DELAY;
 
 	static {
 		DIST_TX_RATE = ElasqlBenchProperties.getLoader()
@@ -59,7 +59,7 @@ public class ElasqlMiroChangingbenchmarkParamGen implements TxParamGenerator {
 				.getPropertyAsDouble(ElasqlMicrobenchParamGen.class.getName() + ".SKEW_TX_RATE", 0.0);
 		LONG_READ_TX_RATE = ElasqlBenchProperties.getLoader()
 				.getPropertyAsDouble(ElasqlMicrobenchParamGen.class.getName() + ".LONG_READ_TX_RATE", 0.0);
-		
+
 		TOTAL_READ_COUNT = ElasqlBenchProperties.getLoader()
 				.getPropertyAsInteger(ElasqlMicrobenchParamGen.class.getName() + ".TOTAL_READ_COUNT", 10);
 		LOCAL_HOT_COUNT = ElasqlBenchProperties.getLoader()
@@ -68,7 +68,7 @@ public class ElasqlMiroChangingbenchmarkParamGen implements TxParamGenerator {
 				.getPropertyAsInteger(ElasqlMicrobenchParamGen.class.getName() + ".REMOTE_HOT_COUNT", 0);
 		REMOTE_COLD_COUNT = ElasqlBenchProperties.getLoader()
 				.getPropertyAsInteger(ElasqlMicrobenchParamGen.class.getName() + ".REMOTE_COLD_COUNT", 5);
-		
+
 		WRITE_RATIO_IN_RW_TX = ElasqlBenchProperties.getLoader()
 				.getPropertyAsDouble(ElasqlMicrobenchParamGen.class.getName() + ".WRITE_RATIO_IN_RW_TX", 0.5);
 		HOT_CONFLICT_RATE = ElasqlBenchProperties.getLoader()
@@ -82,6 +82,7 @@ public class ElasqlMiroChangingbenchmarkParamGen implements TxParamGenerator {
 
 		BENCH_START_TIME = System.currentTimeMillis();
 		CHANGE_PREIOD = 10 * 60000;
+		SKEW_DELAY = 0 * 1000;
 		SKEW_RATIO = 0.6;
 	}
 
@@ -141,7 +142,10 @@ public class ElasqlMiroChangingbenchmarkParamGen implements TxParamGenerator {
 		boolean isLongReadTx = (rvg.randomChooseFromDistribution(LONG_READ_TX_RATE, 1 - LONG_READ_TX_RATE) == 0) ? true
 				: false;
 
-		boolean isChanging = true;
+		boolean isChanging = false;
+
+		if (System.currentTimeMillis() > BENCH_START_TIME + SKEW_DELAY)
+			isChanging = true;
 
 		if (NUM_PARTITIONS < 2)
 			isDistributedTx = false;
@@ -157,15 +161,15 @@ public class ElasqlMiroChangingbenchmarkParamGen implements TxParamGenerator {
 		int skewParirion = 0;
 
 		if (isChanging) {
-			long timePoint = ( System.currentTimeMillis() - BENCH_START_TIME ) / CHANGE_PREIOD;
+			long timePoint = (System.currentTimeMillis() - BENCH_START_TIME) / CHANGE_PREIOD;
 			skewParirion = (int) (timePoint % NUM_PARTITIONS);
-			if(rvg.nextDouble() > SKEW_RATIO)
+			if (rvg.nextDouble() > SKEW_RATIO)
 				mainPartition = rvg.number(0, NUM_PARTITIONS - 1);
-			else{
+			else {
 				mainPartition = skewParirion;
-				//System.out.println("Hit on Skew"+skewParirion);
+				// System.out.println("Hit on Skew"+skewParirion);
 			}
-			
+
 		} else {
 			if (!isSkewTx) {
 				// Uniformly select
