@@ -82,7 +82,7 @@ public class ElasqlMiroChangingbenchmarkParamGen implements TxParamGenerator {
 
 		BENCH_START_TIME = System.currentTimeMillis();
 		CHANGE_PREIOD = 10 * 60000;
-		SKEW_DELAY = 0 * 1000;
+		SKEW_DELAY = 30 * 1000;
 		SKEW_RATIO = 0.6;
 	}
 
