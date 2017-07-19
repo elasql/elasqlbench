@@ -88,7 +88,7 @@ public class ElasqlMicroRealisticbenchmarkParamGen implements TxParamGenerator {
 		COLD_DATA_SIZE_PER_PART = DATA_SIZE_PER_PART - HOT_DATA_SIZE_PER_PART;
 
 		BENCH_START_TIME = System.currentTimeMillis();
-		REPLAY_DELAY = 2 * 60000;
+		REPLAY_DELAY = 30000;
 		REPLAY_PREIOD = 5 * 60000;
 		SKEW_WEIGHT = 1.7;
 		//1273811
