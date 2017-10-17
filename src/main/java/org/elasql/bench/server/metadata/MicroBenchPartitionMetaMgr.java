@@ -13,7 +13,7 @@ public class MicroBenchPartitionMetaMgr extends PartitionMetaMgr {
 	}
 
 
-	public int getLocation(RecordKey key) {
+	public int getPartition(RecordKey key) {
 		/*
 		 * Hard code the partitioning rules for Micro-benchmark testbed.
 		 * Partitions each item id through mod.
