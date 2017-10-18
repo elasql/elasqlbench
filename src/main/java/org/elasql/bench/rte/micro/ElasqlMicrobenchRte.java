@@ -14,7 +14,7 @@ public class ElasqlMicrobenchRte extends RemoteTerminalEmulator {
 
 	public ElasqlMicrobenchRte(SutConnection conn, StatisticMgr statMgr) {
 		super(conn, statMgr);
-		executor = new MicrobenchmarkTxExecutor(new ElasqlMiroChangingbenchmarkParamGen());
+		executor = new MicrobenchmarkTxExecutor(new ElasqlMicroRealisticbenchmarkParamGen());
 	}
 	
 	protected TransactionType getNextTxType() {
