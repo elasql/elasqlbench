@@ -82,9 +82,9 @@ public class ElasqlMiroChangingbenchmarkParamGen implements TxParamGenerator {
 		COLD_DATA_SIZE_PER_PART = DATA_SIZE_PER_PART - HOT_DATA_SIZE_PER_PART;
 
 		BENCH_START_TIME = System.currentTimeMillis();
-		CHANGE_PREIOD = 15 * 6000000;
-		SKEW_DELAY = 30*1000;
-		SKEW_RATIO = 0.6;
+		CHANGE_PREIOD = 40 * 1000;
+		SKEW_DELAY = 30 * 1000;
+		SKEW_RATIO = 0.7;
 	}
 
 	private Random random = new Random();
