@@ -74,6 +74,7 @@ public class ElasqlStartUp implements SutStartUp {
 			factory = getCalvinSpFactory();
 			break;
 		case TPART:
+		case TPART_LAP:
 			factory = getTPartSpFactory();
 			break;
 		}

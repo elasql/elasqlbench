@@ -46,7 +46,7 @@ public class TpccPartitionMetaMgr extends PartitionMetaMgr {
 		return (Integer) widCon.asJavaVal();
 	}
 
-	public int getLocation(RecordKey key) {
+	public int getPartition(RecordKey key) {
 		/*
 		 * Hard code the partitioning rules for TPC-C testbed. Partitions each
 		 * table on warehouse id.

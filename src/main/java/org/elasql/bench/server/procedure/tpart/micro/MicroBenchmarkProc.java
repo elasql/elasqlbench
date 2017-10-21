@@ -13,6 +13,7 @@ import org.vanilladb.core.sql.IntegerConstant;
 
 public class MicroBenchmarkProc extends TPartStoredProcedure<MicroBenchmarkProcParamHelper> {
 
+	private RecordKey[] readKeys;
 	private Map<RecordKey, Constant> writeConstantMap = new HashMap<RecordKey, Constant>();
 
 	public MicroBenchmarkProc(long txNum) {
@@ -23,14 +24,17 @@ public class MicroBenchmarkProc extends TPartStoredProcedure<MicroBenchmarkProcP
 	protected void prepareKeys() {
 		// set read keys
 		int iid;
+		readKeys = new RecordKey[paramHelper.getReadCount()];
 		for (int idx = 0; idx < paramHelper.getReadCount(); idx++) {
 			iid = paramHelper.getReadItemId(idx);
 			// create record key for reading
 			Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
 			keyEntryMap.put("i_id", new IntegerConstant(iid));
 			RecordKey key = new RecordKey("item", keyEntryMap);
+			readKeys[idx] = key;
 			addReadKey(key);
 		}
+		
 		double newPrice;
 		// set write keys
 		for (int idx = 0; idx < paramHelper.getWriteCount(); idx++) {
@@ -51,16 +55,18 @@ public class MicroBenchmarkProc extends TPartStoredProcedure<MicroBenchmarkProcP
 
 	@Override
 	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
+		CachedRecord rec;
+		
 		// SELECT i_name, i_price FROM items WHERE i_id = ...
-		int idx = 0;
-		for (CachedRecord rec : readings.values()) {
+		for (int idx = 0; idx < paramHelper.getReadCount(); idx++) {
+			rec = readings.get(readKeys[idx]);
 			paramHelper.setItemName((String) rec.getVal("i_name").asJavaVal(), idx);
-			paramHelper.setItemPrice((double) rec.getVal("i_price").asJavaVal(), idx++);
+			paramHelper.setItemPrice((double) rec.getVal("i_price").asJavaVal(), idx);
 		}
 
 		// UPDATE items SET i_price = ... WHERE i_id = ...
 		for (Map.Entry<RecordKey, Constant> pair : writeConstantMap.entrySet()) {
-			CachedRecord rec = readings.get(pair.getKey());
+			rec = readings.get(pair.getKey());
 			rec.setVal("i_price", pair.getValue());
 			update(pair.getKey(), rec);
 		}
