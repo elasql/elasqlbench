@@ -1,10 +1,10 @@
 package org.elasql.bench.rte.tpcc;
 
 import org.vanilladb.bench.TransactionType;
-import org.vanilladb.bench.rte.tpcc.TpccTxParamGenerator;
 import org.vanilladb.bench.tpcc.TpccConstants;
 import org.vanilladb.bench.tpcc.TpccTransactionType;
 import org.vanilladb.bench.tpcc.TpccValueGenerator;
+import org.vanilladb.bench.tpcc.rte.TpccTxParamGenerator;
 
 public class NewOrderParamGen implements TpccTxParamGenerator {
 

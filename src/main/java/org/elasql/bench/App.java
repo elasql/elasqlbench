@@ -3,6 +3,8 @@ package org.elasql.bench;
 import org.elasql.bench.micro.ElasqlMicroBenchmarker;
 import org.elasql.bench.remote.sp.ElasqlSpDriver;
 import org.elasql.bench.tpcc.ElasqlTpccBenchmarker;
+import org.elasql.bench.tpce.ElasqlTpceBenchmarker;
+import org.elasql.bench.ycsb.ElasqlYcsbBenchmarker;
 import org.vanilladb.bench.Benchmarker;
 import org.vanilladb.bench.BenchmarkerParameters;
 import org.vanilladb.bench.remote.SutDriver;
@@ -41,7 +43,11 @@ public class App {
 			benchmarker = new ElasqlTpccBenchmarker(driver);
 			break;
 		case TPCE:
-			throw new UnsupportedOperationException("No TPC-E for now");
+			benchmarker = new ElasqlTpceBenchmarker(driver, nodeId);
+			break;
+		case YCSB:
+			benchmarker = new ElasqlYcsbBenchmarker(driver, nodeId);
+			break;
 		}
 		
 		switch (action) {

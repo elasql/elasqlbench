@@ -9,9 +9,9 @@ import org.vanilladb.bench.TransactionType;
 import org.vanilladb.bench.remote.SutConnection;
 import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 import org.vanilladb.bench.rte.TransactionExecutor;
-import org.vanilladb.bench.rte.tpcc.TpccTxExecutor;
 import org.vanilladb.bench.tpcc.TpccConstants;
 import org.vanilladb.bench.tpcc.TpccTransactionType;
+import org.vanilladb.bench.tpcc.rte.TpccTxExecutor;
 
 public class ElasqlTpccRte extends RemoteTerminalEmulator {
 	

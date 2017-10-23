@@ -5,6 +5,12 @@ import java.util.logging.Logger;
 
 import org.elasql.bench.server.metadata.MicroBenchPartitionMetaMgr;
 import org.elasql.bench.server.metadata.TpccPartitionMetaMgr;
+import org.elasql.bench.server.metadata.TpcePartitionMetaMgr;
+import org.elasql.bench.server.metadata.YcsbPartitionMetaMgr;
+import org.elasql.bench.server.procedure.calvin.micro.MicrobenchStoredProcFactory;
+import org.elasql.bench.server.procedure.calvin.tpcc.TpccStoredProcFactory;
+import org.elasql.bench.server.procedure.calvin.tpce.TpceStoredProcFactory;
+import org.elasql.bench.server.procedure.calvin.ycsb.YcsbStoredProcFactory;
 import org.elasql.procedure.DdStoredProcedureFactory;
 import org.elasql.server.Elasql;
 import org.elasql.storage.metadata.PartitionMetaMgr;
@@ -90,6 +96,8 @@ public class ElasqlStartUp implements SutStartUp {
 			throw new UnsupportedOperationException("No TPC-C for now");
 		case TPCE:
 			throw new UnsupportedOperationException("No TPC-E for now");
+		case YCSB:
+			throw new UnsupportedOperationException("No YCSB for now");
 		}
 		return factory;
 	}
@@ -108,7 +116,15 @@ public class ElasqlStartUp implements SutStartUp {
 			factory = new org.elasql.bench.server.procedure.calvin.tpcc.TpccStoredProcFactory();
 			break;
 		case TPCE:
-			throw new UnsupportedOperationException("No TPC-E for now");
+			if (logger.isLoggable(Level.INFO))
+				logger.info("using TPC-E stored procedures for Calvin");
+			factory = new TpceStoredProcFactory();
+			break;
+		case YCSB:
+			if (logger.isLoggable(Level.INFO))
+				logger.info("using YCSB stored procedures for Calvin");
+			factory = new YcsbStoredProcFactory();
+			break;
 		}
 		return factory;
 	}
@@ -128,6 +144,8 @@ public class ElasqlStartUp implements SutStartUp {
 			break;
 		case TPCE:
 			throw new UnsupportedOperationException("No TPC-E for now");
+		case YCSB:
+			throw new UnsupportedOperationException("No YCSB for now");
 		}
 		return factory;
 	}
@@ -142,7 +160,11 @@ public class ElasqlStartUp implements SutStartUp {
 			metaMgr = new TpccPartitionMetaMgr();
 			break;
 		case TPCE:
-			throw new UnsupportedOperationException("No TPC-E for now");
+			metaMgr = new TpcePartitionMetaMgr();
+			break;
+		case YCSB:
+			metaMgr = new YcsbPartitionMetaMgr();
+			break;
 		}
 		return metaMgr;
 	}
