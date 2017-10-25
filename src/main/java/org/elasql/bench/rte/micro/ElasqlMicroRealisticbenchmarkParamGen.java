@@ -173,7 +173,7 @@ public class ElasqlMicroRealisticbenchmarkParamGen implements TxParamGenerator {
 
 		if (pt > 0 && timePoint >= 0 && timePoint < SKEW_HIS.length) {
 			mainPartition = genDistributionOfPart(timePoint);
-			System.out.println("Choose " + mainPartition);
+			System.out.println("pt " + timePoint);
 
 		} else {
 			if (!isSkewTx) {

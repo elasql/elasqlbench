@@ -145,7 +145,9 @@ public class ElasqlStartUp implements SutStartUp {
 		case TPCE:
 			throw new UnsupportedOperationException("No TPC-E for now");
 		case YCSB:
-			throw new UnsupportedOperationException("No YCSB for now");
+			if (logger.isLoggable(Level.INFO))
+				logger.info("using YCSB stored procedures for T-Part");
+			factory = new org.elasql.bench.server.procedure.tpart.ycsb.YcsbStoredProcFactory();
 		}
 		return factory;
 	}
