@@ -2,10 +2,10 @@ package org.elasql.bench.server.procedure.calvin.micro;
 
 import java.util.Map;
 
+import org.elasql.bench.server.param.tpcc.SchemaBuilderProcParamHelper;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.AllExecuteProcedure;
 import org.elasql.sql.RecordKey;
-import org.vanilladb.bench.server.param.micro.SchemaBuilderProcParamHelper;
 import org.vanilladb.core.server.VanillaDb;
 
 public class SchemaBuilderProc extends AllExecuteProcedure<SchemaBuilderProcParamHelper> {
