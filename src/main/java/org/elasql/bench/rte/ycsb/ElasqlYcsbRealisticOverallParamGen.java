@@ -52,14 +52,15 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		BENCH_START_TIME = System.currentTimeMillis();
 		WARMUP_TIME = 90 * 1000;	// cause by ycsb's long init time
 		REPLAY_PREIOD = 153 * 1000;
-		SKEW_WEIGHT = 1.7;
+		SKEW_WEIGHT = 6.5;
 		
 		// Get data
 		int target[] = new int[NUM_PARTITIONS];
-		target[0] = 1;
-		target[1] = 2;
-		target[2] = 3;
-		target[3] = 4;
+		
+		for (int i = 0; i < NUM_PARTITIONS; i++) {
+			target[i] = i+10000;
+		}
+		
 		
 		try {
 			@SuppressWarnings("resource")
@@ -72,7 +73,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 				int hit = 0;
 				int hitCount = 0;
 				
-				while (hitCount < NUM_PARTITIONS && (line=reader.readLine())!=null) {
+				while (hitCount < NUM_PARTITIONS && line != null) {
 					hit = 0;
 					for (i = 0; i < NUM_PARTITIONS; i++) {
 						if (row == target[i]) {
@@ -296,12 +297,21 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		double bot = 0;
 		
 		for (int i = 0; i < NUM_PARTITIONS; i++) {
-			bot += DATA[i][point];
+			if (i == 0)
+				bot += DATA[i][point]*SKEW_WEIGHT;
+			else
+				bot += DATA[i][point];
 		}
 		
 		for (int i = 0; i < NUM_PARTITIONS; i++) {
-			for (int j = 0; j < len * DATA[i][point] / bot; j++)
-				l.add(i);
+			if (i == 0) {
+				for (int j = 0; j < len * DATA[i][point] * SKEW_WEIGHT / bot; j++)
+					l.add(i);
+			}
+			else {
+				for (int j = 0; j < len * DATA[i][point] / bot; j++)
+					l.add(i);
+			}
 		}
 		
 		Collections.shuffle(l);
