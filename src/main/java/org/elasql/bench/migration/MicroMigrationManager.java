@@ -10,8 +10,10 @@ import org.elasql.server.Elasql;
 import org.elasql.server.migration.MigrationManager;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.bench.micro.MicroTransactionType;
+import org.vanilladb.bench.ycsb.YcsbConstants;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.IntegerConstant;
+import org.vanilladb.core.sql.VarcharConstant;
 
 public class MicroMigrationManager extends MigrationManager {
 
@@ -25,8 +27,9 @@ public class MicroMigrationManager extends MigrationManager {
 
 	@Override
 	public boolean keyIsInMigrationRange(RecordKey key) {
-
-		int vetxId = ((int) key.getKeyVal("i_id").asJavaVal() - 1) / MigrationManager.dataRange;
+		
+//		int vetxId = ((int) key.getKeyVal("i_id").asJavaVal() - 1) / MigrationManager.dataRange;
+		int vetxId = (Integer.parseInt(key.getKeyVal("ycsb_id").toString()) - 1) / MigrationManager.dataRange;
 		return this.migrateRanges.contains(vetxId);
 
 	}
@@ -138,8 +141,10 @@ public class MicroMigrationManager extends MigrationManager {
 			endId = (vertexId + 1) * MigrationManager.dataRange;
 			for (int id = startId; id <= endId; id++) {
 				keyEntryMap = new HashMap<String, Constant>();
-				keyEntryMap.put("i_id", new IntegerConstant(id));
-				addOrSleep(dataSet, new RecordKey("item", keyEntryMap));
+//				keyEntryMap.put("i_id", new IntegerConstant(id));
+				keyEntryMap.put("ycsb_id", new VarcharConstant(String.format(YcsbConstants.ID_FORMAT, (Integer) id)));
+//				addOrSleep(dataSet, new RecordKey("item", keyEntryMap));
+				addOrSleep(dataSet, new RecordKey("ycsb", keyEntryMap));
 			}
 
 		}
@@ -166,6 +171,8 @@ public class MicroMigrationManager extends MigrationManager {
 	public int recordSize(String tableName) {
 		switch (tableName) {
 		case "item":
+			return 320;
+		case "ycsb":
 			return 320;
 		default:
 			throw new IllegalArgumentException("No such table for TPCC");

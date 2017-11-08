@@ -19,10 +19,10 @@ public class MicrobenchStoredProcFactory implements CalvinStoredProcedureFactory
 		CalvinStoredProcedure<?> sp;
 		switch (MicroTransactionType.fromProcedureId(pid)) {
 		case SCHEMA_BUILDER:
-			sp = new SchemaBuilderProc(txNum);
+			sp = new MicroSchemaBuilderProc(txNum);
 			break;
 		case TESTBED_LOADER:
-			sp = new TestbedLoaderProc(txNum);
+			sp = new MicroTestbedLoaderProc(txNum);
 			break;
 		case START_PROFILING:
 			sp = new StartProfilingProc(txNum);

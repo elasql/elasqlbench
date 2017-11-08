@@ -21,7 +21,7 @@ import org.vanilladb.core.storage.tx.recovery.CheckpointTask;
 import org.vanilladb.core.storage.tx.recovery.RecoveryMgr;
 
 public class TestBedHashLoaderProc extends AllExecuteProcedure<StoredProcedureParamHelper> {
-	private static Logger logger = Logger.getLogger(TestbedLoaderProc.class.getName());
+	private static Logger logger = Logger.getLogger(MicroTestbedLoaderProc.class.getName());
 
 	public TestBedHashLoaderProc(long txNum) {
 		super(txNum, StoredProcedureParamHelper.DefaultParamHelper());
