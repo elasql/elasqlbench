@@ -50,7 +50,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		DIST_TX_RATE = 0.1;
 		
 		BENCH_START_TIME = System.currentTimeMillis();
-		WARMUP_TIME = 90 * 1000;	// cause by ycsb's long init time
+		WARMUP_TIME = 150 * 1000;	// cause by ycsb's long init time
 		REPLAY_PREIOD = 153 * 1000;
 		SKEW_WEIGHT = 6.5;
 		
