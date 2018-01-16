@@ -83,7 +83,7 @@ public class ElasqlMiroChangingbenchmarkParamGen implements TxParamGenerator {
 
 		BENCH_START_TIME = System.currentTimeMillis();
 		CHANGE_PREIOD = 90 * 1000000;
-		SKEW_DELAY = 45 * 1000;
+		SKEW_DELAY = 60 * 1000;
 		SKEW_RATIO = 0.7;
 	}
 
@@ -163,7 +163,7 @@ public class ElasqlMiroChangingbenchmarkParamGen implements TxParamGenerator {
 		int skewParirion = 0;
 
 		if (isChanging) {
-			long timePoint = ( System.currentTimeMillis() - BENCH_START_TIME ) / CHANGE_PREIOD;
+			long timePoint = ( System.currentTimeMillis() - BENCH_START_TIME - SKEW_DELAY ) / CHANGE_PREIOD;
 			skewParirion = (int) (timePoint % NUM_PARTITIONS);
 			if(rvg.nextDouble() > SKEW_RATIO)
 				mainPartition = rvg.number(0, NUM_PARTITIONS - 1);
