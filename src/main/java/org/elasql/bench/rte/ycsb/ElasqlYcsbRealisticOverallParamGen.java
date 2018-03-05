@@ -50,17 +50,15 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		DIST_TX_RATE = 0.1;
 		
 		BENCH_START_TIME = System.currentTimeMillis();
-//		WARMUP_TIME = 150 * 1000;	// cause by ycsb's long init time - 100RTE
-		WARMUP_TIME = 90 * 1000;	// cause by ycsb's long init time - 50RTE
+		WARMUP_TIME = 150 * 1000;	// cause by ycsb's long init time - 100RTE
 		REPLAY_PREIOD = 153 * 1000;
 		SKEW_WEIGHT = 6.5;
 		
-		// Get data
+		// Get data from Google Cluster
 		int target[] = new int[NUM_PARTITIONS];
 		for (int i = 0; i < NUM_PARTITIONS; i++) 
 	      target[i] = i+1;
 		 
-		
 		try {
 			@SuppressWarnings("resource")
 			BufferedReader reader = new BufferedReader(new FileReader("/opt/shared/Google_Cluster_Data.csv"));
@@ -177,18 +175,13 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 			mainPartition = rvg.number(0, NUM_PARTITIONS - 1);
 			System.out.println("Choose " + mainPartition);
 		}
-		
-		
-		
+
 		latestRandom = latestRandoms[mainPartition];
 		
 		// Decide counts
 		int readCount;
 		int localReadCount = 2;
 		int remoteReadCount = 2;
-		
-//		if (isReadWriteTx) 
-//			readCount = 1;
 		
 		if (isDistributedTx)
 			readCount = localReadCount+remoteReadCount;
@@ -219,10 +212,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 			for (int i = 1; i < localReadCount; i++) {
 				paramList.add(chooseARecordInMainPartition(mainPartition));
 			}
-			
-			
-//			
-			
+
 			if (isDistributedTx) {
 				for (int i = 0; i < remoteReadCount; i++) {
 					paramList.add(readRemoteId[i]);
@@ -248,17 +238,8 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 			paramList.add(rvg.randomAString(YcsbConstants.CHARS_PER_FIELD));
 			
 		} else {
-//			int rec1Id = chooseARecordInMainPartition(mainPartition);
-//			int rec2Id = rec1Id;
-//			while (rec1Id == rec2Id)
-//				rec2Id = chooseARecordInMainPartition(mainPartition);
-			
 			// Read count
 			paramList.add(readCount);
-			
-			// Read ids (in integer)
-//			paramList.add(rec1Id);
-//			paramList.add(rec2Id);
 			
 			for (int i = 0; i < localReadCount; i++) {
 				paramList.add(chooseARecordInMainPartition(mainPartition));
@@ -269,7 +250,6 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 					paramList.add(readRemoteId[i]);
 				}
 			}
-			
 			// Write count
 			paramList.add(0);
 			
@@ -300,7 +280,6 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		          bot += DATA[i][point]*SKEW_WEIGHT;
 		      else
 		          bot += DATA[i][point];
-		   
 		}
 		
 		for (int i = 0; i < NUM_PARTITIONS; i++) {
