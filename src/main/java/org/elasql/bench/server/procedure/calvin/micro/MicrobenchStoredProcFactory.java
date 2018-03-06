@@ -10,6 +10,7 @@ import org.elasql.server.migration.procedure.LaunchClayProc;
 import org.elasql.server.migration.procedure.MigrationAnalysisProc;
 import org.elasql.server.migration.procedure.StartMigrationProc;
 import org.elasql.server.migration.procedure.StopMigrationProc;
+import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.micro.MicroTransactionType;
 
 public class MicrobenchStoredProcFactory implements CalvinStoredProcedureFactory {
@@ -22,7 +23,10 @@ public class MicrobenchStoredProcFactory implements CalvinStoredProcedureFactory
 			sp = new SchemaBuilderProc(txNum);
 			break;
 		case TESTBED_LOADER:
-			sp = new MicroTestbedLoaderProc(txNum);
+			if (PartitionMetaMgr.USE_SCHISM)
+				sp = new SchismTestbedLoader(txNum);
+			else
+				sp = new MicroTestbedLoaderProc(txNum);
 			break;
 		case START_PROFILING:
 			sp = new StartProfilingProc(txNum);
