@@ -8,38 +8,39 @@ import org.elasql.server.Elasql;
 import org.elasql.server.migration.MigrationManager;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.bench.micro.MicroTransactionType;
+import org.vanilladb.bench.ycsb.YcsbConstants;
 import org.vanilladb.core.sql.Constant;
-import org.vanilladb.core.sql.IntegerConstant;
+import org.vanilladb.core.sql.VarcharConstant;
 
-public class MicroMigrationManager extends MigrationManager {
+public class YcsbMigrationManager extends MigrationManager {
 
 	public static final long RECORD_PERIOD = 3000;
 	private static final int COUNTS_FOR_SLEEP = 10000;
 	private int parameterCounter = 0;
 
-	public MicroMigrationManager() {
+	public YcsbMigrationManager() {
 		super(RECORD_PERIOD);
 	}
 
 	@Override
 	public boolean keyIsInMigrationRange(RecordKey key) {
-		int vetxId = ((int) key.getKeyVal("i_id").asJavaVal() - 1) / MigrationManager.dataRange;
+		int vetxId = (Integer.parseInt(key.getKeyVal("ycsb_id").toString()) - 1) / MigrationManager.dataRange;
 		return this.migrateRanges.contains(vetxId);
 	}
 	
 	@Override
 	public int retrieveIdAsInt(RecordKey k) {
-		return (int) k.getKeyVal("i_id").asJavaVal();
+		return Integer.parseInt(k.getKeyVal("ycsb_id").toString());
 	}
 	
 	@Override
 	public long getWaitingTime() {
-		return 30 * 1000;
+		return 159 * 1000;
 	}
 	
 	@Override
 	public long getMigrationPreiod() {
-		return 90 * 1000;
+		return 60 * 1000;
 	}
 
 	/**
@@ -149,9 +150,10 @@ public class MicroMigrationManager extends MigrationManager {
 			endId = (vertexId + 1) * MigrationManager.dataRange;
 			for (int id = startId; id <= endId; id++) {
 				keyEntryMap = new HashMap<String, Constant>();
-				keyEntryMap.put("i_id", new IntegerConstant(id));
-				addOrSleep(dataSet, new RecordKey("item", keyEntryMap));
+				keyEntryMap.put("ycsb_id", new VarcharConstant(String.format(YcsbConstants.ID_FORMAT, (Integer) id)));
+				addOrSleep(dataSet, new RecordKey("ycsb", keyEntryMap));
 			}
+
 		}
 		System.out.println("Migrate from Total " + dataSet.size() + "Keys");
 

@@ -3,14 +3,15 @@ package org.elasql.bench.server;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.elasql.bench.migration.MicroMigrationManager;
+import org.elasql.bench.migration.YcsbMigrationManager;
 import org.elasql.bench.server.metadata.MicroBenchPartitionMetaMgr;
 import org.elasql.bench.server.metadata.TpccPartitionMetaMgr;
 import org.elasql.bench.server.metadata.YcsbPartitionMetaMgr;
-import org.elasql.bench.server.procedure.calvin.micro.MicrobenchStoredProcFactory;
-import org.elasql.bench.server.procedure.calvin.tpcc.TpccStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.ycsb.YcsbStoredProcFactory;
 import org.elasql.procedure.DdStoredProcedureFactory;
 import org.elasql.server.Elasql;
+import org.elasql.server.migration.MigrationManager;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.BenchmarkerParameters;
 import org.vanilladb.bench.server.SutStartUp;
@@ -34,7 +35,8 @@ public class ElasqlStartUp implements SutStartUp {
 			System.out.println("Usage: ./startup [DB Name] [Node Id] ([Is Sequencer])");
 		}
 		
-		Elasql.init(dbName, nodeId, isSequencer, getStoredProcedureFactory(), getPartitionMetaMgr());
+		Elasql.init(dbName, nodeId, isSequencer, getStoredProcedureFactory(), getPartitionMetaMgr(),
+				getMigrationManager());
 
 		if (logger.isLoggable(Level.INFO))
 			logger.info("ElaSQL server ready");
@@ -117,6 +119,8 @@ public class ElasqlStartUp implements SutStartUp {
 				logger.info("using YCSB stored procedures for Calvin");
 			factory = new YcsbStoredProcFactory();
 			break;
+		case TPCE:
+			throw new UnsupportedOperationException("No TPC-E for now");
 		}
 		return factory;
 	}
@@ -154,7 +158,26 @@ public class ElasqlStartUp implements SutStartUp {
 		case YCSB:
 			metaMgr = new YcsbPartitionMetaMgr();
 			break;
+		case TPCE:
+			throw new UnsupportedOperationException("No TPC-E for now");
 		}
 		return metaMgr;
+	}
+	
+	private MigrationManager getMigrationManager() {
+		MigrationManager migraMgr = null;
+		switch (BenchmarkerParameters.BENCH_TYPE) {
+		case MICRO:
+			migraMgr = new MicroMigrationManager();
+			break;
+		case TPCC:
+			throw new UnsupportedOperationException("No TPC-C for now");
+		case YCSB:
+			migraMgr = new YcsbMigrationManager();
+			break;
+		case TPCE:
+			throw new UnsupportedOperationException("No TPC-E for now");
+		}
+		return migraMgr;
 	}
 }
