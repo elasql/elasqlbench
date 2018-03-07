@@ -10,6 +10,7 @@ import org.elasql.server.migration.procedure.LaunchClayProc;
 import org.elasql.server.migration.procedure.MigrationAnalysisProc;
 import org.elasql.server.migration.procedure.StartMigrationProc;
 import org.elasql.server.migration.procedure.StopMigrationProc;
+import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.ycsb.YcsbTransactionType;
 
 public class YcsbStoredProcFactory implements CalvinStoredProcedureFactory {
@@ -22,7 +23,10 @@ public class YcsbStoredProcFactory implements CalvinStoredProcedureFactory {
 				sp = new YcsbSchemaBuilderProc(txNum);
 				break;
 			case TESTBED_LOADER:
-				sp = new YcsbTestbedLoaderProc(txNum);
+				if (PartitionMetaMgr.USE_SCHISM)
+					sp = new SchismYcsbTestbedLoader(txNum);
+				else
+					sp = new YcsbTestbedLoaderProc(txNum);
 				break;
 			case START_PROFILING:
 				sp = new StartProfilingProc(txNum);

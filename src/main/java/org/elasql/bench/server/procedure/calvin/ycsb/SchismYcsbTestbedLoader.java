@@ -1,29 +1,29 @@
-package org.elasql.bench.server.procedure.calvin.micro;
+package org.elasql.bench.server.procedure.calvin.ycsb;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.elasql.bench.micro.ElasqlMicrobenchConstants;
+import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.AllExecuteProcedure;
 import org.elasql.server.Elasql;
 import org.elasql.sql.RecordKey;
 import org.elasql.storage.metadata.PartitionMetaMgr;
-import org.vanilladb.bench.tpcc.TpccConstants;
-import org.vanilladb.bench.util.DoublePlainPrinter;
+import org.vanilladb.bench.ycsb.YcsbConstants;
 import org.vanilladb.core.server.VanillaDb;
 import org.vanilladb.core.sql.Constant;
-import org.vanilladb.core.sql.IntegerConstant;
+import org.vanilladb.core.sql.VarcharConstant;
 import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
 import org.vanilladb.core.storage.tx.recovery.CheckpointTask;
 import org.vanilladb.core.storage.tx.recovery.RecoveryMgr;
 
-public class SchismTestbedLoader extends AllExecuteProcedure<StoredProcedureParamHelper> {
-	private static Logger logger = Logger.getLogger(SchismTestbedLoader.class.getName());
+public class SchismYcsbTestbedLoader extends AllExecuteProcedure<StoredProcedureParamHelper> {
+	private static Logger logger = Logger.getLogger(SchismYcsbTestbedLoader.class.getName());
+	
 	// Notice that this loader should with metis location reader in PartitionMgrF
-	public SchismTestbedLoader(long txNum) {
+	public SchismYcsbTestbedLoader(long txNum) {
 		super(txNum, StoredProcedureParamHelper.DefaultParamHelper());
 	}
 
@@ -33,7 +33,6 @@ public class SchismTestbedLoader extends AllExecuteProcedure<StoredProcedurePara
 		// XXX: We should lock those tables
 		// List<String> writeTables = Arrays.asList(paramHelper.getTables());
 		// localWriteTables.addAll(writeTables);
-
 	}
 
 	@Override
@@ -51,10 +50,11 @@ public class SchismTestbedLoader extends AllExecuteProcedure<StoredProcedurePara
 
 		if (logger.isLoggable(Level.WARNING))
 			logger.warning("This loading procedure only loads the data for micro-benchmarks.");
-
-		int startIId = 1;
-		int endIId = (PartitionMetaMgr.NUM_PARTITIONS) * ElasqlMicrobenchConstants.NUM_ITEMS_PER_NODE;
-		generateItems(startIId, endIId);
+		
+		for (int partId = 0; partId < PartitionMetaMgr.NUM_PARTITIONS; partId++) {
+			int startIId = partId * ElasqlYcsbConstants.MAX_RECORD_PER_PART + 1;
+			generateItems(startIId, ElasqlYcsbConstants.RECORD_PER_PART);
+		}
 
 		if (logger.isLoggable(Level.INFO))
 			logger.info("Loading completed. Flush all loading data to disks...");
@@ -73,45 +73,57 @@ public class SchismTestbedLoader extends AllExecuteProcedure<StoredProcedurePara
 			logger.info("Loading procedure finished.");
 
 	}
-
-	private void generateItems(int startIId, int endIId) {
-		if (logger.isLoggable(Level.FINE))
-			logger.info("Start populating items from i_id=" + startIId + " to i_id=" + endIId);
-
-		int iid, iimid;
-		String iname, idata;
-		double iprice;
+	
+	private void generateItems(int startId, int recordCount) {
+		int endId = startId + recordCount - 1;
+		
+		if (logger.isLoggable(Level.INFO))
+			logger.info("Start populating YCSB table from i_id=" + startId
+					+ " to i_id=" + endId + " (count = " + recordCount + ")");
+		
+		// Generate the field names of YCSB table
+		String sqlPrefix = "INSERT INTO ycsb (ycsb_id";
+		for (int count = 1; count < YcsbConstants.FIELD_COUNT; count++) {
+			sqlPrefix += ", ycsb_" + count;
+		}
+		sqlPrefix += ") VALUES (";
+		
 		String sql;
-
-		int cout = 0;
-
-		Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
+		String ycsbId, ycsbValue;
+		Map<String, Constant> keyEntryMap;
 		RecordKey key;
-		for (int i = startIId; i <= endIId; i++) {
-			keyEntryMap.clear();
-			iid = i;
-
-			keyEntryMap.put("i_id", new IntegerConstant(iid));
-			key = new RecordKey("item", keyEntryMap);
+		for (int id = startId, recCount = 1; id <= endId; id++, recCount++) {
+			
+			// The primary key of YCSB is the string format of id
+			ycsbId = String.format(YcsbConstants.ID_FORMAT, id);
+			
+			// Check if it is a local record
+			keyEntryMap = new HashMap<String, Constant>();
+			keyEntryMap.put("ycsb_id", new VarcharConstant(ycsbId));
+			key = new RecordKey("ycsb", keyEntryMap);
 			if (Elasql.partitionMetaMgr().getPartition(key)== Elasql.serverId()) {
-
-				// Deterministic value generation by item id
-				iimid = iid % (TpccConstants.MAX_IM - TpccConstants.MIN_IM) + TpccConstants.MIN_IM;
-				iname = String.format("%0" + TpccConstants.MIN_I_NAME + "d", iid);
-				iprice = (iid % (int) (TpccConstants.MAX_PRICE - TpccConstants.MIN_PRICE)) + TpccConstants.MIN_PRICE;
-				idata = String.format("%0" + TpccConstants.MIN_I_DATA + "d", iid);
-				sql = "INSERT INTO item(i_id, i_im_id, i_name, i_price, i_data) VALUES (" + iid + ", " + iimid + ", '"
-						+ iname + "', " + DoublePlainPrinter.toPlainString(iprice) + ", '" + idata + "' )";
-
+			
+				sql = sqlPrefix + "'" + ycsbId + "'";
+				
+				// All values of the fields use the same value
+				ycsbValue = ycsbId;
+				
+				for (int count = 1; count < YcsbConstants.FIELD_COUNT; count++) {
+					sql += ", '" + ycsbValue + "'";
+				}
+				sql += ")";
+	
 				int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
 				if (result <= 0)
 					throw new RuntimeException();
-
-				cout++;
+				
+				if (recCount % 50000 == 0)
+					if (logger.isLoggable(Level.INFO))
+						logger.info(recCount + " YCSB records has been populated.");
 			}
 		}
 
-		if (logger.isLoggable(Level.FINE))
-			logger.info("Populating " + cout + " items completed.");
+		if (logger.isLoggable(Level.INFO))
+			logger.info("Populating YCSB table completed.");
 	}
 }

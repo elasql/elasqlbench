@@ -24,7 +24,7 @@ public class MicrobenchStoredProcFactory implements CalvinStoredProcedureFactory
 			break;
 		case TESTBED_LOADER:
 			if (PartitionMetaMgr.USE_SCHISM)
-				sp = new SchismTestbedLoader(txNum);
+				sp = new SchismMicroTestbedLoader(txNum);
 			else
 				sp = new MicroTestbedLoaderProc(txNum);
 			break;

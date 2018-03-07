@@ -25,7 +25,7 @@ public class MicroBenchPartitionMetaMgr extends PartitionMetaMgr {
 	}
 
 	public void getLocationFromMetis() {
-		try (BufferedReader br = new BufferedReader(new FileReader("/opt/shared/metis_table.part"))) {
+		try (BufferedReader br = new BufferedReader(new FileReader("/opt/shared/metis_micro_table.part"))) {
 
 			String sCurrentLine;
 			Map<String, Constant> keyEntryMap;
