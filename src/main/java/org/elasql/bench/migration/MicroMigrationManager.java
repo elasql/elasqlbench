@@ -34,7 +34,7 @@ public class MicroMigrationManager extends MigrationManager {
 	
 	@Override
 	public long getWaitingTime() {
-		return 30 * 1000;
+		return 60 * 1000;
 	}
 	
 	@Override
