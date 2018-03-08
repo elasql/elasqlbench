@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.elasql.bench.util.ElasqlBenchProperties;
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.storage.metadata.PartitionMetaMgr;
+import org.vanilladb.bench.Benchmarker;
 import org.vanilladb.bench.TransactionType;
 import org.vanilladb.bench.rte.TxParamGenerator;
 import org.vanilladb.bench.tpcc.TpccValueGenerator;
@@ -29,10 +29,9 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 	private static final AtomicInteger[] GLOBAL_COUNTERS;
 	
 	// Real parameter
-	private static int DATA_LEN = 51;
+	private static final int DATA_LEN = 51;
 	private static double DATA[][] = new double[NUM_PARTITIONS][DATA_LEN];
 	
-	private static final long BENCH_START_TIME;
 	private static final long REPLAY_PREIOD;
 	private static final long WARMUP_TIME;
 	private static final double SKEW_WEIGHT;
@@ -48,9 +47,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".SKEW_PARAMETER", 0.0);
 		
 		DIST_TX_RATE = 0.1;
-		
-		BENCH_START_TIME = System.currentTimeMillis();
-		WARMUP_TIME = 150 * 1000;	// cause by ycsb's long init time
+		WARMUP_TIME = 200 * 1000;	// cause by ycsb's long init time (init 200 RTEs takes around 160 secs)
 		REPLAY_PREIOD = 153 * 1000;
 		SKEW_WEIGHT = 6.5;
 		
@@ -167,7 +164,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		// Choose the main partition
 		int mainPartition = 0;
 		
-		long pt = (System.currentTimeMillis() - BENCH_START_TIME) - WARMUP_TIME;
+		long pt = (System.nanoTime() - Benchmarker.BENCH_START_TIME) / 1_000_000 - WARMUP_TIME;
 		int timePoint = (int) (pt / (REPLAY_PREIOD / DATA_LEN));
 
 		if (pt > 0 && timePoint >= 0 && timePoint < DATA_LEN) {

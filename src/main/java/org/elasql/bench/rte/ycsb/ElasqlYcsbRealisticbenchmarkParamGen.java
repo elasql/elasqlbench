@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.elasql.bench.util.ElasqlBenchProperties;
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.storage.metadata.PartitionMetaMgr;
+import org.vanilladb.bench.Benchmarker;
 import org.vanilladb.bench.TransactionType;
 import org.vanilladb.bench.rte.TxParamGenerator;
 import org.vanilladb.bench.tpcc.TpccValueGenerator;
@@ -30,7 +31,6 @@ public class ElasqlYcsbRealisticbenchmarkParamGen implements TxParamGenerator {
 	private static double[] NOR2;
 	private static double[] NOR3;
 	
-	private static final long BENCH_START_TIME;
 	private static final long REPLAY_PREIOD;
 	private static final long WARMUP_TIME;
 	private static final double SKEW_WEIGHT;
@@ -47,8 +47,7 @@ public class ElasqlYcsbRealisticbenchmarkParamGen implements TxParamGenerator {
 		
 		DIST_TX_RATE = 0.1;
 		
-		BENCH_START_TIME = System.currentTimeMillis();
-		WARMUP_TIME = 90 * 1000;	// cause by ycsb's long init time
+		WARMUP_TIME = 200 * 1000;	// cause by ycsb's long init time (init 200 RTEs takes around 160 secs)
 		REPLAY_PREIOD = 153 * 1000;
 		SKEW_WEIGHT = 1.7;
 		
@@ -146,7 +145,7 @@ public class ElasqlYcsbRealisticbenchmarkParamGen implements TxParamGenerator {
 		// Choose the main partition
 		int mainPartition = 0;
 		
-		long pt = (System.currentTimeMillis() - BENCH_START_TIME) - WARMUP_TIME;
+		long pt = (System.nanoTime() - Benchmarker.BENCH_START_TIME) / 1_000_000 - WARMUP_TIME;
 		int timePoint = (int) (pt / (REPLAY_PREIOD / SKEW_HIS.length));
 
 		if (pt > 0 && timePoint >= 0 && timePoint < SKEW_HIS.length) {
