@@ -9,6 +9,7 @@ import org.elasql.remote.groupcomm.StoredProcedureCall;
 import org.elasql.server.Elasql;
 import org.elasql.server.migration.MigrationManager;
 import org.elasql.sql.RecordKey;
+import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.micro.MicroTransactionType;
 import org.vanilladb.core.sql.Constant;
 
@@ -22,6 +23,11 @@ public class YcsbMigrationManager extends MigrationManager {
 
 	public YcsbMigrationManager() {
 		super(RECORD_PERIOD);
+	}
+	
+	@Override
+	public int getRecordCount() {
+		return PartitionMetaMgr.NUM_PARTITIONS * ElasqlYcsbConstants.RECORD_PER_PART;
 	}
 	
 	@Override
