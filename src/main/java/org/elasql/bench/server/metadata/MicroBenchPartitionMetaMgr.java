@@ -1,10 +1,13 @@
 package org.elasql.bench.server.metadata;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.elasql.bench.micro.ElasqlMicrobenchConstants;
 import org.elasql.server.Elasql;
@@ -15,25 +18,35 @@ import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class MicroBenchPartitionMetaMgr extends PartitionMetaMgr {
+	private static Logger logger = Logger.getLogger(MicroBenchPartitionMetaMgr.class.getName());
+	
+	private static final String LOC_FILE_PATH = "/opt/shared/metis_micro_table.part";
 	
 	public MicroBenchPartitionMetaMgr() {
 		if (PartitionMetaMgr.USE_SCHISM) {
 			//shoud load metis when loading testbed
-			getLocationFromMetis();
+			loadMetisPartitions();
 			//monitor should commit it
 		}
 	}
 
-	public void getLocationFromMetis() {
-		try (BufferedReader br = new BufferedReader(new FileReader("/opt/shared/metis_micro_table.part"))) {
+	public void loadMetisPartitions() {
+		File file = new File(LOC_FILE_PATH);
+		if (!file.exists()) {
+			if (logger.isLoggable(Level.WARNING))
+				logger.warning(String.format("Cannot find Metis partitions at '%s'", LOC_FILE_PATH));
+			return;
+		}
+		
+		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 
 			String sCurrentLine;
 			Map<String, Constant> keyEntryMap;
 			int line_c = 0;
 			while ((sCurrentLine = br.readLine()) != null) {
-				for (int i = 1; i <= MigrationManager.dataRange; i++) {
+				for (int i = 1; i <= MigrationManager.DATA_RANGE_SIZE; i++) {
 					keyEntryMap = new HashMap<String, Constant>();
-					keyEntryMap.put("i_id", new IntegerConstant(MigrationManager.dataRange * line_c + i));
+					keyEntryMap.put("i_id", new IntegerConstant(MigrationManager.DATA_RANGE_SIZE * line_c + i));
 					this.setPartition(new RecordKey("item", keyEntryMap), Integer.parseInt(sCurrentLine));
 				}
 				line_c++;

@@ -3,29 +3,35 @@ package org.elasql.bench.migration;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.elasql.bench.util.CheckThisException;
+import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.remote.groupcomm.StoredProcedureCall;
 import org.elasql.server.Elasql;
 import org.elasql.server.migration.MigrationManager;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.bench.micro.MicroTransactionType;
-import org.vanilladb.bench.ycsb.YcsbConstants;
 import org.vanilladb.core.sql.Constant;
-import org.vanilladb.core.sql.VarcharConstant;
 
 public class YcsbMigrationManager extends MigrationManager {
 
 	public static final long RECORD_PERIOD = 3000;
 	private static final int COUNTS_FOR_SLEEP = 10000;
 	private int parameterCounter = 0;
+	
+	public static final int VERTEX_PER_PART = ElasqlYcsbConstants.RECORD_PER_PART / DATA_RANGE_SIZE;
 
 	public YcsbMigrationManager() {
 		super(RECORD_PERIOD);
 	}
-
+	
 	@Override
-	public boolean keyIsInMigrationRange(RecordKey key) {
-		int vetxId = (Integer.parseInt(key.getKeyVal("ycsb_id").toString()) - 1) / MigrationManager.dataRange;
-		return this.migrateRanges.contains(vetxId);
+	public int convertToVertexId(RecordKey key)
+	{
+		int ycsbId = (int) Integer.parseInt(key.getKeyVal("ycsb_id").toString());
+		ycsbId -= 1; // [1, N] => [0, N-1]
+		int partId = ycsbId / ElasqlYcsbConstants.MAX_RECORD_PER_PART;
+		int vertexIdInPart = (ycsbId % ElasqlYcsbConstants.MAX_RECORD_PER_PART) / DATA_RANGE_SIZE;
+		return partId * VERTEX_PER_PART + vertexIdInPart;
 	}
 	
 	@Override
@@ -144,15 +150,19 @@ public class YcsbMigrationManager extends MigrationManager {
 		// Convert Migration Range to RecordKeys
 
 		for (Integer vertexId : this.migrateRanges) {
-
-			// vertrxId 0 : 1 ~ 100
-			startId = vertexId * MigrationManager.dataRange + 1;
-			endId = (vertexId + 1) * MigrationManager.dataRange;
-			for (int id = startId; id <= endId; id++) {
-				keyEntryMap = new HashMap<String, Constant>();
-				keyEntryMap.put("ycsb_id", new VarcharConstant(String.format(YcsbConstants.ID_FORMAT, (Integer) id)));
-				addOrSleep(dataSet, new RecordKey("ycsb", keyEntryMap));
-			}
+			
+			throw new CheckThisException();
+			
+			// SLMT (2018/3/8): Not suitable for YCSB
+			
+//			// vertrxId 0 : 1 ~ 100
+//			startId = vertexId * DATA_RANGE_SIZE + 1;
+//			endId = (vertexId + 1) * DATA_RANGE_SIZE;
+//			for (int id = startId; id <= endId; id++) {
+//				keyEntryMap = new HashMap<String, Constant>();
+//				keyEntryMap.put("ycsb_id", new VarcharConstant(String.format(YcsbConstants.ID_FORMAT, (Integer) id)));
+//				addOrSleep(dataSet, new RecordKey("ycsb", keyEntryMap));
+//			}
 
 		}
 		System.out.println("Migrate from Total " + dataSet.size() + "Keys");

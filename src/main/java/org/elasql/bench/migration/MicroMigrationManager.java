@@ -3,6 +3,7 @@ package org.elasql.bench.migration;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.elasql.bench.rte.micro.ElasqlMiroChangingbenchmarkParamGen;
 import org.elasql.remote.groupcomm.StoredProcedureCall;
 import org.elasql.server.Elasql;
 import org.elasql.server.migration.MigrationManager;
@@ -20,11 +21,12 @@ public class MicroMigrationManager extends MigrationManager {
 	public MicroMigrationManager() {
 		super(RECORD_PERIOD);
 	}
-
+	
 	@Override
-	public boolean keyIsInMigrationRange(RecordKey key) {
-		int vetxId = ((int) key.getKeyVal("i_id").asJavaVal() - 1) / MigrationManager.dataRange;
-		return this.migrateRanges.contains(vetxId);
+	public int convertToVertexId(RecordKey key)
+	{
+		int iid = (int) key.getKeyVal("i_id").asJavaVal();
+		return (iid - 1) / MigrationManager.DATA_RANGE_SIZE;
 	}
 	
 	@Override
@@ -34,12 +36,12 @@ public class MicroMigrationManager extends MigrationManager {
 	
 	@Override
 	public long getWaitingTime() {
-		return 60 * 1000;
+		return ElasqlMiroChangingbenchmarkParamGen.START_DELAY;
 	}
 	
 	@Override
 	public long getMigrationPreiod() {
-		return 90 * 1000;
+		return ElasqlMiroChangingbenchmarkParamGen.CHANGE_PREIOD;
 	}
 
 	/**
@@ -145,8 +147,8 @@ public class MicroMigrationManager extends MigrationManager {
 		for (Integer vertexId : this.migrateRanges) {
 
 			// vertrxId 0 : 1 ~ 100
-			startId = vertexId * MigrationManager.dataRange + 1;
-			endId = (vertexId + 1) * MigrationManager.dataRange;
+			startId = vertexId * MigrationManager.DATA_RANGE_SIZE + 1;
+			endId = (vertexId + 1) * MigrationManager.DATA_RANGE_SIZE;
 			for (int id = startId; id <= endId; id++) {
 				keyEntryMap = new HashMap<String, Constant>();
 				keyEntryMap.put("i_id", new IntegerConstant(id));
@@ -176,8 +178,6 @@ public class MicroMigrationManager extends MigrationManager {
 	public int recordSize(String tableName) {
 		switch (tableName) {
 		case "item":
-			return 320;
-		case "ycsb":
 			return 320;
 		default:
 			throw new IllegalArgumentException("No such table for TPCC");
