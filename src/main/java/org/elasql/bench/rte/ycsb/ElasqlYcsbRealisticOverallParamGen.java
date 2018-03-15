@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.elasql.bench.util.ElasqlBenchProperties;
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
@@ -32,13 +33,12 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 	private static final int DATA_LEN = 51;
 	private static double DATA[][] = new double[NUM_PARTITIONS][DATA_LEN];
 	
+	private static AtomicLong globalStartTime = new AtomicLong(-1);
 	private static final long REPLAY_PREIOD;
 	private static final long WARMUP_TIME;
 	private static final double SKEW_WEIGHT;
 	
 	private static int nodeId;
-	private YcsbLatestGenerator[] latestRandoms = new YcsbLatestGenerator[NUM_PARTITIONS];
-	private YcsbLatestGenerator latestRandom;
 	
 	static {
 		RW_TX_RATE = ElasqlBenchProperties.getLoader()
@@ -47,18 +47,16 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".SKEW_PARAMETER", 0.0);
 		
 		DIST_TX_RATE = 0.1;
-		WARMUP_TIME = 200 * 1000;	// cause by ycsb's long init time (init 200 RTEs takes around 160 secs)
+		
+		WARMUP_TIME = 60 * 1000;
 		REPLAY_PREIOD = 153 * 1000;
 		SKEW_WEIGHT = 6.5;
 		
-		// Get data
+		// Get data from Google Cluster
 		int target[] = new int[NUM_PARTITIONS];
-		
-		for (int i = 0; i < NUM_PARTITIONS; i++) {
-			target[i] = i+10000;
-		}
-		
-		
+		for (int i = 0; i < NUM_PARTITIONS; i++) 
+	      target[i] = i+1;
+		 
 		try {
 			@SuppressWarnings("resource")
 			BufferedReader reader = new BufferedReader(new FileReader("/opt/shared/Google_Cluster_Data.csv"));
@@ -99,7 +97,6 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 			e.printStackTrace();
 		}
 	}
-
 	
 	static {
 		if (NUM_PARTITIONS == -1)
@@ -108,6 +105,15 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		GLOBAL_COUNTERS = new AtomicInteger[NUM_PARTITIONS];
 		for (int i = 0; i < NUM_PARTITIONS; i++)
 			GLOBAL_COUNTERS[i] = new AtomicInteger(0);
+	}
+	
+	private static long getGlobalStartTime() {
+		long time = globalStartTime.get();
+		if (time == -1) {
+			globalStartTime.compareAndSet(-1, System.currentTimeMillis());
+			time = globalStartTime.get();
+		}
+		return time;
 	}
 	
 	private static int getNextInsertId(int partitionId) {
@@ -124,6 +130,11 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 	private static int getRecordCount(int partitionId) {
 		return ElasqlYcsbConstants.RECORD_PER_PART;
 	}
+	
+	private YcsbLatestGenerator[] latestRandoms = new YcsbLatestGenerator[NUM_PARTITIONS];
+	private YcsbLatestGenerator latestRandom;
+	private long startTime = -1;
+	private boolean notifyReplayStart, notifyReplayEnd;
 
 	public ElasqlYcsbRealisticOverallParamGen(int nodeId) {
 		ElasqlYcsbRealisticOverallParamGen.nodeId = nodeId;
@@ -143,6 +154,13 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 	public Object[] generateParameter() {
 		TpccValueGenerator rvg = new TpccValueGenerator();
 		ArrayList<Object> paramList = new ArrayList<Object>();
+		
+		if (startTime == -1) {
+			startTime = getGlobalStartTime();
+			
+			long currentTime = (System.nanoTime() - Benchmarker.BENCH_START_TIME) / 1_000_000_000;
+			System.out.println("Benchmark starts at " + currentTime);
+		}
 		
 		// ================================
 		// Decide the types of transactions
@@ -164,29 +182,37 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		// Choose the main partition
 		int mainPartition = 0;
 		
-		long pt = (System.nanoTime() - Benchmarker.BENCH_START_TIME) / 1_000_000 - WARMUP_TIME;
+		long pt = (System.currentTimeMillis() - startTime) - WARMUP_TIME;
 		int timePoint = (int) (pt / (REPLAY_PREIOD / DATA_LEN));
 
 		if (pt > 0 && timePoint >= 0 && timePoint < DATA_LEN) {
 			mainPartition = genDistributionOfPart(timePoint);
-			System.out.println("pt " + timePoint);
+//			System.out.println("pt " + timePoint);
+			
+			if (!notifyReplayStart) {
+				long currentTime = (System.nanoTime() - Benchmarker.BENCH_START_TIME) / 1_000_000_000;
+				System.out.println("Replay starts at " + currentTime);
+				System.out.println("Estimated time point: " + timePoint);
+				notifyReplayStart = true;
+			}
 		}
 		else {
 			mainPartition = rvg.number(0, NUM_PARTITIONS - 1);
-			System.out.println("Choose " + mainPartition);
+//			System.out.println("Choose " + mainPartition);
+			
+			if (notifyReplayStart && !notifyReplayEnd) {
+				long currentTime = (System.nanoTime() - Benchmarker.BENCH_START_TIME) / 1_000_000_000;
+				System.out.println("Replay ends at " + currentTime);
+				notifyReplayEnd = true;
+			}
 		}
-		
-		
-		
+
 		latestRandom = latestRandoms[mainPartition];
 		
 		// Decide counts
 		int readCount;
 		int localReadCount = 2;
 		int remoteReadCount = 2;
-		
-//		if (isReadWriteTx) 
-//			readCount = 1;
 		
 		if (isDistributedTx)
 			readCount = localReadCount+remoteReadCount;
@@ -217,10 +243,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 			for (int i = 1; i < localReadCount; i++) {
 				paramList.add(chooseARecordInMainPartition(mainPartition));
 			}
-			
-			
-//			
-			
+
 			if (isDistributedTx) {
 				for (int i = 0; i < remoteReadCount; i++) {
 					paramList.add(readRemoteId[i]);
@@ -246,17 +269,8 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 			paramList.add(rvg.randomAString(YcsbConstants.CHARS_PER_FIELD));
 			
 		} else {
-//			int rec1Id = chooseARecordInMainPartition(mainPartition);
-//			int rec2Id = rec1Id;
-//			while (rec1Id == rec2Id)
-//				rec2Id = chooseARecordInMainPartition(mainPartition);
-			
 			// Read count
 			paramList.add(readCount);
-			
-			// Read ids (in integer)
-//			paramList.add(rec1Id);
-//			paramList.add(rec2Id);
 			
 			for (int i = 0; i < localReadCount; i++) {
 				paramList.add(chooseARecordInMainPartition(mainPartition));
@@ -267,7 +281,6 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 					paramList.add(readRemoteId[i]);
 				}
 			}
-			
 			// Write count
 			paramList.add(0);
 			
@@ -294,21 +307,21 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		double bot = 0;
 		
 		for (int i = 0; i < NUM_PARTITIONS; i++) {
-			if (i == 0)
-				bot += DATA[i][point]*SKEW_WEIGHT;
-			else
-				bot += DATA[i][point];
+		      if (i == 0)
+		          bot += DATA[i][point]*SKEW_WEIGHT;
+		      else
+		          bot += DATA[i][point];
 		}
 		
 		for (int i = 0; i < NUM_PARTITIONS; i++) {
-			if (i == 0) {
-				for (int j = 0; j < len * DATA[i][point] * SKEW_WEIGHT / bot; j++)
-					l.add(i);
-			}
-			else {
-				for (int j = 0; j < len * DATA[i][point] / bot; j++)
-					l.add(i);
-			}
+		      if (i == 0) {
+		    	  for (int j = 0; j < len * DATA[i][point] * SKEW_WEIGHT / bot; j++)
+		    		  l.add(i);
+		      }
+		      else {
+		    	  for (int j = 0; j < len * DATA[i][point] / bot; j++)
+		    		  l.add(i);
+		      }
 		}
 		
 		Collections.shuffle(l);
