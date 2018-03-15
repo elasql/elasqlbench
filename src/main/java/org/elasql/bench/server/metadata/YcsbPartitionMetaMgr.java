@@ -13,16 +13,16 @@ import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.server.Elasql;
 import org.elasql.sql.RecordKey;
 import org.elasql.storage.metadata.PartitionMetaMgr;
-import org.vanilladb.bench.ycsb.YcsbConstants;
 import org.vanilladb.core.sql.Constant;
-import org.vanilladb.core.sql.VarcharConstant;
 
 public class YcsbPartitionMetaMgr extends PartitionMetaMgr {
 private static Logger logger = Logger.getLogger(YcsbPartitionMetaMgr.class.getName());
 	
-	private static final String LOC_FILE_PATH = "/opt/shared/metis_ycsb_table.part";
+	private static final String LOC_FILE_PATH = "/opt/shared/metis-partitions/google-20/mon30s-iter80s-rang10/2.part";
 	
 	private static final int VERTEX_PER_PART = ElasqlYcsbConstants.RECORD_PER_PART / METIS_DATA_RANGE;
+	
+	private Map<Integer, Integer> schismMap = new HashMap<Integer, Integer>();
 	
 	public YcsbPartitionMetaMgr() {
 		if (LOAD_METIS_PARTITIONS) {
@@ -31,7 +31,7 @@ private static Logger logger = Logger.getLogger(YcsbPartitionMetaMgr.class.getNa
 			//monitor should commit it
 			
 			if (logger.isLoggable(Level.INFO))
-				logger.info("Successfully loaded the Metis partitions");
+				logger.info("finish loading Metis' partition plan");
 		}
 	}
 
@@ -46,22 +46,24 @@ private static Logger logger = Logger.getLogger(YcsbPartitionMetaMgr.class.getNa
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 
 			String line;
-			Map<String, Constant> keyEntryMap;
+//			Map<String, Constant> keyEntryMap;
 			int lineCount = 0;
 			while ((line = br.readLine()) != null) {
 				int newPartId = Integer.parseInt(line);
-				int higherPart = lineCount / VERTEX_PER_PART; // 123 => 1
-				int lowerPart = lineCount % VERTEX_PER_PART; // 123 => 23
-				int startYcsbId = higherPart * ElasqlYcsbConstants.MAX_RECORD_PER_PART + lowerPart * METIS_DATA_RANGE; // 1 * 1000000000 + 23 * 10000
+				schismMap.put(lineCount, newPartId);
 				
-				for (int i = 1; i <= METIS_DATA_RANGE; i++) {
-					keyEntryMap = new HashMap<String, Constant>();
-					keyEntryMap.put("ycsb_id", new VarcharConstant(
-							String.format(YcsbConstants.ID_FORMAT, startYcsbId + i)));
-					setCurrentLocation(new RecordKey("ycsb", keyEntryMap), newPartId);
-				}
+//				int higherPart = lineCount / VERTEX_PER_PART; // 123 => 1
+//				int lowerPart = lineCount % VERTEX_PER_PART; // 123 => 23
+//				int startYcsbId = higherPart * ElasqlYcsbConstants.MAX_RECORD_PER_PART + lowerPart * METIS_DATA_RANGE; // 1 * 1000000000 + 23 * 10000
+//				
+//				for (int i = 1; i <= METIS_DATA_RANGE; i++) {
+//					keyEntryMap = new HashMap<String, Constant>();
+//					keyEntryMap.put("ycsb_id", new VarcharConstant(
+//							String.format(YcsbConstants.ID_FORMAT, startYcsbId + i)));
+//					setCurrentLocation(new RecordKey("ycsb", keyEntryMap), newPartId);
+//				}
+				
 				lineCount++;
-
 			}
 
 		} catch (IOException e) {
@@ -72,6 +74,14 @@ private static Logger logger = Logger.getLogger(YcsbPartitionMetaMgr.class.getNa
 	public boolean isFullyReplicated(RecordKey key) {
 		return false;
 	}
+	
+	public int convertToVertexId(int ycsbId)
+	{
+		ycsbId -= 1; // [1, N] => [0, N-1]
+		int partId = ycsbId / ElasqlYcsbConstants.MAX_RECORD_PER_PART;
+		int vertexIdInPart = (ycsbId % ElasqlYcsbConstants.MAX_RECORD_PER_PART) / METIS_DATA_RANGE;
+		return partId * VERTEX_PER_PART + vertexIdInPart;
+	}
 
 	public int getPartition(RecordKey key) {
 		/*
@@ -80,8 +90,19 @@ private static Logger logger = Logger.getLogger(YcsbPartitionMetaMgr.class.getNa
 		 */
 		Constant idCon = key.getKeyVal("ycsb_id");
 		if (idCon != null) {
-			String id = (String) idCon.asJavaVal();
-			return (Integer.parseInt(id) - 1) / ElasqlYcsbConstants.MAX_RECORD_PER_PART;
+			int ycsbId = Integer.parseInt((String) idCon.asJavaVal());
+			
+			if (LOAD_METIS_PARTITIONS) {
+				// Hash-based
+//				return ycsbId % NUM_PARTITIONS;
+				
+				// Schism-based
+				int vid = convertToVertexId(ycsbId);
+				return schismMap.get(vid);
+			}
+			
+			// Range-based
+			return ycsbId / ElasqlYcsbConstants.MAX_RECORD_PER_PART;
 		} else {
 			// Fully replicated
 			return Elasql.serverId();

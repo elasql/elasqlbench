@@ -22,6 +22,8 @@ import org.vanilladb.core.storage.tx.recovery.RecoveryMgr;
 public class SchismYcsbTestbedLoader extends AllExecuteProcedure<StoredProcedureParamHelper> {
 	private static Logger logger = Logger.getLogger(SchismYcsbTestbedLoader.class.getName());
 	
+	private int loadedCount = 0;
+	
 	// Notice that this loader should with metis location reader in PartitionMgrF
 	public SchismYcsbTestbedLoader(long txNum) {
 		super(txNum, StoredProcedureParamHelper.DefaultParamHelper());
@@ -58,6 +60,9 @@ public class SchismYcsbTestbedLoader extends AllExecuteProcedure<StoredProcedure
 
 		if (logger.isLoggable(Level.INFO))
 			logger.info("Loading completed. Flush all loading data to disks...");
+		
+		if (logger.isLoggable(Level.INFO))
+			logger.info("Loaded " + loadedCount + " YCSB records.");
 
 		// TODO: remove this hack code in the future
 		RecoveryMgr.enableLogging(true);
@@ -92,7 +97,7 @@ public class SchismYcsbTestbedLoader extends AllExecuteProcedure<StoredProcedure
 		String ycsbId, ycsbValue;
 		Map<String, Constant> keyEntryMap;
 		RecordKey key;
-		for (int id = startId, recCount = 1; id <= endId; id++, recCount++) {
+		for (int id = startId; id <= endId; id++) {
 			
 			// The primary key of YCSB is the string format of id
 			ycsbId = String.format(YcsbConstants.ID_FORMAT, id);
@@ -101,7 +106,7 @@ public class SchismYcsbTestbedLoader extends AllExecuteProcedure<StoredProcedure
 			keyEntryMap = new HashMap<String, Constant>();
 			keyEntryMap.put("ycsb_id", new VarcharConstant(ycsbId));
 			key = new RecordKey("ycsb", keyEntryMap);
-			if (Elasql.partitionMetaMgr().getCurrentLocation(key) == Elasql.serverId()) {
+			if (Elasql.partitionMetaMgr().getPartition(key) == Elasql.serverId()) {
 			
 				sql = sqlPrefix + "'" + ycsbId + "'";
 				
@@ -117,9 +122,10 @@ public class SchismYcsbTestbedLoader extends AllExecuteProcedure<StoredProcedure
 				if (result <= 0)
 					throw new RuntimeException();
 				
-				if (recCount % 50000 == 0)
+				loadedCount++;
+				if (loadedCount % 50000 == 0)
 					if (logger.isLoggable(Level.INFO))
-						logger.info(recCount + " YCSB records has been populated.");
+						logger.info(loadedCount + " YCSB records has been populated.");
 			}
 		}
 
