@@ -25,6 +25,12 @@ public class YcsbPartitionMetaMgr extends PartitionMetaMgr {
 	
 	private static final String LOC_FILE_PATH = "/opt/shared/metis_ycsb_table.part";
 	
+	public static int getStartYcsbId(int vertexId) {
+		int higherPart = vertexId / YcsbMigrationManager.VERTEX_PER_PART; // 123 => 1
+		int lowerPart = vertexId % YcsbMigrationManager.VERTEX_PER_PART; // 123 => 23
+		return higherPart * ElasqlYcsbConstants.MAX_RECORD_PER_PART + lowerPart * YcsbMigrationManager.DATA_RANGE_SIZE; // 1 * 1000000000 + 23 * 10000
+	}
+	
 	public YcsbPartitionMetaMgr() {
 		if (PartitionMetaMgr.USE_SCHISM) {
 			//shoud load metis when loading testbed
@@ -48,9 +54,7 @@ public class YcsbPartitionMetaMgr extends PartitionMetaMgr {
 			int lineCount = 0;
 			while ((line = br.readLine()) != null) {
 				int newPartId = Integer.parseInt(line);
-				int higherPart = lineCount / YcsbMigrationManager.VERTEX_PER_PART; // 123 => 1
-				int lowerPart = lineCount % YcsbMigrationManager.VERTEX_PER_PART; // 123 => 23
-				int startYcsbId = higherPart * ElasqlYcsbConstants.MAX_RECORD_PER_PART + lowerPart * YcsbMigrationManager.DATA_RANGE_SIZE; // 1 * 1000000000 + 23 * 10000
+				int startYcsbId = getStartYcsbId(lineCount);
 				
 				for (int i = 1; i <= MigrationManager.DATA_RANGE_SIZE; i++) {
 					keyEntryMap = new HashMap<String, Constant>();
@@ -59,7 +63,6 @@ public class YcsbPartitionMetaMgr extends PartitionMetaMgr {
 					this.setPartition(new RecordKey("ycsb", keyEntryMap), newPartId);
 				}
 				lineCount++;
-
 			}
 
 		} catch (IOException e) {

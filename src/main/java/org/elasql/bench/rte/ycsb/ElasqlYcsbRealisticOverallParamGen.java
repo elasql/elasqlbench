@@ -5,14 +5,15 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.elasql.bench.util.ElasqlBenchProperties;
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.storage.metadata.PartitionMetaMgr;
+import org.vanilladb.bench.Benchmarker;
 import org.vanilladb.bench.TransactionType;
 import org.vanilladb.bench.rte.TxParamGenerator;
 import org.vanilladb.bench.tpcc.TpccValueGenerator;
@@ -29,17 +30,15 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 	private static final AtomicInteger[] GLOBAL_COUNTERS;
 	
 	// Real parameter
-	private static int DATA_LEN = 51;
+	private static final int DATA_LEN = 51;
 	private static double DATA[][] = new double[NUM_PARTITIONS][DATA_LEN];
 	
-	private static final long BENCH_START_TIME;
+	private static AtomicLong globalStartTime = new AtomicLong(-1);
 	private static final long REPLAY_PREIOD;
 	private static final long WARMUP_TIME;
 	private static final double SKEW_WEIGHT;
 	
 	private static int nodeId;
-	private YcsbLatestGenerator[] latestRandoms = new YcsbLatestGenerator[NUM_PARTITIONS];
-	private YcsbLatestGenerator latestRandom;
 	
 	static {
 		RW_TX_RATE = ElasqlBenchProperties.getLoader()
@@ -49,8 +48,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		
 		DIST_TX_RATE = 0.1;
 		
-		BENCH_START_TIME = System.currentTimeMillis();
-		WARMUP_TIME = 150 * 1000;	// cause by ycsb's long init time - 100RTE
+		WARMUP_TIME = 60 * 1000;
 		REPLAY_PREIOD = 153 * 1000;
 		SKEW_WEIGHT = 6.5;
 		
@@ -99,7 +97,6 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 			e.printStackTrace();
 		}
 	}
-
 	
 	static {
 		if (NUM_PARTITIONS == -1)
@@ -108,6 +105,15 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		GLOBAL_COUNTERS = new AtomicInteger[NUM_PARTITIONS];
 		for (int i = 0; i < NUM_PARTITIONS; i++)
 			GLOBAL_COUNTERS[i] = new AtomicInteger(0);
+	}
+	
+	private static long getGlobalStartTime() {
+		long time = globalStartTime.get();
+		if (time == -1) {
+			globalStartTime.compareAndSet(-1, System.currentTimeMillis());
+			time = globalStartTime.get();
+		}
+		return time;
 	}
 	
 	private static int getNextInsertId(int partitionId) {
@@ -124,6 +130,11 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 	private static int getRecordCount(int partitionId) {
 		return ElasqlYcsbConstants.RECORD_PER_PART;
 	}
+	
+	private YcsbLatestGenerator[] latestRandoms = new YcsbLatestGenerator[NUM_PARTITIONS];
+	private YcsbLatestGenerator latestRandom;
+	private long startTime = -1;
+	private boolean notifyReplayStart, notifyReplayEnd;
 
 	public ElasqlYcsbRealisticOverallParamGen(int nodeId) {
 		ElasqlYcsbRealisticOverallParamGen.nodeId = nodeId;
@@ -143,6 +154,13 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 	public Object[] generateParameter() {
 		TpccValueGenerator rvg = new TpccValueGenerator();
 		ArrayList<Object> paramList = new ArrayList<Object>();
+		
+		if (startTime == -1) {
+			startTime = getGlobalStartTime();
+			
+			long currentTime = (System.nanoTime() - Benchmarker.BENCH_START_TIME) / 1_000_000_000;
+			System.out.println("Benchmark starts at " + currentTime);
+		}
 		
 		// ================================
 		// Decide the types of transactions
@@ -164,16 +182,29 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		// Choose the main partition
 		int mainPartition = 0;
 		
-		long pt = (System.currentTimeMillis() - BENCH_START_TIME) - WARMUP_TIME;
+		long pt = (System.currentTimeMillis() - startTime) - WARMUP_TIME;
 		int timePoint = (int) (pt / (REPLAY_PREIOD / DATA_LEN));
 
 		if (pt > 0 && timePoint >= 0 && timePoint < DATA_LEN) {
 			mainPartition = genDistributionOfPart(timePoint);
-			System.out.println("pt " + timePoint);
+//			System.out.println("pt " + timePoint);
+			
+			if (!notifyReplayStart) {
+				long currentTime = (System.nanoTime() - Benchmarker.BENCH_START_TIME) / 1_000_000_000;
+				System.out.println("Replay starts at " + currentTime);
+				System.out.println("Estimated time point: " + timePoint);
+				notifyReplayStart = true;
+			}
 		}
 		else {
 			mainPartition = rvg.number(0, NUM_PARTITIONS - 1);
-			System.out.println("Choose " + mainPartition);
+//			System.out.println("Choose " + mainPartition);
+			
+			if (notifyReplayStart && !notifyReplayEnd) {
+				long currentTime = (System.nanoTime() - Benchmarker.BENCH_START_TIME) / 1_000_000_000;
+				System.out.println("Replay ends at " + currentTime);
+				notifyReplayEnd = true;
+			}
 		}
 
 		latestRandom = latestRandoms[mainPartition];

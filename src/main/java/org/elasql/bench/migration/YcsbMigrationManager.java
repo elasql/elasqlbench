@@ -3,7 +3,7 @@ package org.elasql.bench.migration;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.elasql.bench.util.CheckThisException;
+import org.elasql.bench.server.metadata.YcsbPartitionMetaMgr;
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.remote.groupcomm.StoredProcedureCall;
 import org.elasql.server.Elasql;
@@ -11,7 +11,9 @@ import org.elasql.server.migration.MigrationManager;
 import org.elasql.sql.RecordKey;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.micro.MicroTransactionType;
+import org.vanilladb.bench.ycsb.YcsbConstants;
 import org.vanilladb.core.sql.Constant;
+import org.vanilladb.core.sql.VarcharConstant;
 
 public class YcsbMigrationManager extends MigrationManager {
 
@@ -47,12 +49,12 @@ public class YcsbMigrationManager extends MigrationManager {
 	
 	@Override
 	public long getWaitingTime() {
-		return 159 * 1000;
+		return 60 * 1000;
 	}
 	
 	@Override
 	public long getMigrationPreiod() {
-		return 60 * 1000;
+		return 80 * 1000;
 	}
 
 	/**
@@ -150,26 +152,17 @@ public class YcsbMigrationManager extends MigrationManager {
 		Map<String, Constant> keyEntryMap;
 
 		// Generate record keys
-		// XXX: For Micro and Clay migration plan
-
-		int startId, endId;
+		// XXX: For Clay migration plan
 		// Convert Migration Range to RecordKeys
-
 		for (Integer vertexId : this.migrateRanges) {
+			int startYcsbId = YcsbPartitionMetaMgr.getStartYcsbId(vertexId);
 			
-			throw new CheckThisException();
-			
-			// SLMT (2018/3/8): Not suitable for YCSB
-			
-//			// vertrxId 0 : 1 ~ 100
-//			startId = vertexId * DATA_RANGE_SIZE + 1;
-//			endId = (vertexId + 1) * DATA_RANGE_SIZE;
-//			for (int id = startId; id <= endId; id++) {
-//				keyEntryMap = new HashMap<String, Constant>();
-//				keyEntryMap.put("ycsb_id", new VarcharConstant(String.format(YcsbConstants.ID_FORMAT, (Integer) id)));
-//				addOrSleep(dataSet, new RecordKey("ycsb", keyEntryMap));
-//			}
-
+			for (int i = 1; i <= MigrationManager.DATA_RANGE_SIZE; i++) {
+				keyEntryMap = new HashMap<String, Constant>();
+				keyEntryMap.put("ycsb_id", new VarcharConstant(
+						String.format(YcsbConstants.ID_FORMAT, startYcsbId + i)));
+				addOrSleep(dataSet, new RecordKey("ycsb", keyEntryMap));
+			}
 		}
 		System.out.println("Migrate from Total " + dataSet.size() + "Keys");
 
@@ -193,12 +186,10 @@ public class YcsbMigrationManager extends MigrationManager {
 	@Override
 	public int recordSize(String tableName) {
 		switch (tableName) {
-		case "item":
-			return 320;
 		case "ycsb":
-			return 320;
+			return 1000;
 		default:
-			throw new IllegalArgumentException("No such table for TPCC");
+			throw new IllegalArgumentException("No such table for YCSB");
 		}
 	}
 
