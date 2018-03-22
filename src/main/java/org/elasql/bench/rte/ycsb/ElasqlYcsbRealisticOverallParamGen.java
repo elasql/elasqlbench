@@ -53,9 +53,14 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		SKEW_WEIGHT = 6.5;
 		
 		// Get data from Google Cluster
-		int target[] = new int[NUM_PARTITIONS];
-		for (int i = 0; i < NUM_PARTITIONS; i++) 
-	      target[i] = i+1;
+//		int target[] = new int[NUM_PARTITIONS];
+//		for (int i = 0; i < NUM_PARTITIONS; i++) 
+//	      target[i] = i+1;
+		int target[] = {
+				8962, 11898, 4900, 9510, 11029, // Former Skews
+				2007, 12122, 9572, 12215, 10304, // Later Skews
+				8410, 8761, 9356, 6836, 4272, 11303, 8873, 4835, 9185, 1952 // Stables
+		};
 		 
 		try {
 			@SuppressWarnings("resource")
