@@ -18,7 +18,7 @@ import org.vanilladb.core.sql.Constant;
 public class YcsbPartitionMetaMgr extends PartitionMetaMgr {
 private static Logger logger = Logger.getLogger(YcsbPartitionMetaMgr.class.getName());
 	
-	private static final String LOC_FILE_PATH = "/opt/shared/metis-partitions/google-20/mon30s-iter80s-rang10/2.part";
+	private static final String LOC_FILE_PATH = "/opt/shared/metis-partitions/google-20/mon30s-iter60s-ran10/tail.part";
 	
 	private static final int VERTEX_PER_PART = ElasqlYcsbConstants.RECORD_PER_PART / METIS_DATA_RANGE;
 	
@@ -95,6 +95,14 @@ private static Logger logger = Logger.getLogger(YcsbPartitionMetaMgr.class.getNa
 			if (LOAD_METIS_PARTITIONS) {
 				// Hash-based
 //				return ycsbId % NUM_PARTITIONS;
+				
+				// Range-based (shift)
+//				int partId = ycsbId / ElasqlYcsbConstants.MAX_RECORD_PER_PART;
+//				int index = ycsbId % ElasqlYcsbConstants.MAX_RECORD_PER_PART;
+//				if (index > 800000)
+//					return (partId + 1) % NUM_PARTITIONS;
+//				else
+//					return partId;
 				
 				// Schism-based
 				int vid = convertToVertexId(ycsbId);
