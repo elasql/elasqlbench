@@ -48,7 +48,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		
 		DIST_TX_RATE = 0.1;
 		
-		WARMUP_TIME = 60 * 1000;
+		WARMUP_TIME = 120 * 1000;
 		REPLAY_PREIOD = 153 * 1000;
 		SKEW_WEIGHT = 6.5;
 		
@@ -57,9 +57,9 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 //		for (int i = 0; i < NUM_PARTITIONS; i++) 
 //	      target[i] = i+1;
 		int target[] = {
-				8515, 11475, 6737, 8962, 9768, 4509, 11898, // Former Skews
-				4019, 12215, 316, 7733, 3165, 9572, 9773, // Later Skews
-				1803, 10477, 5204, 7319, 82, 1870 // Stables
+				1348, 11384, 11956, 9768, 8515, 8962, 4900, // Former Skews
+				12122, 11112, 5038, 8292, 3165, 9572, 316, // Later Skews
+				8622, 9441, 4967, 5235, 1670, 2748 // Stables
 		};
 		 
 		try {
