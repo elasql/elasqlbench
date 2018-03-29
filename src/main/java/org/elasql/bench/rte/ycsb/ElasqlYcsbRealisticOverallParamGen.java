@@ -52,7 +52,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		DIST_TX_RATE = 0.1;
 		
 		WARMUP_TIME = 120 * 1000;
-		REPLAY_PREIOD = 153 * 1000;
+		REPLAY_PREIOD = 204 * 1000;
 		SKEW_WEIGHT = 6.5;
 		
 		// Get data from Google Cluster
