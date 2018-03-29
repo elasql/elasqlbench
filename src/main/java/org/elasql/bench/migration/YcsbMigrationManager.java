@@ -55,7 +55,7 @@ public class YcsbMigrationManager extends MigrationManager {
 	
 	@Override
 	public long getMigrationPreiod() {
-		return 80 * 1000;
+		return 60 * 1000;
 	}
 
 	/**
