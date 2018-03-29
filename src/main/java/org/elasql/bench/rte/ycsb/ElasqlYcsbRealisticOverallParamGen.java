@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.elasql.bench.util.ElasqlBenchProperties;
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
@@ -40,6 +41,8 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 	
 	private static int nodeId;
 	
+	private static final AtomicReference<YcsbLatestGenerator> GLOBAL_GEN;
+	
 	static {
 		RW_TX_RATE = ElasqlBenchProperties.getLoader()
 				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".RW_TX_RATE", 0.0);
@@ -57,9 +60,9 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 //		for (int i = 0; i < NUM_PARTITIONS; i++) 
 //	      target[i] = i+1;
 		int target[] = {
-				1348, 11384, 11956, 9768, 8515, 8962, 4900, // Former Skews
-				12122, 11112, 5038, 8292, 3165, 9572, 316, // Later Skews
-				8622, 9441, 4967, 5235, 1670, 2748 // Stables
+				4900, 4179, 4509, 6737, 9768, 11898, 11475, // Former Skews
+				5038, 9773, 316, 10304, 1958, 12122, 4019, // Later Skews
+				6112, 9212, 7045, 4139, 6817, 9157 // Stables
 		};
 		 
 		try {
@@ -101,6 +104,9 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}
+		
+		GLOBAL_GEN = new AtomicReference<YcsbLatestGenerator>(
+					new YcsbLatestGenerator(ElasqlYcsbConstants.RECORD_PER_PART, SKEW_PARAMETER));
 	}
 	
 	static {
@@ -125,15 +131,11 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		int id = GLOBAL_COUNTERS[partitionId].getAndIncrement();
 		int CLIENT_COUNT = NUM_PARTITIONS;
 		
-		return id * CLIENT_COUNT + nodeId + getStartId(partitionId) + getRecordCount(partitionId);
+		return id * CLIENT_COUNT + nodeId + getStartId(partitionId) + ElasqlYcsbConstants.RECORD_PER_PART;
 	}
 	
 	private static int getStartId(int partitionId) {
 		return partitionId * ElasqlYcsbConstants.MAX_RECORD_PER_PART + 1;
-	}
-	
-	private static int getRecordCount(int partitionId) {
-		return ElasqlYcsbConstants.RECORD_PER_PART;
 	}
 	
 	private YcsbLatestGenerator[] latestRandoms = new YcsbLatestGenerator[NUM_PARTITIONS];
@@ -144,8 +146,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 	public ElasqlYcsbRealisticOverallParamGen(int nodeId) {
 		ElasqlYcsbRealisticOverallParamGen.nodeId = nodeId;
 		for (int i = 0; i < NUM_PARTITIONS; i++) {
-			int partitionSize = getRecordCount(i);
-			latestRandoms[i] = new YcsbLatestGenerator(partitionSize, SKEW_PARAMETER);
+			latestRandoms[i] = new YcsbLatestGenerator(GLOBAL_GEN.get());
 		}
 	}
 	
