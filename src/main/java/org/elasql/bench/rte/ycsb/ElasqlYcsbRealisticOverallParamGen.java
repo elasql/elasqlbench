@@ -60,9 +60,9 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		// target[i] = i+1;
 		// Assign the chosen workloads
 		int target[] = {
-				1348, 11384, 11956, 9768, 8515, 8962, 4900, // Former Skews
-				12122, 11112, 5038, 8292, 3165, 9572, 316, // Later Skews
-				8622, 9441, 4967, 5235, 1670, 2748 // Stables
+			11913, 275, 9780, 3165, 7733, 2367, 2494, 6454, 8570, 1359, // Former Skews
+			1348, 11444, 10083, 1054, 5132, 4900, 2740, 9186, 1126, 11870, // Later Skews
+			 // Stables
 		};
 
 		// Read data
@@ -103,6 +103,36 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+		
+		// Normalization
+		for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
+			// Find the min and max
+			double min = Double.MAX_VALUE;
+			double max = Double.MIN_VALUE;
+			for (int i = 0; i < DATA_LEN; i++) {
+				if (min > DATA[partId][i])
+					min = DATA[partId][i];
+				if (max < DATA[partId][i])
+					max = DATA[partId][i];
+			}
+			
+			// Scale and transition
+			double scale = max - min;
+			for (int i = 0; i < DATA_LEN; i++) {
+				DATA[partId][i] = (DATA[partId][i] - min) / scale;
+			}
+			
+			// Make the odd workloads twice larger
+//			if (partId % 2 == 1)
+//				for (int i = 0; i < DATA_LEN; i++) {
+//					DATA[partId][i] *= 2;
+//				}
+			
+			// Make the min become 0.1
+			for (int i = 0; i < DATA_LEN; i++) {
+				DATA[partId][i] += 0.1;
+			}
 		}
 
 		GLOBAL_GEN = new AtomicReference<YcsbLatestGenerator>(
