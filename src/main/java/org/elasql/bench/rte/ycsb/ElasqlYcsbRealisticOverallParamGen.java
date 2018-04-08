@@ -12,7 +12,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.elasql.bench.util.ElasqlBenchProperties;
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.storage.metadata.PartitionMetaMgr;
+import org.elasql.util.PeriodicalJob;
 import org.vanilladb.bench.Benchmarker;
+import org.vanilladb.bench.BenchmarkerParameters;
 import org.vanilladb.bench.TransactionType;
 import org.vanilladb.bench.rte.TxParamGenerator;
 import org.vanilladb.bench.tpcc.TpccValueGenerator;
@@ -25,12 +27,15 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 	private static final double DIST_TX_RATE;
 	private static final double SKEW_PARAMETER;
 	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
+	
+	private static final int TOTAL_READ_COUNT = 2;
+	private static final int REMOTE_READ_COUNT = 1;
 
 	private static final AtomicInteger[] GLOBAL_COUNTERS;
 
 	// Real parameter
 	private static final int DATA_LEN = 51;
-	private static double DATA[][] = new double[NUM_PARTITIONS][DATA_LEN]; // [Partition][Time]
+	private static double DATA[][] = new double[DATA_LEN][NUM_PARTITIONS]; // [Time][Partition]
 
 	private static AtomicLong globalStartTime = new AtomicLong(-1);
 	private static final long REPLAY_PREIOD;
@@ -47,7 +52,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		SKEW_PARAMETER = ElasqlBenchProperties.getLoader()
 				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".SKEW_PARAMETER", 0.0);
 
-		DIST_TX_RATE = 0.1;
+		DIST_TX_RATE = 0.5;
 
 		WARMUP_TIME = 120 * 1000;
 		REPLAY_PREIOD = 204 * 1000;
@@ -60,8 +65,8 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		// target[i] = i+1;
 		// Assign the chosen workloads
 		int target[] = {
-			11913, 275, 9780, 3165, 7733, 2367, 2494, 6454, 8570, 1359, // Former Skews
-			1348, 11444, 10083, 1054, 5132, 4900, 2740, 9186, 1126, 11870, // Later Skews
+			9768, 8962, 4179, 12070, 6737, 4509, 11475, 11898, 11384, 4900, // Former Skews
+			3165, 7733, 1359, 9572, 1958, 5038, 12122, 10304, 316, 4019, // Later Skews
 			 // Stables
 		};
 
@@ -92,7 +97,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 //					System.out.println(line);
 					loads = line.split(",");
 					for (int j = 0; j < loads.length; j++) {
-						DATA[partId][j] = Double.parseDouble(loads[j]);
+						DATA[j][partId] = Double.parseDouble(loads[j]);
 					}
 				}
 
@@ -106,37 +111,73 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		}
 		
 		// Normalization
-		for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
-			// Find the min and max
-			double min = Double.MAX_VALUE;
-			double max = Double.MIN_VALUE;
-			for (int i = 0; i < DATA_LEN; i++) {
-				if (min > DATA[partId][i])
-					min = DATA[partId][i];
-				if (max < DATA[partId][i])
-					max = DATA[partId][i];
-			}
-			
-			// Scale and transition
-			double scale = max - min;
-			for (int i = 0; i < DATA_LEN; i++) {
-				DATA[partId][i] = (DATA[partId][i] - min) / scale;
-			}
-			
-			// Make the odd workloads twice larger
-//			if (partId % 2 == 1)
-//				for (int i = 0; i < DATA_LEN; i++) {
-//					DATA[partId][i] *= 2;
-//				}
-			
-			// Make the min become 0.1
-			for (int i = 0; i < DATA_LEN; i++) {
-				DATA[partId][i] += 0.1;
-			}
-		}
+//		for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
+//			// Find the min and max
+//			double min = Double.MAX_VALUE;
+//			double max = Double.MIN_VALUE;
+//			for (int i = 0; i < DATA_LEN; i++) {
+//				if (min > DATA[partId][i])
+//					min = DATA[partId][i];
+//				if (max < DATA[partId][i])
+//					max = DATA[partId][i];
+//			}
+//			
+//			// Scale and transition
+//			double scale = max - min;
+//			for (int i = 0; i < DATA_LEN; i++) {
+//				DATA[partId][i] = (DATA[partId][i] - min) / scale;
+//			}
+//			
+//			// Make the odd workloads twice larger
+////			if (partId % 2 == 1)
+////				for (int i = 0; i < DATA_LEN; i++) {
+////					DATA[partId][i] *= 2;
+////				}
+//			
+//			// Make the min become 0.1
+//			for (int i = 0; i < DATA_LEN; i++) {
+//				DATA[partId][i] += 0.1;
+//			}
+//		}
 
 		GLOBAL_GEN = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(ElasqlYcsbConstants.RECORD_PER_PART, SKEW_PARAMETER));
+		
+		new PeriodicalJob(1000, BenchmarkerParameters.BENCHMARK_INTERVAL, 
+			new Runnable() {
+		
+				boolean notifyReplayStart, notifyReplayEnd;
+
+				@Override
+				public void run() {
+					long startTime = globalStartTime.get();
+					long time = System.currentTimeMillis() - startTime;
+					long pt = time - WARMUP_TIME;
+					int timePoint = (int) (pt / (REPLAY_PREIOD / DATA_LEN));
+					
+					if (pt > 0 && timePoint >= 0 && timePoint < DATA_LEN) {
+//						System.out.println(String.format("Replay Point: %d, Distribution: %s", 
+//							timePoint, Arrays.toString(DATA[timePoint])));
+						System.out.println(String.format("Current Time: %d, Replay Point: %d", time, timePoint));
+						
+						if (!notifyReplayStart) {
+							long currentTime = (System.nanoTime() - startTime) / 1_000_000_000;
+							System.out.println("Replay starts at " + currentTime);
+							System.out.println("Estimated time point: " + timePoint);
+							notifyReplayStart = true;
+						}
+					} else {
+						System.out.println(String.format("Current Time: %d, Replay offset: %d", time, pt));
+						
+						if (notifyReplayStart && !notifyReplayEnd) {
+							long currentTime = (System.nanoTime() - startTime) / 1_000_000_000;
+							System.out.println("Replay ends at " + currentTime);
+							notifyReplayEnd = true;
+						}
+					}
+				}
+			}
+		).start();
 	}
 
 	static {
@@ -225,96 +266,77 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 
 		// Replay time
 		if (pt > 0 && timePoint >= 0 && timePoint < DATA_LEN) {
-			mainPartition = genDistributionOfPart(timePoint, rvg);
+//			mainPartition = genDistributionOfPart(timePoint, rvg);
+			mainPartition = rvg.randomChooseFromDistribution(DATA[timePoint]);
 			// System.out.println("pt " + timePoint);
 
-			if (!notifyReplayStart) {
-				long currentTime = (System.nanoTime() - Benchmarker.BENCH_START_TIME) / 1_000_000_000;
-				System.out.println("Replay starts at " + currentTime);
-				System.out.println("Estimated time point: " + timePoint);
-				notifyReplayStart = true;
-			}
+//			if (!notifyReplayStart) {
+//				long currentTime = (System.nanoTime() - Benchmarker.BENCH_START_TIME) / 1_000_000_000;
+//				System.out.println("Replay starts at " + currentTime);
+//				System.out.println("Estimated time point: " + timePoint);
+//				notifyReplayStart = true;
+//			}
 		} else { // Non-replay time
 			mainPartition = rvg.number(0, NUM_PARTITIONS - 1);
 			// System.out.println("Choose " + mainPartition);
 
-			if (notifyReplayStart && !notifyReplayEnd) {
-				long currentTime = (System.nanoTime() - Benchmarker.BENCH_START_TIME) / 1_000_000_000;
-				System.out.println("Replay ends at " + currentTime);
-				notifyReplayEnd = true;
-			}
+//			if (notifyReplayStart && !notifyReplayEnd) {
+//				long currentTime = (System.nanoTime() - Benchmarker.BENCH_START_TIME) / 1_000_000_000;
+//				System.out.println("Replay ends at " + currentTime);
+//				notifyReplayEnd = true;
+//			}
 		}
-
-		// Decide counts
-		int readCount;
-		int localReadCount = 2;
-		int remoteReadCount = 2;
-
-		if (isDistributedTx)
-			readCount = localReadCount + remoteReadCount;
-		else
-			readCount = localReadCount;
 
 		// =====================
 		// Generating Parameters
 		// =====================
-		int[] readRemoteId = new int[remoteReadCount];
-
+		
+		int localReadCount = TOTAL_READ_COUNT;
+		
 		if (isDistributedTx) {
-			for (int i = 0; i < remoteReadCount; i++) {
-				int remotePartition = randomChooseOtherPartition(mainPartition, rvg);
-				readRemoteId[i] = chooseARecordInMainPartition(remotePartition);
-			}
+			localReadCount -= REMOTE_READ_COUNT;
 		}
 
 		if (isReadWriteTx) {
-			int readWriteId = chooseARecordInMainPartition(mainPartition);
-			int insertId = getNextInsertId(mainPartition);
-
 			// Read count
-			paramList.add(readCount);
+			paramList.add(TOTAL_READ_COUNT);
 
 			// Read ids (in integer)
-			paramList.add(readWriteId);
-			for (int i = 1; i < localReadCount; i++) {
+			for (int i = 0; i < localReadCount; i++)
 				paramList.add(chooseARecordInMainPartition(mainPartition));
-			}
 
 			if (isDistributedTx) {
-				for (int i = 0; i < remoteReadCount; i++) {
-					paramList.add(readRemoteId[i]);
+				for (int i = 0; i < REMOTE_READ_COUNT; i++) {
+					int remotePartition = randomChooseOtherPartition(mainPartition, rvg);
+					paramList.add(chooseARecordInMainPartition(remotePartition));
 				}
 			}
 
 			// Write count
-			paramList.add(1);
+			paramList.add(TOTAL_READ_COUNT);
 
 			// Write ids (in integer)
-			paramList.add(readWriteId);
+			for (int i = 0; i < TOTAL_READ_COUNT; i++)
+				paramList.add(paramList.get(i + 1));
 
 			// Write values
-			paramList.add(rvg.randomAString(YcsbConstants.CHARS_PER_FIELD));
+			for (int i = 0; i < TOTAL_READ_COUNT; i++)
+				paramList.add(rvg.randomAString(YcsbConstants.CHARS_PER_FIELD));
 
 			// Insert count
 			paramList.add(0);
 
-			// Insert ids (in integer)
-			paramList.add(insertId);
-
-			// Insert values
-			paramList.add(rvg.randomAString(YcsbConstants.CHARS_PER_FIELD));
-
 		} else {
 			// Read count
-			paramList.add(readCount);
+			paramList.add(TOTAL_READ_COUNT);
 
-			for (int i = 0; i < localReadCount; i++) {
+			for (int i = 0; i < localReadCount; i++)
 				paramList.add(chooseARecordInMainPartition(mainPartition));
-			}
 
 			if (isDistributedTx) {
-				for (int i = 0; i < remoteReadCount; i++) {
-					paramList.add(readRemoteId[i]);
+				for (int i = 0; i < REMOTE_READ_COUNT; i++) {
+					int remotePartition = randomChooseOtherPartition(mainPartition, rvg);
+					paramList.add(chooseARecordInMainPartition(remotePartition));
 				}
 			}
 			// Write count
