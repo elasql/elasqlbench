@@ -143,7 +143,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		GLOBAL_GEN = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(ElasqlYcsbConstants.RECORD_PER_PART, SKEW_PARAMETER));
 		
-		new PeriodicalJob(1000, BenchmarkerParameters.BENCHMARK_INTERVAL, 
+		new PeriodicalJob(2000, BenchmarkerParameters.BENCHMARK_INTERVAL, 
 			new Runnable() {
 		
 				boolean notifyReplayStart, notifyReplayEnd;
@@ -151,6 +151,10 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 				@Override
 				public void run() {
 					long startTime = globalStartTime.get();
+					
+					if (startTime == -1)
+						return;
+					
 					long time = System.currentTimeMillis() - startTime;
 					long pt = time - WARMUP_TIME;
 					int timePoint = (int) (pt / (REPLAY_PREIOD / DATA_LEN));
@@ -161,8 +165,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 						System.out.println(String.format("Current Time: %d, Replay Point: %d", time, timePoint));
 						
 						if (!notifyReplayStart) {
-							long currentTime = (System.nanoTime() - startTime) / 1_000_000_000;
-							System.out.println("Replay starts at " + currentTime);
+							System.out.println("Replay starts at " + time);
 							System.out.println("Estimated time point: " + timePoint);
 							notifyReplayStart = true;
 						}
@@ -170,8 +173,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 						System.out.println(String.format("Current Time: %d, Replay offset: %d", time, pt));
 						
 						if (notifyReplayStart && !notifyReplayEnd) {
-							long currentTime = (System.nanoTime() - startTime) / 1_000_000_000;
-							System.out.println("Replay ends at " + currentTime);
+							System.out.println("Replay ends at " + time);
 							notifyReplayEnd = true;
 						}
 					}
@@ -211,7 +213,6 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 
 	private YcsbLatestGenerator[] latestRandoms = new YcsbLatestGenerator[NUM_PARTITIONS];
 	private long startTime = -1;
-	private boolean notifyReplayStart, notifyReplayEnd;
 
 	public ElasqlYcsbRealisticOverallParamGen(int nodeId) {
 		ElasqlYcsbRealisticOverallParamGen.nodeId = nodeId;
