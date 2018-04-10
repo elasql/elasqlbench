@@ -55,7 +55,8 @@ public class YcsbMigrationManager extends MigrationManager {
 	
 	@Override
 	public long getMigrationPreiod() {
-		return 55 * 1000;
+//		return 55 * 1000; // Schism
+		return 60 * 1000; // Clay
 	}
 
 	/**
