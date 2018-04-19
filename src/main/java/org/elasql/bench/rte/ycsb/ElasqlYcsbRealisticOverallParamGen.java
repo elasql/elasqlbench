@@ -52,7 +52,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		SKEW_PARAMETER = ElasqlBenchProperties.getLoader()
 				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".SKEW_PARAMETER", 0.0);
 
-		DIST_TX_RATE = 0.0;
+		DIST_TX_RATE = 0.1;
 
 		WARMUP_TIME = 90 * 1000;
 		REPLAY_PREIOD = 153 * 1000;
@@ -141,31 +141,31 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 //		}
 		
 		// Alter the data distribution for testing
-		int oneThird = DATA_LEN / 3;
-		int twoThird = 2 * oneThird;
-		for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
-			for (int time = 0; time < DATA_LEN; time++) {
-				if (partId % 2 == 1) {
-					if (time < oneThird) {
-						DATA[time][partId] = 1.0;
-					} else if (time < twoThird) {
-						int diff = time - oneThird;
-						DATA[time][partId] = 1.0 - 0.9 * diff / oneThird;
-					} else {
-						DATA[time][partId] = 0.1;
-					}
-				} else {
-					if (time < oneThird) {
-						DATA[time][partId] = 0.1;
-					} else if (time < twoThird) {
-						int diff = time - oneThird;
-						DATA[time][partId] = 0.1 + 0.9 * diff / oneThird;
-					} else {
-						DATA[time][partId] = 1.0;
-					}
-				}
-			}
-		}
+//		int oneThird = DATA_LEN / 3;
+//		int twoThird = 2 * oneThird;
+//		for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
+//			for (int time = 0; time < DATA_LEN; time++) {
+//				if (partId % 2 == 1) {
+//					if (time < oneThird) {
+//						DATA[time][partId] = 1.0;
+//					} else if (time < twoThird) {
+//						int diff = time - oneThird;
+//						DATA[time][partId] = 1.0 - 0.9 * diff / oneThird;
+//					} else {
+//						DATA[time][partId] = 0.1;
+//					}
+//				} else {
+//					if (time < oneThird) {
+//						DATA[time][partId] = 0.1;
+//					} else if (time < twoThird) {
+//						int diff = time - oneThird;
+//						DATA[time][partId] = 0.1 + 0.9 * diff / oneThird;
+//					} else {
+//						DATA[time][partId] = 1.0;
+//					}
+//				}
+//			}
+//		}
 
 		GLOBAL_GEN = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(ElasqlYcsbConstants.RECORD_PER_PART, SKEW_PARAMETER));
@@ -207,12 +207,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 				}
 			}
 		).start();
-	}
-
-	static {
-		if (NUM_PARTITIONS == -1)
-			throw new RuntimeException("it's -1 !!!!");
-
+		
 		GLOBAL_COUNTERS = new AtomicInteger[NUM_PARTITIONS];
 		for (int i = 0; i < NUM_PARTITIONS; i++)
 			GLOBAL_COUNTERS[i] = new AtomicInteger(0);
