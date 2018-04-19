@@ -52,10 +52,10 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		SKEW_PARAMETER = ElasqlBenchProperties.getLoader()
 				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".SKEW_PARAMETER", 0.0);
 
-		DIST_TX_RATE = 0.5;
+		DIST_TX_RATE = 0.0;
 
-		WARMUP_TIME = 120 * 1000;
-		REPLAY_PREIOD = 204 * 1000;
+		WARMUP_TIME = 90 * 1000;
+		REPLAY_PREIOD = 153 * 1000;
 //		SKEW_WEIGHT = 6.5;
 
 		// Get data from Google Cluster
@@ -139,6 +139,33 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 //				DATA[partId][i] += 0.1;
 //			}
 //		}
+		
+		// Alter the data distribution for testing
+		int oneThird = DATA_LEN / 3;
+		int twoThird = 2 * oneThird;
+		for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
+			for (int time = 0; time < DATA_LEN; time++) {
+				if (partId % 2 == 1) {
+					if (time < oneThird) {
+						DATA[time][partId] = 1.0;
+					} else if (time < twoThird) {
+						int diff = time - oneThird;
+						DATA[time][partId] = 1.0 - 0.9 * diff / oneThird;
+					} else {
+						DATA[time][partId] = 0.1;
+					}
+				} else {
+					if (time < oneThird) {
+						DATA[time][partId] = 0.1;
+					} else if (time < twoThird) {
+						int diff = time - oneThird;
+						DATA[time][partId] = 0.1 + 0.9 * diff / oneThird;
+					} else {
+						DATA[time][partId] = 1.0;
+					}
+				}
+			}
+		}
 
 		GLOBAL_GEN = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(ElasqlYcsbConstants.RECORD_PER_PART, SKEW_PARAMETER));
