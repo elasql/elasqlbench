@@ -64,9 +64,14 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		// for (int i = 0; i < NUM_PARTITIONS; i++)
 		// target[i] = i+1;
 		// Assign the chosen workloads
+//		int target[] = {
+//			9768, 8962, 4179, 12070, 6737, 4509, 11475, 11898, 11384, 4900, // Former Skews
+//			3165, 7733, 1359, 9572, 1958, 5038, 12122, 10304, 316, 4019, // Later Skews
+//			 // Stables
+//		};
 		int target[] = {
-			9768, 8962, 4179, 12070, 6737, 4509, 11475, 11898, 11384, 4900, // Former Skews
-			3165, 7733, 1359, 9572, 1958, 5038, 12122, 10304, 316, 4019, // Later Skews
+			11475, 11898, 11384, 4900, // Former Skews
+			3165, 7733, 1359, 9572, // Later Skews
 			 // Stables
 		};
 
