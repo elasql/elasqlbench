@@ -4,7 +4,9 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -28,7 +30,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 	private static final double SKEW_PARAMETER;
 	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
 	
-	private static final int TOTAL_READ_COUNT = 2;
+	private static final int TOTAL_READ_COUNT = 3;
 	private static final int REMOTE_READ_COUNT = 1;
 
 	private static final AtomicInteger[] GLOBAL_COUNTERS;
@@ -63,12 +65,18 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		// int target[] = new int[NUM_PARTITIONS];
 		// for (int i = 0; i < NUM_PARTITIONS; i++)
 		// target[i] = i+1;
-		// Assign the chosen workloads
+		// Assign the chosen workloads (for 20 nodes)
 		int target[] = {
 			9768, 8962, 4179, 12070, 6737, 4509, 11475, 11898, 11384, 4900, // Former Skews
 			3165, 7733, 1359, 9572, 1958, 5038, 12122, 10304, 316, 4019, // Later Skews
 			 // Stables
 		};
+		// Assign the chosen workloads (for 8 nodes)
+//		int target[] = {
+//			11475, 11898, 11384, 4900, // Former Skews
+//			3165, 7733, 1359, 9572, // Later Skews
+//			 // Stables
+//		};
 
 		// Read data
 		try (BufferedReader reader = new BufferedReader(new FileReader("/opt/shared/Google_Cluster_Data.csv"))) {
@@ -141,31 +149,31 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 //		}
 		
 		// Alter the data distribution for testing
-//		int oneThird = DATA_LEN / 3;
-//		int twoThird = 2 * oneThird;
-//		for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
-//			for (int time = 0; time < DATA_LEN; time++) {
-//				if (partId % 2 == 1) {
-//					if (time < oneThird) {
-//						DATA[time][partId] = 1.0;
-//					} else if (time < twoThird) {
-//						int diff = time - oneThird;
-//						DATA[time][partId] = 1.0 - 0.9 * diff / oneThird;
-//					} else {
-//						DATA[time][partId] = 0.1;
-//					}
-//				} else {
-//					if (time < oneThird) {
-//						DATA[time][partId] = 0.1;
-//					} else if (time < twoThird) {
-//						int diff = time - oneThird;
-//						DATA[time][partId] = 0.1 + 0.9 * diff / oneThird;
-//					} else {
-//						DATA[time][partId] = 1.0;
-//					}
-//				}
-//			}
-//		}
+		int oneThird = DATA_LEN / 3;
+		int twoThird = 2 * oneThird;
+		for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
+			for (int time = 0; time < DATA_LEN; time++) {
+				if (partId % 2 == 0) {
+					if (time < oneThird) {
+						DATA[time][partId] = 1.0;
+					} else if (time < twoThird) {
+						int diff = time - oneThird;
+						DATA[time][partId] = 1.0 - 0.9 * diff / oneThird;
+					} else {
+						DATA[time][partId] = 0.1;
+					}
+				} else {
+					if (time < oneThird) {
+						DATA[time][partId] = 0.1;
+					} else if (time < twoThird) {
+						int diff = time - oneThird;
+						DATA[time][partId] = 0.1 + 0.9 * diff / oneThird;
+					} else {
+						DATA[time][partId] = 1.0;
+					}
+				}
+			}
+		}
 
 		GLOBAL_GEN = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(ElasqlYcsbConstants.RECORD_PER_PART, SKEW_PARAMETER));
@@ -319,55 +327,51 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		if (isDistributedTx) {
 			localReadCount -= REMOTE_READ_COUNT;
 		}
+		
+		// Read count
+		paramList.add(TOTAL_READ_COUNT);
 
-		if (isReadWriteTx) {
-			// Read count
-			paramList.add(TOTAL_READ_COUNT);
+		// Read ids (in integer)
+		Set<Integer> chosenIds = new HashSet<Integer>();
+		for (int i = 0; i < localReadCount; i++) {
+			int id = chooseARecordInMainPartition(mainPartition);
+			while (!chosenIds.add(id))
+				id = chooseARecordInMainPartition(mainPartition);
+		}
 
-			// Read ids (in integer)
-			for (int i = 0; i < localReadCount; i++)
-				paramList.add(chooseARecordInMainPartition(mainPartition));
-
-			if (isDistributedTx) {
-				for (int i = 0; i < REMOTE_READ_COUNT; i++) {
-					int remotePartition = randomChooseOtherPartition(mainPartition, rvg);
-					paramList.add(chooseARecordInMainPartition(remotePartition));
-				}
+		if (isDistributedTx) {
+			for (int i = 0; i < REMOTE_READ_COUNT; i++) {
+				int remotePartition = randomChooseOtherPartition(mainPartition, rvg);
+				int id = chooseARecordInMainPartition(remotePartition);
+				while (!chosenIds.add(id))
+					id = chooseARecordInMainPartition(remotePartition);
 			}
+		}
+		
+		// Add the ids to the param list
+		for (Integer id : chosenIds)
+			paramList.add(id);
+		
+		if (isReadWriteTx) {
 
 			// Write count
 			paramList.add(TOTAL_READ_COUNT);
-
+	
 			// Write ids (in integer)
-			for (int i = 0; i < TOTAL_READ_COUNT; i++)
-				paramList.add(paramList.get(i + 1));
-
+			for (Integer id : chosenIds)
+				paramList.add(id);
+	
 			// Write values
 			for (int i = 0; i < TOTAL_READ_COUNT; i++)
 				paramList.add(rvg.randomAString(YcsbConstants.CHARS_PER_FIELD));
-
-			// Insert count
-			paramList.add(0);
-
+		
 		} else {
-			// Read count
-			paramList.add(TOTAL_READ_COUNT);
-
-			for (int i = 0; i < localReadCount; i++)
-				paramList.add(chooseARecordInMainPartition(mainPartition));
-
-			if (isDistributedTx) {
-				for (int i = 0; i < REMOTE_READ_COUNT; i++) {
-					int remotePartition = randomChooseOtherPartition(mainPartition, rvg);
-					paramList.add(chooseARecordInMainPartition(remotePartition));
-				}
-			}
 			// Write count
 			paramList.add(0);
-
-			// Insert count
-			paramList.add(0);
 		}
+
+		// Insert count
+		paramList.add(0);
 
 		return paramList.toArray(new Object[0]);
 	}
