@@ -30,7 +30,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 	private static final double SKEW_PARAMETER;
 	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
 	
-	private static final int TOTAL_READ_COUNT = 3;
+	private static final int TOTAL_READ_COUNT = 2;
 	private static final int REMOTE_READ_COUNT = 1;
 
 	private static final AtomicInteger[] GLOBAL_COUNTERS;
@@ -46,7 +46,8 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 
 	private static int nodeId;
 
-	private static final AtomicReference<YcsbLatestGenerator> GLOBAL_GEN;
+	private static final AtomicReference<YcsbLatestGenerator> STATIC_GEN_FOR_PART;
+	private static final AtomicReference<YcsbLatestGenerator> STATIC_GLOBAL_GEN;
 
 	static {
 		RW_TX_RATE = ElasqlBenchProperties.getLoader()
@@ -54,7 +55,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		SKEW_PARAMETER = ElasqlBenchProperties.getLoader()
 				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".SKEW_PARAMETER", 0.0);
 
-		DIST_TX_RATE = 0.1;
+		DIST_TX_RATE = 1.0;
 
 		WARMUP_TIME = 90 * 1000;
 		REPLAY_PREIOD = 153 * 1000;
@@ -175,8 +176,10 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 			}
 		}
 
-		GLOBAL_GEN = new AtomicReference<YcsbLatestGenerator>(
+		STATIC_GEN_FOR_PART = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(ElasqlYcsbConstants.RECORD_PER_PART, SKEW_PARAMETER));
+		STATIC_GLOBAL_GEN = new AtomicReference<YcsbLatestGenerator>(new YcsbLatestGenerator(
+				ElasqlYcsbConstants.RECORD_PER_PART * NUM_PARTITIONS, SKEW_PARAMETER));
 		
 		new PeriodicalJob(2000, BenchmarkerParameters.BENCHMARK_INTERVAL, 
 			new Runnable() {
@@ -241,14 +244,16 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		return partitionId * ElasqlYcsbConstants.MAX_RECORD_PER_PART + 1;
 	}
 
-	private YcsbLatestGenerator[] latestRandoms = new YcsbLatestGenerator[NUM_PARTITIONS];
+	private YcsbLatestGenerator[] distributionInPart = new YcsbLatestGenerator[NUM_PARTITIONS];
+	private YcsbLatestGenerator globalDistribution;
 	private long startTime = -1;
 
 	public ElasqlYcsbRealisticOverallParamGen(int nodeId) {
 		ElasqlYcsbRealisticOverallParamGen.nodeId = nodeId;
 		for (int i = 0; i < NUM_PARTITIONS; i++) {
-			latestRandoms[i] = new YcsbLatestGenerator(GLOBAL_GEN.get());
+			distributionInPart[i] = new YcsbLatestGenerator(STATIC_GEN_FOR_PART.get());
 		}
+		globalDistribution = new YcsbLatestGenerator(STATIC_GLOBAL_GEN.get()); 
 	}
 
 	@Override
@@ -341,10 +346,16 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 
 		if (isDistributedTx) {
 			for (int i = 0; i < REMOTE_READ_COUNT; i++) {
-				int remotePartition = randomChooseOtherPartition(mainPartition, rvg);
-				int id = chooseARecordInMainPartition(remotePartition);
+				// Method 1: Choose a remote partition, then choose records in it
+//				int remotePartition = randomChooseOtherPartition(mainPartition, rvg);
+//				int id = chooseARecordInMainPartition(remotePartition);
+//				while (!chosenIds.add(id))
+//					id = chooseARecordInMainPartition(remotePartition);
+				
+				// Method 2: Use a global Zipfian distribution to select records
+				int id = chooseARecordGlobally();
 				while (!chosenIds.add(id))
-					id = chooseARecordInMainPartition(remotePartition);
+					id = chooseARecordGlobally();
 			}
 		}
 		
@@ -379,11 +390,20 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 	private int randomChooseOtherPartition(int mainPartition, TpccValueGenerator rvg) {
 		return ((mainPartition + rvg.number(1, NUM_PARTITIONS - 1)) % NUM_PARTITIONS);
 	}
-
+	
+	// XXX: We should use long
 	private int chooseARecordInMainPartition(int mainPartition) {
 		int partitionStartId = getStartId(mainPartition);
 
-		return (int) latestRandoms[mainPartition].nextValue() + partitionStartId - 1;
+		return (int) distributionInPart[mainPartition].nextValue() + partitionStartId - 1;
+	}
+	
+	// XXX: We should use long
+	private int chooseARecordGlobally() {
+		int id = (int) globalDistribution.nextValue() - 1;
+		int partId = id / ElasqlYcsbConstants.RECORD_PER_PART;
+		int offset = id % ElasqlYcsbConstants.RECORD_PER_PART;
+		return partId * ElasqlYcsbConstants.MAX_RECORD_PER_PART + offset + 1;
 	}
 
 	private int genDistributionOfPart(int time, TpccValueGenerator rvg) {
