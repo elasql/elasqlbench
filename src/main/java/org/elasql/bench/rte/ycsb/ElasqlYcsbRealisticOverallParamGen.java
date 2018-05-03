@@ -41,7 +41,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 
 	private static AtomicLong globalStartTime = new AtomicLong(-1);
 	private static final long REPLAY_PREIOD;
-	private static final long WARMUP_TIME;
+	public static final long WARMUP_TIME;
 //	private static final double SKEW_WEIGHT;
 
 	private static int nodeId;
@@ -55,7 +55,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		SKEW_PARAMETER = ElasqlBenchProperties.getLoader()
 				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".SKEW_PARAMETER", 0.0);
 
-		DIST_TX_RATE = 1.0;
+		DIST_TX_RATE = 0.5;
 
 		WARMUP_TIME = 90 * 1000;
 		REPLAY_PREIOD = 153 * 1000;
@@ -67,11 +67,25 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		// for (int i = 0; i < NUM_PARTITIONS; i++)
 		// target[i] = i+1;
 		// Assign the chosen workloads (for 20 nodes)
+//		int target[] = {
+//			9768, 8962, 4179, 12070, 6737, 4509, 11475, 11898, 11384, 4900, // Former Skews
+//			3165, 7733, 1359, 9572, 1958, 5038, 12122, 10304, 316, 4019, // Later Skews
+//			 // Stables
+//		};
+		// Workloads 2
 		int target[] = {
-			9768, 8962, 4179, 12070, 6737, 4509, 11475, 11898, 11384, 4900, // Former Skews
-			3165, 7733, 1359, 9572, 1958, 5038, 12122, 10304, 316, 4019, // Later Skews
-			 // Stables
+			4179, 4509, 4900, 6737, // Former Skews
+			400, 2202, 2356, 2384, // Middle Skews
+			316, 1359, 1958, 3165, // Later Skews
+			422, 558, 805, 1721, 3530, 4337, 5272, 6406, // Low loading
 		};
+		// Workloads 3
+//		int target[] = {
+//			4179, 4509, // Former Skews
+//			400, 3584, // Middle Skews
+//			1359, 3165, // Later Skews
+//			311, 422, 558, 619, 805, 1721, 3530, 4337, 5272, 6406, 6491, 8040, 8202, 8630, // Low loading
+//		};
 		// Assign the chosen workloads (for 8 nodes)
 //		int target[] = {
 //			11475, 11898, 11384, 4900, // Former Skews
@@ -149,32 +163,50 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 //			}
 //		}
 		
-		// Alter the data distribution for testing
-		int oneThird = DATA_LEN / 3;
-		int twoThird = 2 * oneThird;
-		for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
-			for (int time = 0; time < DATA_LEN; time++) {
-				if (partId % 2 == 0) {
-					if (time < oneThird) {
-						DATA[time][partId] = 1.0;
-					} else if (time < twoThird) {
-						int diff = time - oneThird;
-						DATA[time][partId] = 1.0 - 0.9 * diff / oneThird;
-					} else {
-						DATA[time][partId] = 0.1;
-					}
-				} else {
-					if (time < oneThird) {
-						DATA[time][partId] = 0.1;
-					} else if (time < twoThird) {
-						int diff = time - oneThird;
-						DATA[time][partId] = 0.1 + 0.9 * diff / oneThird;
-					} else {
-						DATA[time][partId] = 1.0;
-					}
-				}
-			}
+		// Clear the loading of the last partition
+		for (int time = 0; time < DATA_LEN; time++) {
+			DATA[time][NUM_PARTITIONS - 1] = 0.0;
 		}
+		
+		// Alter the data distribution for testing
+//		int oneThird = DATA_LEN / 3;
+//		int twoThird = 2 * oneThird;
+//		for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
+//			for (int time = 0; time < DATA_LEN; time++) {
+//				if (partId == NUM_PARTITIONS - 1) {
+//					DATA[time][partId] = 0.0;
+//				} else if (partId < NUM_PARTITIONS / 5) {
+//					if (time < oneThird) {
+//						DATA[time][partId] = 1.0;
+//					} else if (time < twoThird) {
+//						int diff = time - oneThird;
+//						DATA[time][partId] = 1.0 - 0.8 * diff / oneThird;
+//					} else {
+//						DATA[time][partId] = 0.2;
+//					}
+//				} else if (partId >= NUM_PARTITIONS / 5 && partId < NUM_PARTITIONS * 2 / 5) {
+//					if (time < oneThird) {
+//						DATA[time][partId] = 0.2 + 0.8 * time / oneThird;
+//					} else if (time < twoThird) {
+//						DATA[time][partId] = 1.0;
+//					} else {
+//						int diff = time - oneThird * 2;
+//						DATA[time][partId] = 1.0 - 0.8 * diff / oneThird;
+//					}
+//				} else if (partId >= NUM_PARTITIONS * 2 / 5 && partId < NUM_PARTITIONS * 3 / 5) {
+//					if (time < oneThird) {
+//						DATA[time][partId] = 0.2;
+//					} else if (time < twoThird) {
+//						int diff = time - oneThird;
+//						DATA[time][partId] = 0.2 + 0.8 * diff / oneThird;
+//					} else {
+//						DATA[time][partId] = 1.0;
+//					}
+//				} else {
+//					DATA[time][partId] = 0.2;
+//				}
+//			}
+//		}
 
 		STATIC_GEN_FOR_PART = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(ElasqlYcsbConstants.RECORD_PER_PART, SKEW_PARAMETER));
