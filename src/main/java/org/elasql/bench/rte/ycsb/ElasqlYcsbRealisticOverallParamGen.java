@@ -174,73 +174,69 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		}
 
 		// Another alter distribution
+//		int oneThird = DATA_LEN / 3;
+//		int twoThird = 2 * oneThird;
+//		for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
+//			for (int time = 0; time < DATA_LEN; time++) {
+//				if (partId % 2 == 0) {
+//					if (time < oneThird) {
+//						DATA[time][partId] = 1.0;
+//					} else if (time < twoThird) {
+//						int diff = time - oneThird;
+//						DATA[time][partId] = 1.0 - 0.9 * diff / oneThird;
+//					} else {
+//						DATA[time][partId] = 0.1;
+//					}
+//				} else {
+//					if (time < oneThird) {
+//						DATA[time][partId] = 0.1;
+//					} else if (time < twoThird) {
+//						int diff = time - oneThird;
+//						DATA[time][partId] = 0.1 + 0.9 * diff / oneThird;
+//					} else {
+//						DATA[time][partId] = 1.0;
+//					}
+//				}
+//			}
+//		}
+
+		// Alter the data distribution for testing
 		int oneThird = DATA_LEN / 3;
 		int twoThird = 2 * oneThird;
 		for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
 			for (int time = 0; time < DATA_LEN; time++) {
-				if (partId % 2 == 0) {
+				if (partId < NUM_PARTITIONS / 5) {
 					if (time < oneThird) {
 						DATA[time][partId] = 1.0;
 					} else if (time < twoThird) {
 						int diff = time - oneThird;
-						DATA[time][partId] = 1.0 - 0.9 * diff / oneThird;
+						DATA[time][partId] = 1.0 - 0.8 * diff / oneThird;
 					} else {
-						DATA[time][partId] = 0.1;
+						DATA[time][partId] = 0.2;
+					}
+				} else if (partId >= NUM_PARTITIONS / 5 && partId < NUM_PARTITIONS * 2 / 5) {
+					if (time < oneThird) {
+						DATA[time][partId] = 0.2 + 0.8 * time / oneThird;
+					} else if (time < twoThird) {
+						DATA[time][partId] = 1.0;
+					} else {
+						int diff = time - oneThird * 2;
+						DATA[time][partId] = 1.0 - 0.8 * diff / oneThird;
+					}
+				} else if (partId >= NUM_PARTITIONS * 2 / 5 && partId < NUM_PARTITIONS * 3 / 5) {
+					if (time < oneThird) {
+						DATA[time][partId] = 0.2;
+					} else if (time < twoThird) {
+						int diff = time - oneThird;
+						DATA[time][partId] = 0.2 + 0.8 * diff / oneThird;
+					} else {
+						DATA[time][partId] = 1.0;
 					}
 				} else {
-					if (time < oneThird) {
-						DATA[time][partId] = 0.1;
-					} else if (time < twoThird) {
-						int diff = time - oneThird;
-						DATA[time][partId] = 0.1 + 0.9 * diff / oneThird;
-					} else {
-						DATA[time][partId] = 1.0;
-					}
+					DATA[time][partId] = 0.2;
 				}
 			}
 		}
-
-		// Alter the data distribution for testing
-		// int oneThird = DATA_LEN / 3;
-		// int twoThird = 2 * oneThird;
-		// for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
-		// for (int time = 0; time < DATA_LEN; time++) {
-		// if (partId == NUM_PARTITIONS - 1) {
-		// DATA[time][partId] = 0.0;
-		// } else if (partId < NUM_PARTITIONS / 5) {
-		// if (time < oneThird) {
-		// DATA[time][partId] = 1.0;
-		// } else if (time < twoThird) {
-		// int diff = time - oneThird;
-		// DATA[time][partId] = 1.0 - 0.8 * diff / oneThird;
-		// } else {
-		// DATA[time][partId] = 0.2;
-		// }
-		// } else if (partId >= NUM_PARTITIONS / 5 && partId < NUM_PARTITIONS *
-		// 2 / 5) {
-		// if (time < oneThird) {
-		// DATA[time][partId] = 0.2 + 0.8 * time / oneThird;
-		// } else if (time < twoThird) {
-		// DATA[time][partId] = 1.0;
-		// } else {
-		// int diff = time - oneThird * 2;
-		// DATA[time][partId] = 1.0 - 0.8 * diff / oneThird;
-		// }
-		// } else if (partId >= NUM_PARTITIONS * 2 / 5 && partId <
-		// NUM_PARTITIONS * 3 / 5) {
-		// if (time < oneThird) {
-		// DATA[time][partId] = 0.2;
-		// } else if (time < twoThird) {
-		// int diff = time - oneThird;
-		// DATA[time][partId] = 0.2 + 0.8 * diff / oneThird;
-		// } else {
-		// DATA[time][partId] = 1.0;
-		// }
-		// } else {
-		// DATA[time][partId] = 0.2;
-		// }
-		// }
-		// }
 
 		STATIC_GEN_FOR_PART = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(ElasqlYcsbConstants.RECORD_PER_PART, SKEW_PARAMETER));
