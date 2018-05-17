@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.elasql.bench.micro.ElasqlMicrobenchConstants;
 import org.elasql.bench.rte.micro.ElasqlMiroChangingbenchmarkParamGen;
+import org.elasql.bench.rte.ycsb.ElasqlYcsbRealisticOverallParamGen;
 import org.elasql.remote.groupcomm.StoredProcedureCall;
 import org.elasql.server.Elasql;
 import org.elasql.server.migration.MigrationManager;
@@ -49,6 +50,10 @@ public class MicroMigrationManager extends MigrationManager {
 	@Override
 	public long getMigrationPreiod() {
 		return ElasqlMiroChangingbenchmarkParamGen.CHANGE_PREIOD;
+	}
+	
+	public long getMigrationStopTime() {
+		return 1000_000;
 	}
 
 	/**

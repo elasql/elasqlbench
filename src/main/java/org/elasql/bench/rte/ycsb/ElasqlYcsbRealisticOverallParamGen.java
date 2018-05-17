@@ -43,7 +43,7 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 	private static double DATA[][] = new double[DATA_LEN][NUM_PARTITIONS]; // [Time][Partition]
 
 	private static AtomicLong globalStartTime = new AtomicLong(-1);
-	private static final long REPLAY_PREIOD;
+	public static final long REPLAY_PREIOD;
 	public static final long WARMUP_TIME;
 	// private static final double SKEW_WEIGHT;
 

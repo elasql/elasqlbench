@@ -55,8 +55,11 @@ public class YcsbMigrationManager extends MigrationManager {
 	
 	@Override
 	public long getMigrationPreiod() {
-		return 55 * 1000; // Schism
-//		return 50 * 1000; // Clay
+		return 55 * 1000;
+	}
+	
+	public long getMigrationStopTime() {
+		return ElasqlYcsbRealisticOverallParamGen.REPLAY_PREIOD;
 	}
 
 	/**
