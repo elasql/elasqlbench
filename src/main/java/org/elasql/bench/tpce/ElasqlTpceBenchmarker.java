@@ -17,7 +17,8 @@ import org.vanilladb.bench.tpce.rte.TpceRte;
 public class ElasqlTpceBenchmarker extends Benchmarker {
 	
 	private TpceDataManager dataMgr;
-
+	
+	// XXX: Add report postfix
 	public ElasqlTpceBenchmarker(SutDriver sutDriver, int nodeId) {
 		super(sutDriver);
 		dataMgr = new ElasqlTpceDataManager(nodeId);

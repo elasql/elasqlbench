@@ -12,6 +12,7 @@ public class ElasqlTpccBenchmarker extends TpccBenchmarker {
 	
 	private int nextWid = 0;
 	
+	// XXX: Add report postfix
 	public ElasqlTpccBenchmarker(SutDriver sutDriver) {
 		super(sutDriver);
 	}

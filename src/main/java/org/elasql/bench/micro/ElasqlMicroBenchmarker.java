@@ -9,6 +9,7 @@ import org.vanilladb.bench.tpcc.TpccBenchmarker;
 
 public class ElasqlMicroBenchmarker extends TpccBenchmarker {
 	
+	// XXX: Add report postfix
 	public ElasqlMicroBenchmarker(SutDriver sutDriver) {
 		super(sutDriver);
 	}
