@@ -205,8 +205,8 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 		}
 
 		STATIC_GEN_FOR_PART = new AtomicReference<YcsbLatestGenerator>(
-				new YcsbLatestGenerator(ElasqlYcsbConstants.RECORD_PER_PART, 0.99));
-		STATIC_GLOBAL_GEN = new AtomicReference<TwoSidedSkewGenerator>(new TwoSidedSkewGenerator(DATA_SIZE, SKEW_PARAMETER));
+				new YcsbLatestGenerator(ElasqlYcsbConstants.RECORD_PER_PART, SKEW_PARAMETER));
+		STATIC_GLOBAL_GEN = new AtomicReference<TwoSidedSkewGenerator>(new TwoSidedSkewGenerator(DATA_SIZE, 0.9));
 
 		new PeriodicalJob(2000, BenchmarkerParameters.BENCHMARK_INTERVAL, new Runnable() {
 
