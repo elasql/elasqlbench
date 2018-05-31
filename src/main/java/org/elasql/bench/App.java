@@ -37,7 +37,7 @@ public class App {
 		// Create a benchmarker
 		switch (BenchmarkerParameters.BENCH_TYPE) {
 		case MICRO:
-			benchmarker = new ElasqlMicroBenchmarker(driver);
+			benchmarker = new ElasqlMicroBenchmarker(driver, nodeId);
 			break;
 		case TPCC:
 			benchmarker = new ElasqlTpccBenchmarker(driver);

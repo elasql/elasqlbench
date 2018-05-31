@@ -2,16 +2,15 @@ package org.elasql.bench.micro;
 
 import org.elasql.bench.rte.micro.ElasqlMicrobenchRte;
 import org.vanilladb.bench.StatisticMgr;
+import org.vanilladb.bench.micro.MicroBenchmarker;
 import org.vanilladb.bench.remote.SutConnection;
 import org.vanilladb.bench.remote.SutDriver;
 import org.vanilladb.bench.rte.RemoteTerminalEmulator;
-import org.vanilladb.bench.tpcc.TpccBenchmarker;
 
-public class ElasqlMicroBenchmarker extends TpccBenchmarker {
+public class ElasqlMicroBenchmarker extends MicroBenchmarker {
 	
-	// XXX: Add report postfix
-	public ElasqlMicroBenchmarker(SutDriver sutDriver) {
-		super(sutDriver);
+	public ElasqlMicroBenchmarker(SutDriver sutDriver, int nodeId) {
+		super(sutDriver, "" + nodeId);
 	}
 	
 	@Override
