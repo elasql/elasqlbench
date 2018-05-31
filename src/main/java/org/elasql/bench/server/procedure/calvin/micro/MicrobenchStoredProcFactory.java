@@ -20,6 +20,7 @@ public class MicrobenchStoredProcFactory implements CalvinStoredProcedureFactory
 			if (PartitionMetaMgr.LOAD_METIS_PARTITIONS)
 				sp = new SchismMicroTestbedLoader(txNum);
 			else
+//				sp = new TestBedHashLoaderProc(txNum);
 				sp = new MicroTestbedLoaderProc(txNum);
 			break;
 		case START_PROFILING:
