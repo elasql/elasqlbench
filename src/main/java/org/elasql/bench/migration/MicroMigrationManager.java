@@ -44,7 +44,7 @@ public class MicroMigrationManager extends MigrationManager {
 	
 	@Override
 	public long getWaitingTime() {
-		return ElasqlMiroChangingbenchmarkParamGen.START_DELAY;
+		return ElasqlMiroChangingbenchmarkParamGen.START_DELAY * 1000;
 	}
 	
 	@Override
