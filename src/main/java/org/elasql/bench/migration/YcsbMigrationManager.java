@@ -3,7 +3,8 @@ package org.elasql.bench.migration;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.elasql.bench.rte.ycsb.ElasqlYcsbRealisticOverallParamGen;
+import org.elasql.bench.rte.ycsb.GoogleWorkloadsParamGen;
+import org.elasql.bench.rte.ycsb.SingleSkewWorkloadsParamGen;
 import org.elasql.bench.server.metadata.YcsbPartitionMetaMgr;
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.remote.groupcomm.StoredProcedureCall;
@@ -50,16 +51,19 @@ public class YcsbMigrationManager extends MigrationManager {
 	
 	@Override
 	public long getWaitingTime() {
-		return ElasqlYcsbRealisticOverallParamGen.WARMUP_TIME;
+//		return GoogleWorkloadsParamGen.WARMUP_TIME;
+		return SingleSkewWorkloadsParamGen.WARMUP_TIME;
 	}
 	
 	@Override
 	public long getMigrationPreiod() {
-		return 55 * 1000;
+//		return 55 * 1000;
+		return SingleSkewWorkloadsParamGen.CHANGING_PERIOD;
 	}
 	
 	public long getMigrationStopTime() {
-		return ElasqlYcsbRealisticOverallParamGen.REPLAY_PREIOD;
+//		return GoogleWorkloadsParamGen.REPLAY_PREIOD;
+		return 400 * 1000;
 	}
 
 	/**

@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.elasql.bench.micro.ElasqlMicrobenchConstants;
 import org.elasql.bench.rte.micro.ElasqlMiroChangingbenchmarkParamGen;
-import org.elasql.bench.rte.ycsb.ElasqlYcsbRealisticOverallParamGen;
+import org.elasql.bench.rte.ycsb.GoogleWorkloadsParamGen;
 import org.elasql.remote.groupcomm.StoredProcedureCall;
 import org.elasql.server.Elasql;
 import org.elasql.server.migration.MigrationManager;

@@ -5,13 +5,13 @@ import org.vanilladb.bench.StatisticMgr;
 import org.vanilladb.bench.remote.SutConnection;
 import org.vanilladb.bench.remote.SutDriver;
 import org.vanilladb.bench.rte.RemoteTerminalEmulator;
-import org.vanilladb.bench.tpcc.TpccBenchmarker;
+import org.vanilladb.bench.ycsb.YcsbBenchmarker;
 
-public class ElasqlYcsbBenchmarker extends TpccBenchmarker {
+public class ElasqlYcsbBenchmarker extends YcsbBenchmarker {
 	private int nodeId;
 	
 	public ElasqlYcsbBenchmarker(SutDriver sutDriver, int nodeId) {
-		super(sutDriver);
+		super(sutDriver, "" + nodeId);
 		this.nodeId = nodeId;
 	}
 	
