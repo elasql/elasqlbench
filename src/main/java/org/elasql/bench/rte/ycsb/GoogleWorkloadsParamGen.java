@@ -24,7 +24,7 @@ import org.vanilladb.bench.util.YcsbLatestGenerator;
 import org.vanilladb.bench.ycsb.YcsbConstants;
 import org.vanilladb.bench.ycsb.YcsbTransactionType;
 
-public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
+public class GoogleWorkloadsParamGen implements TxParamGenerator {
 
 	private static final double RW_TX_RATE;
 	private static final double DIST_TX_RATE;
@@ -274,8 +274,8 @@ public class ElasqlYcsbRealisticOverallParamGen implements TxParamGenerator {
 	private TwoSidedSkewGenerator globalDistribution;
 	private long startTime = -1;
 
-	public ElasqlYcsbRealisticOverallParamGen(int nodeId) {
-		ElasqlYcsbRealisticOverallParamGen.nodeId = nodeId;
+	public GoogleWorkloadsParamGen(int nodeId) {
+		GoogleWorkloadsParamGen.nodeId = nodeId;
 		for (int i = 0; i < NUM_PARTITIONS; i++) {
 			distributionInPart[i] = new YcsbLatestGenerator(STATIC_GEN_FOR_PART.get());
 		}
