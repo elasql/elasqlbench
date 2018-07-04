@@ -61,20 +61,20 @@ public class GoogleWorkloadsParamGen implements TxParamGenerator {
 		DIST_TX_RATE = 0.5;
 
 		WARMUP_TIME = 90 * 1000;
-		REPLAY_PREIOD = 153 * 1000;
+		REPLAY_PREIOD = 255 * 1000;
 		// SKEW_WEIGHT = 6.5;
 
 		// Get data from Google Cluster
 		// Directly choose 1 ~ NUM_PARTITIONS workloads
-		int target[] = new int[NUM_PARTITIONS];
-		for (int i = 0; i < NUM_PARTITIONS; i++)
-			target[i] = i + 1;
+//		int target[] = new int[NUM_PARTITIONS];
+//		for (int i = 0; i < NUM_PARTITIONS; i++)
+//			target[i] = i + 1;
 		// Assign the chosen workloads (for 20 nodes)
-//		int target[] = {
-//			9768, 8962, 4179, 12070, 6737, 4509, 11475, 11898, 11384, 4900, // Former Skews
-//			3165, 7733, 1359, 9572, 1958, 5038, 12122, 10304, 316, 4019, // Later Skews
-//			// Stables
-//		};
+		int target[] = {
+			9768, 8962, 4179, 12070, 6737, 4509, 11475, 11898, 11384, 4900, // Former Skews
+			3165, 7733, 1359, 9572, 1958, 5038, 12122, 10304, 316, 4019, // Later Skews
+			// Stables
+		};
 		// Workloads 2
 //		int target[] = { 4179, 4509, 4900, 6737, // Former Skews
 //				400, 2202, 2356, 2384, // Middle Skews
@@ -169,40 +169,40 @@ public class GoogleWorkloadsParamGen implements TxParamGenerator {
 //		}
 
 		// Alter the data distribution for testing
-		int oneThird = DATA_LEN / 3;
-		int twoThird = 2 * oneThird;
-		for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
-			for (int time = 0; time < DATA_LEN; time++) {
-				if (partId < NUM_PARTITIONS / 3) {
-					if (time < oneThird) {
-						DATA[time][partId] = 1.0;
-					} else if (time < twoThird) {
-						int diff = time - oneThird;
-						DATA[time][partId] = 1.0 - 0.8 * diff / oneThird;
-					} else {
-						DATA[time][partId] = 0.2;
-					}
-				} else if (partId >= NUM_PARTITIONS / 3 && partId < NUM_PARTITIONS * 2 / 3) {
-					if (time < oneThird) {
-						DATA[time][partId] = 0.2 + 0.8 * time / oneThird;
-					} else if (time < twoThird) {
-						DATA[time][partId] = 1.0;
-					} else {
-						int diff = time - oneThird * 2;
-						DATA[time][partId] = 1.0 - 0.8 * diff / oneThird;
-					}
-				} else {
-					if (time < oneThird) {
-						DATA[time][partId] = 0.2;
-					} else if (time < twoThird) {
-						int diff = time - oneThird;
-						DATA[time][partId] = 0.2 + 0.8 * diff / oneThird;
-					} else {
-						DATA[time][partId] = 1.0;
-					}
-				}
-			}
-		}
+//		int oneThird = DATA_LEN / 3;
+//		int twoThird = 2 * oneThird;
+//		for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
+//			for (int time = 0; time < DATA_LEN; time++) {
+//				if (partId < NUM_PARTITIONS / 3) {
+//					if (time < oneThird) {
+//						DATA[time][partId] = 1.0;
+//					} else if (time < twoThird) {
+//						int diff = time - oneThird;
+//						DATA[time][partId] = 1.0 - 0.8 * diff / oneThird;
+//					} else {
+//						DATA[time][partId] = 0.2;
+//					}
+//				} else if (partId >= NUM_PARTITIONS / 3 && partId < NUM_PARTITIONS * 2 / 3) {
+//					if (time < oneThird) {
+//						DATA[time][partId] = 0.2 + 0.8 * time / oneThird;
+//					} else if (time < twoThird) {
+//						DATA[time][partId] = 1.0;
+//					} else {
+//						int diff = time - oneThird * 2;
+//						DATA[time][partId] = 1.0 - 0.8 * diff / oneThird;
+//					}
+//				} else {
+//					if (time < oneThird) {
+//						DATA[time][partId] = 0.2;
+//					} else if (time < twoThird) {
+//						int diff = time - oneThird;
+//						DATA[time][partId] = 0.2 + 0.8 * diff / oneThird;
+//					} else {
+//						DATA[time][partId] = 1.0;
+//					}
+//				}
+//			}
+//		}
 
 		STATIC_GEN_FOR_PART = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(ElasqlYcsbConstants.RECORD_PER_PART, SKEW_PARAMETER));
