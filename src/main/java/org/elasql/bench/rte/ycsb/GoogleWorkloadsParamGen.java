@@ -53,12 +53,12 @@ public class GoogleWorkloadsParamGen implements TxParamGenerator {
 	private static final AtomicReference<TwoSidedSkewGenerator> STATIC_GLOBAL_GEN;
 
 	static {
+		DIST_TX_RATE = ElasqlBenchProperties.getLoader()
+				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".DIST_TX_RATE", 0.5);
 		RW_TX_RATE = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".RW_TX_RATE", 0.0);
+				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".RW_TX_RATE", 0.5);
 		SKEW_PARAMETER = ElasqlBenchProperties.getLoader()
 				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".SKEW_PARAMETER", 0.0);
-
-		DIST_TX_RATE = 0.5;
 
 		WARMUP_TIME = 90 * 1000;
 		REPLAY_PREIOD = 255 * 1000;
