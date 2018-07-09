@@ -137,9 +137,9 @@ public class GoogleWorkloadsParamGen implements TxParamGenerator {
 		}
 
 		// Clear the loading of the last partition
-		for (int time = 0; time < DATA_LEN; time++) {
-			DATA[time][NUM_PARTITIONS - 1] = 0.0;
-		}
+//		for (int time = 0; time < DATA_LEN; time++) {
+//			DATA[time][NUM_PARTITIONS - 1] = 0.0;
+//		}
 
 		// Another alter distribution
 //		int oneThird = DATA_LEN / 3;
@@ -208,7 +208,7 @@ public class GoogleWorkloadsParamGen implements TxParamGenerator {
 				new YcsbLatestGenerator(ElasqlYcsbConstants.RECORD_PER_PART, SKEW_PARAMETER));
 		STATIC_GLOBAL_GEN = new AtomicReference<TwoSidedSkewGenerator>(new TwoSidedSkewGenerator(DATA_SIZE, 0.9));
 
-		new PeriodicalJob(2000, BenchmarkerParameters.BENCHMARK_INTERVAL, new Runnable() {
+		new PeriodicalJob(5000, BenchmarkerParameters.BENCHMARK_INTERVAL, new Runnable() {
 
 			boolean notifyReplayStart, notifyReplayEnd;
 
