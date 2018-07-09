@@ -22,7 +22,7 @@ import org.vanilladb.bench.ycsb.YcsbTransactionType;
 public class SingleSkewWorkloadsParamGen implements TxParamGenerator {
 
 	private static final double RW_TX_RATE;
-	private static final double DIST_TX_RATE = 0.1;
+	private static final double DIST_TX_RATE;
 	private static final double SKEW_PARAMETER;
 
 	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
@@ -33,20 +33,22 @@ public class SingleSkewWorkloadsParamGen implements TxParamGenerator {
 	private static AtomicLong globalStartTime = new AtomicLong(-1);
 	public static final long WARMUP_TIME = 60 * 1000;
 	public static final long CHANGING_PERIOD = 90 * 1000;
-	private static final double SKEW_RATIO = 0.8;
+	private static final double SKEW_RATIO = 0.9;
 
 	private static final AtomicReference<YcsbLatestGenerator> TEMPLATE_GENERATOR;
 
 	static {
+		DIST_TX_RATE = ElasqlBenchProperties.getLoader()
+				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".DIST_TX_RATE", 0.0);
 		RW_TX_RATE = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".RW_TX_RATE", 0.0);
+				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".RW_TX_RATE", 0.5);
 		SKEW_PARAMETER = ElasqlBenchProperties.getLoader()
 				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".SKEW_PARAMETER", 0.0);
 
 		TEMPLATE_GENERATOR = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(ElasqlYcsbConstants.RECORD_PER_PART, SKEW_PARAMETER));
 
-		new PeriodicalJob(3000, BenchmarkerParameters.BENCHMARK_INTERVAL, new Runnable() {
+		new PeriodicalJob(5000, BenchmarkerParameters.BENCHMARK_INTERVAL, new Runnable() {
 			@Override
 			public void run() {
 				long startTime = globalStartTime.get();
