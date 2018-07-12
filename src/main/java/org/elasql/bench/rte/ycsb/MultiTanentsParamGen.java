@@ -21,10 +21,14 @@ import org.vanilladb.bench.ycsb.YcsbTransactionType;
 
 public class MultiTanentsParamGen implements TxParamGenerator {
 	
+	private static final boolean HAS_HOTSPOT = true;
+	
 	private static final double RW_TX_RATE;
 	private static final double SKEW_PARAMETER;
 	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
+//	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS - 1; // for scaling-out
 	private static final int TANENTS_PER_PART = 4;
+//	private static final int TANENTS_PER_PART = 3; // for consolidation
 	private static final int NUM_TANENTS = NUM_PARTITIONS * TANENTS_PER_PART;
 	private static final int RECORD_PER_TANENT = ElasqlYcsbConstants.RECORD_PER_PART / TANENTS_PER_PART;
 	
@@ -46,25 +50,29 @@ public class MultiTanentsParamGen implements TxParamGenerator {
 		STATIC_GEN_FOR_TANENT = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(RECORD_PER_TANENT, SKEW_PARAMETER));
 		
-		new PeriodicalJob(5000, BenchmarkerParameters.BENCHMARK_INTERVAL, new Runnable() {
-			@Override
-			public void run() {
-				long startTime = globalStartTime.get();
-
-				if (startTime == -1)
-					return;
-				
-				long currentTime = System.currentTimeMillis();
-				if (currentTime > startTime + WARMUP_TIME) {
-					// Find the hot spot partition
-					int slotId = (int) ((currentTime - startTime - WARMUP_TIME) / CHANGING_PERIOD);
-					int skewedPartition = slotId % NUM_PARTITIONS;
-					System.out.println(String.format("Current Time: %d, Skewed Partition: %d", currentTime - startTime, skewedPartition));
-				} else { // Non-skewed mode
-					System.out.println(String.format("Current Time: %d, Replay offset: %d", currentTime - startTime, currentTime - startTime - WARMUP_TIME));
+		if (HAS_HOTSPOT) {
+			new PeriodicalJob(5000, BenchmarkerParameters.BENCHMARK_INTERVAL, new Runnable() {
+				@Override
+				public void run() {
+					long startTime = globalStartTime.get();
+	
+					if (startTime == -1)
+						return;
+					
+					long currentTime = System.currentTimeMillis();
+					if (currentTime > startTime + WARMUP_TIME) {
+						// Find the hot spot partition
+						int slotId = (int) ((currentTime - startTime - WARMUP_TIME) / CHANGING_PERIOD);
+						int skewedPartition = slotId % NUM_PARTITIONS;
+						System.out.println(String.format("Current Time: %d, Skewed Partition: %d", currentTime - startTime, skewedPartition));
+					} else { // Non-skewed mode
+						System.out.println(String.format("Current Time: %d, Replay offset: %d", currentTime - startTime, currentTime - startTime - WARMUP_TIME));
+					}
 				}
-			}
-		}).start();
+			}).start();
+	    } else {
+	    	System.out.println("This is a normal balanced workload.");
+	    }
 	}
 
 	private static long getGlobalStartTime() {
@@ -123,7 +131,7 @@ public class MultiTanentsParamGen implements TxParamGenerator {
 		
 		// Decide if there is a hot spot (skewed) partition
 		long currentTime = System.currentTimeMillis();
-		if (currentTime > startTime + WARMUP_TIME) {
+	    if (HAS_HOTSPOT && currentTime > startTime + WARMUP_TIME) {
 			// Find the hot spot partition
 			int slotId = (int) ((currentTime - startTime - WARMUP_TIME) / CHANGING_PERIOD);
 			int skewedPartition = slotId % NUM_PARTITIONS;
