@@ -63,6 +63,10 @@ public class YcsbTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 	}
 	
 	private void generateItems(int startId, int recordCount) {
+		// For scaling-out experiments
+//		if (Elasql.serverId() > 2)
+//			return;
+		
 		int endId = startId + recordCount - 1;
 		
 		if (logger.isLoggable(Level.INFO))
