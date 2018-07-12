@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.elasql.bench.rte.ycsb.GoogleWorkloadsParamGen;
-import org.elasql.bench.rte.ycsb.SingleSkewWorkloadsParamGen;
 import org.elasql.bench.server.metadata.YcsbPartitionMetaMgr;
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.remote.groupcomm.StoredProcedureCall;
@@ -53,20 +52,22 @@ public class YcsbMigrationManager extends MigrationManager {
 	public long getWaitingTime() {
 		return GoogleWorkloadsParamGen.WARMUP_TIME;
 //		return SingleSkewWorkloadsParamGen.WARMUP_TIME;
+//		return MultiTanentsParamGen.WARMUP_TIME;
 //		return 90 * 1000; // for scaling-out & consolidation
 	}
 	
 	@Override
 	public long getMigrationPreiod() {
-		return 55 * 1000;
+		return 55 * 1000; // For Google workloads
 //		return SingleSkewWorkloadsParamGen.CHANGING_PERIOD;
+//		return MultiTanentsParamGen.CHANGING_PERIOD;
 //		return 1000 * 1000; // for scaling-out & consolidation
 	}
 	
 	public long getMigrationStopTime() {
 		return GoogleWorkloadsParamGen.REPLAY_PREIOD;
 //		return 400 * 1000;
-//		return 1000 * 1000; // for scaling-out & consolidation
+//		return 1000 * 1000; // only stop after long time (scaling-out & consolidation, multitanent)
 	}
 
 	/**
