@@ -5,7 +5,7 @@ import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.Constant;
 
-public class TpcePartitionPlan implements PartitionPlan {
+public class TpcePartitionPlan extends PartitionPlan {
 
 	@Override
 	public boolean isFullyReplicated(RecordKey key) {

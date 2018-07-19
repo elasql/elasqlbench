@@ -14,7 +14,7 @@ import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.IntegerConstant;
 
-public class MicroBenchMetisPartitionPlan implements PartitionPlan {
+public class MicroBenchMetisPartitionPlan extends PartitionPlan {
 	private static Logger logger = Logger.getLogger(MicroBenchMetisPartitionPlan.class.getName());
 
 	private static final int METIS_DATA_RANGE = 1;

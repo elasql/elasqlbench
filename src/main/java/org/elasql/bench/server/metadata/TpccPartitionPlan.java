@@ -5,7 +5,7 @@ import org.elasql.sql.RecordKey;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.Constant;
 
-public class TpccPartitionPlan implements PartitionPlan {
+public class TpccPartitionPlan extends PartitionPlan {
 
 	public boolean isFullyReplicated(RecordKey key) {
 		return key.getTableName().equals("item");

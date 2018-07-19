@@ -6,7 +6,7 @@ import org.elasql.sql.RecordKey;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.Constant;
 
-public class YcsbPartitionPlan implements PartitionPlan {
+public class YcsbPartitionPlan extends PartitionPlan {
 	
 	public boolean isFullyReplicated(RecordKey key) {
 		return false;

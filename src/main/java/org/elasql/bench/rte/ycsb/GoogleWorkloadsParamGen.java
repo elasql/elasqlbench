@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.elasql.bench.util.ElasqlBenchProperties;
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
+import org.elasql.migration.MigrationMgr;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.util.PeriodicalJob;
 import org.vanilladb.bench.Benchmarker;
@@ -30,7 +31,9 @@ public class GoogleWorkloadsParamGen implements TxParamGenerator {
 	private static final double DIST_TX_RATE;
 	private static final double SKEW_PARAMETER;
 
-	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
+//	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
+	private static final int NUM_PARTITIONS = MigrationMgr.IS_SCALING_OUT?
+			PartitionMetaMgr.NUM_PARTITIONS - 1: PartitionMetaMgr.NUM_PARTITIONS;
 	private static final int DATA_SIZE = ElasqlYcsbConstants.RECORD_PER_PART * NUM_PARTITIONS;
 
 	private static final int TOTAL_READ_COUNT = 2;
@@ -267,7 +270,8 @@ public class GoogleWorkloadsParamGen implements TxParamGenerator {
 	}
 
 	private static int getStartId(int partitionId) {
-		return partitionId * ElasqlYcsbConstants.MAX_RECORD_PER_PART + 1;
+//		return partitionId * ElasqlYcsbConstants.MAX_RECORD_PER_PART + 1;
+		return partitionId * ElasqlYcsbConstants.RECORD_PER_PART + 1;
 	}
 
 	private YcsbLatestGenerator[] distributionInPart = new YcsbLatestGenerator[NUM_PARTITIONS];
@@ -436,9 +440,10 @@ public class GoogleWorkloadsParamGen implements TxParamGenerator {
 	// XXX: We should use long
 	private int chooseARecordGlobally(int center) {
 		int id = (int) globalDistribution.nextValue(center) - 1;
-		int partId = id / ElasqlYcsbConstants.RECORD_PER_PART;
-		int offset = id % ElasqlYcsbConstants.RECORD_PER_PART;
-		return partId * ElasqlYcsbConstants.MAX_RECORD_PER_PART + offset + 1;
+//		int partId = id / ElasqlYcsbConstants.RECORD_PER_PART;
+//		int offset = id % ElasqlYcsbConstants.RECORD_PER_PART;
+//		return partId * ElasqlYcsbConstants.MAX_RECORD_PER_PART + offset + 1;
+		return id + 1;
 	}
 
 	private int genDistributionOfPart(int time, TpccValueGenerator rvg) {

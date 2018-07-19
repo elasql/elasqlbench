@@ -6,7 +6,7 @@ import org.elasql.sql.RecordKey;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.Constant;
 
-public class MicroBenchPartitionPlan implements PartitionPlan {
+public class MicroBenchPartitionPlan extends PartitionPlan {
 	
 	public boolean isFullyReplicated(RecordKey key) {
 		if (key.getKeyVal("i_id") != null) {

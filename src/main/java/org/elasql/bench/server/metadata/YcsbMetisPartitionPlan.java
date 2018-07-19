@@ -14,7 +14,7 @@ import org.elasql.sql.RecordKey;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.Constant;
 
-public class YcsbMetisPartitionPlan implements PartitionPlan {
+public class YcsbMetisPartitionPlan extends PartitionPlan {
 	private static Logger logger = Logger.getLogger(YcsbMetisPartitionPlan.class.getName());
 	
 	private static final int METIS_DATA_RANGE = 1;

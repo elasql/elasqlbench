@@ -7,13 +7,16 @@ import org.elasql.bench.server.metadata.MicroBenchMetisPartitionPlan;
 import org.elasql.bench.server.metadata.MicroBenchPartitionPlan;
 import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.bench.server.metadata.TpcePartitionPlan;
-import org.elasql.bench.server.metadata.YcsbMetisPartitionPlan;
-import org.elasql.bench.server.metadata.YcsbPartitionPlan;
+import org.elasql.bench.server.migraion.YcsbMigrationMgr;
 import org.elasql.bench.server.procedure.calvin.tpce.TpceStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.ycsb.YcsbStoredProcFactory;
+import org.elasql.bench.ycsb.ElasqlYcsbConstants;
+import org.elasql.migration.MigrationMgr;
 import org.elasql.procedure.DdStoredProcedureFactory;
 import org.elasql.server.Elasql;
+import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.storage.metadata.PartitionPlan;
+import org.elasql.storage.metadata.RangePartitionPlan;
 import org.vanilladb.bench.BenchmarkerParameters;
 import org.vanilladb.bench.server.SutStartUp;
 
@@ -40,7 +43,8 @@ public class ElasqlStartUp implements SutStartUp {
 			System.out.println("Usage: ./startup [DB Name] [Node Id] ([Is Sequencer])");
 		}
 		
-		Elasql.init(dbName, nodeId, isSequencer, getStoredProcedureFactory(), getPartitionPlan());
+		Elasql.init(dbName, nodeId, isSequencer, getStoredProcedureFactory(), getPartitionPlan(),
+				getMigrationMgr());
 
 		if (logger.isLoggable(Level.INFO))
 			logger.info("ElaSQL server ready");
@@ -171,11 +175,32 @@ public class ElasqlStartUp implements SutStartUp {
 			partPlan = new TpcePartitionPlan();
 			break;
 		case YCSB:
-			partPlan = new YcsbPartitionPlan();
-			if (LOAD_METIS_PARTITIONS)
-				partPlan = new YcsbMetisPartitionPlan(partPlan, METIS_FILE_PATH);
+			// For normal situation
+//			partPlan = new YcsbPartitionPlan();
+//			if (LOAD_METIS_PARTITIONS)
+//				partPlan = new YcsbMetisPartitionPlan(partPlan, METIS_FILE_PATH);
+			// For elastic experiments
+			int numOfPartitions = MigrationMgr.IS_SCALING_OUT? PartitionMetaMgr.NUM_PARTITIONS - 1:
+				PartitionMetaMgr.NUM_PARTITIONS;
+			
+			partPlan = new RangePartitionPlan("ycsb_id", ElasqlYcsbConstants.RECORD_PER_PART *
+					numOfPartitions, numOfPartitions);
 			break;
 		}
 		return partPlan;
+	}
+	
+	private MigrationMgr getMigrationMgr() {
+		switch (BenchmarkerParameters.BENCH_TYPE) {
+		case MICRO:
+			throw new UnsupportedOperationException("No Micro Migration Manager for now");
+		case TPCC:
+			throw new UnsupportedOperationException("No TPC-C Migration Manager for now");
+		case TPCE:
+			throw new UnsupportedOperationException("No TPC-E Migration Manager for now");
+		case YCSB:
+			return new YcsbMigrationMgr();
+		}
+		return null;
 	}
 }
