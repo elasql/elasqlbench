@@ -2,9 +2,10 @@ package org.elasql.bench.server.metadata;
 
 import org.elasql.sql.RecordKey;
 import org.elasql.storage.metadata.PartitionMetaMgr;
+import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.Constant;
 
-public class TpcePartitionMetaMgr extends PartitionMetaMgr {
+public class TpcePartitionPlan implements PartitionPlan {
 
 	@Override
 	public boolean isFullyReplicated(RecordKey key) {

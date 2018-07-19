@@ -10,36 +10,35 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
-import org.elasql.server.Elasql;
 import org.elasql.sql.RecordKey;
-import org.elasql.storage.metadata.PartitionMetaMgr;
+import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.Constant;
 
-public class YcsbPartitionMetaMgr extends PartitionMetaMgr {
-private static Logger logger = Logger.getLogger(YcsbPartitionMetaMgr.class.getName());
+public class YcsbMetisPartitionPlan implements PartitionPlan {
+	private static Logger logger = Logger.getLogger(YcsbMetisPartitionPlan.class.getName());
 	
-	private static final String LOC_FILE_PATH = "/opt/shared/metis-partitions/google-20/mon30s-iter60s-ran10/tail.part";
-	
+	private static final int METIS_DATA_RANGE = 1;
 	private static final int VERTEX_PER_PART = ElasqlYcsbConstants.RECORD_PER_PART / METIS_DATA_RANGE;
 	
-	private Map<Integer, Integer> schismMap = new HashMap<Integer, Integer>();
+	private PartitionPlan underlayerPlan;
+	private Map<Integer, Integer> metisPlan = new HashMap<Integer, Integer>();
 	
-	public YcsbPartitionMetaMgr() {
-		if (LOAD_METIS_PARTITIONS) {
-			//shoud load metis when loading testbed
-			loadMetisPartitions();
-			//monitor should commit it
-			
-			if (logger.isLoggable(Level.INFO))
-				logger.info("finish loading Metis' partition plan");
-		}
+	public YcsbMetisPartitionPlan(PartitionPlan defaultPlan, String metisFilePath) {
+		underlayerPlan = defaultPlan;
+		
+		//shoud load metis when loading testbed
+		loadMetisPartitions(metisFilePath);
+		//monitor should commit it
+		
+		if (logger.isLoggable(Level.INFO))
+			logger.info("Successfully loaded the Metis partitions");
 	}
 
-	public void loadMetisPartitions() {
-		File file = new File(LOC_FILE_PATH);
+	public void loadMetisPartitions(String metisFilePath) {
+		File file = new File(metisFilePath);
 		if (!file.exists()) {
 			if (logger.isLoggable(Level.WARNING))
-				logger.warning(String.format("Cannot find Metis partitions at '%s'", LOC_FILE_PATH));
+				logger.warning(String.format("Cannot find Metis partitions at '%s'", metisFilePath));
 			return;
 		}
 		
@@ -50,7 +49,7 @@ private static Logger logger = Logger.getLogger(YcsbPartitionMetaMgr.class.getNa
 			int lineCount = 0;
 			while ((line = br.readLine()) != null) {
 				int newPartId = Integer.parseInt(line);
-				schismMap.put(lineCount, newPartId);
+				metisPlan.put(lineCount, newPartId);
 				
 //				int higherPart = lineCount / VERTEX_PER_PART; // 123 => 1
 //				int lowerPart = lineCount % VERTEX_PER_PART; // 123 => 23
@@ -70,9 +69,9 @@ private static Logger logger = Logger.getLogger(YcsbPartitionMetaMgr.class.getNa
 			e.printStackTrace();
 		}
 	}
-	
+
 	public boolean isFullyReplicated(RecordKey key) {
-		return false;
+		return underlayerPlan.isFullyReplicated(key);
 	}
 	
 	public int convertToVertexId(int ycsbId)
@@ -84,36 +83,18 @@ private static Logger logger = Logger.getLogger(YcsbPartitionMetaMgr.class.getNa
 	}
 
 	public int getPartition(RecordKey key) {
-		/*
-		 * Hard code the partitioning rules for Ycsb-benchmark testbed.
-		 * Partitions each item id through mod.
-		 */
+		// Check the metis first
 		Constant idCon = key.getKeyVal("ycsb_id");
 		if (idCon != null) {
 			int ycsbId = Integer.parseInt((String) idCon.asJavaVal());
+			int vid = convertToVertexId(ycsbId);
+			Integer id = metisPlan.get(vid);
 			
-			if (LOAD_METIS_PARTITIONS) {
-				// Hash-based
-//				return ycsbId % NUM_PARTITIONS;
-				
-				// Range-based (shift)
-//				int partId = ycsbId / ElasqlYcsbConstants.MAX_RECORD_PER_PART;
-//				int index = ycsbId % ElasqlYcsbConstants.MAX_RECORD_PER_PART;
-//				if (index > 800000)
-//					return (partId + 1) % NUM_PARTITIONS;
-//				else
-//					return partId;
-				
-				// Schism-based
-				int vid = convertToVertexId(ycsbId);
-				return schismMap.get(vid);
-			}
-			
-			// Range-based
-			return ycsbId / ElasqlYcsbConstants.MAX_RECORD_PER_PART;
-		} else {
-			// Fully replicated
-			return Elasql.serverId();
+			if (id != null)
+				return id;
 		}
+			
+		// If not found, check the underlayer plan
+		return underlayerPlan.getPartition(key);
 	}
 }

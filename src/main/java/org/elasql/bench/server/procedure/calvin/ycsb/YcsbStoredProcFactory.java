@@ -1,10 +1,10 @@
 package org.elasql.bench.server.procedure.calvin.ycsb;
 
+import org.elasql.bench.server.ElasqlStartUp;
 import org.elasql.bench.server.procedure.calvin.StartProfilingProc;
 import org.elasql.bench.server.procedure.calvin.StopProfilingProc;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.procedure.calvin.CalvinStoredProcedureFactory;
-import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.ycsb.YcsbTransactionType;
 
 public class YcsbStoredProcFactory implements CalvinStoredProcedureFactory {
@@ -17,7 +17,7 @@ public class YcsbStoredProcFactory implements CalvinStoredProcedureFactory {
 				sp = new YcsbSchemaBuilderProc(txNum);
 				break;
 			case TESTBED_LOADER:
-				if (PartitionMetaMgr.LOAD_METIS_PARTITIONS)
+				if (ElasqlStartUp.LOAD_METIS_PARTITIONS)
 					sp = new SchismYcsbTestbedLoader(txNum);
 				else
 					sp = new YcsbTestbedLoaderProc(txNum);

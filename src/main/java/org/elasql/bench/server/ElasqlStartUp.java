@@ -3,23 +3,27 @@ package org.elasql.bench.server;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.elasql.bench.server.metadata.MicroBenchPartitionMetaMgr;
-import org.elasql.bench.server.metadata.TpccPartitionMetaMgr;
-import org.elasql.bench.server.metadata.TpcePartitionMetaMgr;
-import org.elasql.bench.server.metadata.YcsbPartitionMetaMgr;
-import org.elasql.bench.server.procedure.calvin.micro.MicrobenchStoredProcFactory;
-import org.elasql.bench.server.procedure.calvin.tpcc.TpccStoredProcFactory;
+import org.elasql.bench.server.metadata.MicroBenchMetisPartitionPlan;
+import org.elasql.bench.server.metadata.MicroBenchPartitionPlan;
+import org.elasql.bench.server.metadata.TpccPartitionPlan;
+import org.elasql.bench.server.metadata.TpcePartitionPlan;
+import org.elasql.bench.server.metadata.YcsbMetisPartitionPlan;
+import org.elasql.bench.server.metadata.YcsbPartitionPlan;
 import org.elasql.bench.server.procedure.calvin.tpce.TpceStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.ycsb.YcsbStoredProcFactory;
 import org.elasql.procedure.DdStoredProcedureFactory;
 import org.elasql.server.Elasql;
-import org.elasql.storage.metadata.PartitionMetaMgr;
+import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.bench.BenchmarkerParameters;
 import org.vanilladb.bench.server.SutStartUp;
 
 public class ElasqlStartUp implements SutStartUp {
 	private static Logger logger = Logger.getLogger(ElasqlStartUp.class
 			.getName());
+	
+	// Metis
+	public static final boolean LOAD_METIS_PARTITIONS = false;
+	private static final String METIS_FILE_PATH = ""; 
 	
 	private static String dbName;
 	private static int nodeId;
@@ -36,7 +40,7 @@ public class ElasqlStartUp implements SutStartUp {
 			System.out.println("Usage: ./startup [DB Name] [Node Id] ([Is Sequencer])");
 		}
 		
-		Elasql.init(dbName, nodeId, isSequencer, getStoredProcedureFactory(), getPartitionMetaMgr());
+		Elasql.init(dbName, nodeId, isSequencer, getStoredProcedureFactory(), getPartitionPlan());
 
 		if (logger.isLoggable(Level.INFO))
 			logger.info("ElaSQL server ready");
@@ -152,22 +156,26 @@ public class ElasqlStartUp implements SutStartUp {
 		return factory;
 	}
 	
-	private PartitionMetaMgr getPartitionMetaMgr() {
-		PartitionMetaMgr metaMgr = null;
+	private PartitionPlan getPartitionPlan() {
+		PartitionPlan partPlan = null;
 		switch (BenchmarkerParameters.BENCH_TYPE) {
 		case MICRO:
-			metaMgr = new MicroBenchPartitionMetaMgr();
+			partPlan = new MicroBenchPartitionPlan();
+			if (LOAD_METIS_PARTITIONS)
+				partPlan = new MicroBenchMetisPartitionPlan(partPlan, METIS_FILE_PATH);
 			break;
 		case TPCC:
-			metaMgr = new TpccPartitionMetaMgr();
+			partPlan = new TpccPartitionPlan();
 			break;
 		case TPCE:
-			metaMgr = new TpcePartitionMetaMgr();
+			partPlan = new TpcePartitionPlan();
 			break;
 		case YCSB:
-			metaMgr = new YcsbPartitionMetaMgr();
+			partPlan = new YcsbPartitionPlan();
+			if (LOAD_METIS_PARTITIONS)
+				partPlan = new YcsbMetisPartitionPlan(partPlan, METIS_FILE_PATH);
 			break;
 		}
-		return metaMgr;
+		return partPlan;
 	}
 }
