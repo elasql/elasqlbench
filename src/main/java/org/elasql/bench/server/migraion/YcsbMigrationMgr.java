@@ -15,12 +15,12 @@ public class YcsbMigrationMgr extends MigrationMgr {
 	}
 
 	@Override
-	public Iterator<RecordKey> getKeyIterator(MigrationRange range) {
+	public Iterator<RecordKey> toKeyIterator(MigrationRange range) {
 		return new YcsbKeyIterator(range);
 	}
 
 	@Override
-	public int toId(RecordKey key) {
+	public int toNumericId(RecordKey key) {
 		// This only works for RangePartitionPlan
 		Constant idCon = key.getKeyVal("ycsb_id");
 		return Integer.parseInt((String) idCon.asJavaVal());
