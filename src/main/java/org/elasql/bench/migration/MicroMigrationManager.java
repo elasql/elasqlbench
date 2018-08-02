@@ -31,7 +31,7 @@ public class MicroMigrationManager extends MigrationManager {
 	}
 	
 	@Override
-	public int convertToVertexId(RecordKey key)
+	public int getPartitioningKey(RecordKey key)
 	{
 		int iid = (int) key.getKeyVal("i_id").asJavaVal();
 		return (iid - 1) / MigrationManager.DATA_RANGE_SIZE;
@@ -106,7 +106,7 @@ public class MicroMigrationManager extends MigrationManager {
 	 */
 
 	@Override
-	public void onReceieveLaunchClayReq(Object[] metadata) {
+	public void sendLaunchClayReq(Object[] metadata) {
 		// Send a store procedure call
 		Object[] call = {
 				new StoredProcedureCall(-1, -1, MicroTransactionType.LAUNCH_CLAY.ordinal(), (Object[]) null) };

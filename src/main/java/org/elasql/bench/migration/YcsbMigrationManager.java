@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.elasql.bench.rte.ycsb.GoogleWorkloadsParamGen;
-import org.elasql.bench.server.metadata.YcsbPartitionMetaMgr;
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.remote.groupcomm.StoredProcedureCall;
 import org.elasql.server.Elasql;
@@ -22,7 +21,7 @@ public class YcsbMigrationManager extends MigrationManager {
 	private static final int COUNTS_FOR_SLEEP = 10000;
 	private int parameterCounter = 0;
 	
-	public static final int VERTEX_PER_PART = ElasqlYcsbConstants.RECORD_PER_PART / DATA_RANGE_SIZE;
+//	public static final int VERTEX_PER_PART = ElasqlYcsbConstants.RECORD_PER_PART / DATA_RANGE_SIZE;
 
 	public YcsbMigrationManager() {
 		super(RECORD_PERIOD);
@@ -34,13 +33,14 @@ public class YcsbMigrationManager extends MigrationManager {
 	}
 	
 	@Override
-	public int convertToVertexId(RecordKey key)
+	public int getPartitioningKey(RecordKey key)
 	{
-		int ycsbId = (int) Integer.parseInt(key.getKeyVal("ycsb_id").toString());
-		ycsbId -= 1; // [1, N] => [0, N-1]
-		int partId = ycsbId / ElasqlYcsbConstants.MAX_RECORD_PER_PART;
-		int vertexIdInPart = (ycsbId % ElasqlYcsbConstants.MAX_RECORD_PER_PART) / DATA_RANGE_SIZE;
-		return partId * VERTEX_PER_PART + vertexIdInPart;
+//		int ycsbId = (int) Integer.parseInt(key.getKeyVal("ycsb_id").toString());
+//		ycsbId -= 1; // [1, N] => [0, N-1]
+//		int partId = ycsbId / ElasqlYcsbConstants.MAX_RECORD_PER_PART;
+//		int vertexIdInPart = (ycsbId % ElasqlYcsbConstants.MAX_RECORD_PER_PART) / DATA_RANGE_SIZE;
+//		return partId * VERTEX_PER_PART + vertexIdInPart;
+		return (int) Integer.parseInt(key.getKeyVal("ycsb_id").toString());
 	}
 	
 	@Override
@@ -116,32 +116,28 @@ public class YcsbMigrationManager extends MigrationManager {
 	}
 
 	/**
-	 * This should only be executed on the Sequence node.
+	 * This should only be executed on the sequencer node.
 	 */
 
 	@Override
-	public void onReceieveLaunchClayReq(Object[] metadata) {
+	public void sendLaunchClayReq(Object[] metadata) {
 		// Send a store procedure call
-		Object[] call = {
-				new StoredProcedureCall(-1, -1, MicroTransactionType.LAUNCH_CLAY.ordinal(), (Object[]) null) };
-		// Call not from appia thread
+		Object[] call = { new StoredProcedureCall(-1, -1,
+				MicroTransactionType.LAUNCH_CLAY.ordinal(), (Object[]) null) };
+		// Cannot be called from Appia thread
 		Elasql.connectionMgr().sendBroadcastRequest(call, false);
-
 	}
 
 	/**
-	 * This should only be executed on the Sequence node.
+	 * This should only be executed on the sequencer node.
 	 */
 	@Override
-	public void broadcastMigrateKeys(Object[] migratekeys) {
-
+	public void broadcastMigrateKeys(Object[] params) {
 		Object[] call;
-		call = new Object[] {
-				new StoredProcedureCall(-1, -1, MicroTransactionType.BROADCAST_MIGRAKEYS.ordinal(), migratekeys) };
-		System.out.println("I am going to send the keys");
-		// Call not from appia thread
+		call = new Object[] { new StoredProcedureCall(-1, -1,
+				MicroTransactionType.BROADCAST_MIGRAKEYS.ordinal(), params) };
+		// Cannot be called from Appia thread
 		Elasql.connectionMgr().sendBroadcastRequest(call, false);
-
 	}
 
 	@Override
@@ -167,8 +163,9 @@ public class YcsbMigrationManager extends MigrationManager {
 		// Generate record keys
 		// XXX: For Clay migration plan
 		// Convert Migration Range to RecordKeys
-		for (Integer vertexId : this.migrateRanges) {
-			int startYcsbId = YcsbPartitionMetaMgr.getStartYcsbId(vertexId);
+		for (Integer vertexId : migrateRanges) {
+//			int startYcsbId = YcsbPartitionMetaMgr.getStartYcsbId(vertexId);
+			int startYcsbId = vertexId * DATA_RANGE_SIZE;
 			
 			for (int i = 1; i <= MigrationManager.DATA_RANGE_SIZE; i++) {
 				keyEntryMap = new HashMap<String, Constant>();

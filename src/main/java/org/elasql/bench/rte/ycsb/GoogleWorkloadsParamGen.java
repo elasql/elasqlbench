@@ -267,7 +267,8 @@ public class GoogleWorkloadsParamGen implements TxParamGenerator {
 	}
 
 	private static int getStartId(int partitionId) {
-		return partitionId * ElasqlYcsbConstants.MAX_RECORD_PER_PART + 1;
+//		return partitionId * ElasqlYcsbConstants.MAX_RECORD_PER_PART + 1;
+		return partitionId * ElasqlYcsbConstants.RECORD_PER_PART + 1;
 	}
 
 	private YcsbLatestGenerator[] distributionInPart = new YcsbLatestGenerator[NUM_PARTITIONS];
@@ -436,9 +437,10 @@ public class GoogleWorkloadsParamGen implements TxParamGenerator {
 	// XXX: We should use long
 	private int chooseARecordGlobally(int center) {
 		int id = (int) globalDistribution.nextValue(center) - 1;
-		int partId = id / ElasqlYcsbConstants.RECORD_PER_PART;
-		int offset = id % ElasqlYcsbConstants.RECORD_PER_PART;
-		return partId * ElasqlYcsbConstants.MAX_RECORD_PER_PART + offset + 1;
+//		int partId = id / ElasqlYcsbConstants.RECORD_PER_PART;
+//		int offset = id % ElasqlYcsbConstants.RECORD_PER_PART;
+//		return partId * ElasqlYcsbConstants.MAX_RECORD_PER_PART + offset + 1;
+		return id + 1;
 	}
 
 	private int genDistributionOfPart(int time, TpccValueGenerator rvg) {
