@@ -9,6 +9,7 @@ import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.AllExecuteProcedure;
 import org.elasql.server.Elasql;
+import org.elasql.server.migration.MigrationManager;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.bench.ycsb.YcsbConstants;
 import org.vanilladb.core.server.VanillaDb;
@@ -48,7 +49,7 @@ public class YcsbTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 		// Generate item records
 //		int startIId = Elasql.serverId() * ElasqlYcsbConstants.MAX_RECORD_PER_PART + 1;
 //		generateItems(startIId, ElasqlYcsbConstants.RECORD_PER_PART);
-		int numOfParts = Elasql.partitionMetaMgr().getCurrentNumOfParts();
+		int numOfParts = MigrationManager.currentNumOfPartitions();
 		generateItems(1, ElasqlYcsbConstants.RECORD_PER_PART * numOfParts);
 
 		if (logger.isLoggable(Level.INFO))

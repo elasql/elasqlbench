@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.elasql.bench.util.ElasqlBenchProperties;
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
+import org.elasql.server.migration.MigrationManager;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.util.PeriodicalJob;
 import org.vanilladb.bench.Benchmarker;
@@ -21,14 +22,14 @@ import org.vanilladb.bench.ycsb.YcsbTransactionType;
 
 public class MultiTanentsParamGen implements TxParamGenerator {
 	
-	private static final boolean HAS_HOTSPOT = true;
+	private static final boolean HAS_HOTSPOT = false;
 	
 	private static final double RW_TX_RATE;
 	private static final double SKEW_PARAMETER;
-	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
-//	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS - 1; // for scaling-out
+//	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
+	private static final int NUM_PARTITIONS = MigrationManager.IS_SCALING_OUT?
+			PartitionMetaMgr.NUM_PARTITIONS - 1: PartitionMetaMgr.NUM_PARTITIONS;
 	private static final int TANENTS_PER_PART = 4;
-//	private static final int TANENTS_PER_PART = 3; // for consolidation
 	private static final int NUM_TANENTS = NUM_PARTITIONS * TANENTS_PER_PART;
 	private static final int RECORD_PER_TANENT = ElasqlYcsbConstants.RECORD_PER_PART / TANENTS_PER_PART;
 	
@@ -70,9 +71,9 @@ public class MultiTanentsParamGen implements TxParamGenerator {
 					}
 				}
 			}).start();
-	    } else {
-	    	System.out.println("This is a normal balanced workload.");
-	    }
+		} else {
+			System.out.println("This is a normal balanced workload.");
+		}
 	}
 
 	private static long getGlobalStartTime() {
@@ -131,7 +132,7 @@ public class MultiTanentsParamGen implements TxParamGenerator {
 		
 		// Decide if there is a hot spot (skewed) partition
 		long currentTime = System.currentTimeMillis();
-	    if (HAS_HOTSPOT && currentTime > startTime + WARMUP_TIME) {
+		if (HAS_HOTSPOT && currentTime > startTime + WARMUP_TIME) {
 			// Find the hot spot partition
 			int slotId = (int) ((currentTime - startTime - WARMUP_TIME) / CHANGING_PERIOD);
 			int skewedPartition = slotId % NUM_PARTITIONS;
@@ -202,7 +203,8 @@ public class MultiTanentsParamGen implements TxParamGenerator {
 	private int chooseARecordInTanent(int tanentId) {
 		int partId = tanentId / TANENTS_PER_PART;
 		int tanentInPart = tanentId % TANENTS_PER_PART;
-		int tanentStartId = partId * ElasqlYcsbConstants.MAX_RECORD_PER_PART + tanentInPart * RECORD_PER_TANENT;
+//		int tanentStartId = partId * ElasqlYcsbConstants.MAX_RECORD_PER_PART + tanentInPart * RECORD_PER_TANENT;
+		int tanentStartId = partId * ElasqlYcsbConstants.RECORD_PER_PART + tanentInPart * RECORD_PER_TANENT;
 		long offset = distributionInTanent[tanentId].nextValue();
 		return (int) (tanentStartId + offset);
 	}
