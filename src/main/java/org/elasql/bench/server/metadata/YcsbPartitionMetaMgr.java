@@ -64,7 +64,9 @@ public class YcsbPartitionMetaMgr extends PartitionMetaMgr {
 	}
 	
 	public static int getRangeIndex(RecordKey key) {
-		return getRangeIndex(Integer.parseInt(key.getKeyVal("ycsb_id").toString()));
+//		return getRangeIndex(Integer.parseInt(key.getKeyVal("ycsb_id").toString()));
+		int id = Integer.parseInt(key.getKeyVal("ycsb_id").toString());
+		return (id - 1) / ElasqlYcsbConstants.RECORD_PER_PART;
 	}
 
 	public static int getRangeIndex(int id) {
@@ -82,9 +84,9 @@ public class YcsbPartitionMetaMgr extends PartitionMetaMgr {
 		if (key.getTableName().equals("notification"))
 			return -1;
 
-		Constant iidCon = key.getKeyVal("ycsb_id");
+		Constant ycsbIdCon = key.getKeyVal("ycsb_id");
 
-		if (iidCon == null) {
+		if (ycsbIdCon == null) {
 			// Fully replicated
 			return Elasql.serverId();
 		}

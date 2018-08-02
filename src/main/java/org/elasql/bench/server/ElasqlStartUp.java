@@ -36,7 +36,7 @@ public class ElasqlStartUp implements SutStartUp {
 		}
 		
 		Elasql.init(dbName, nodeId, isSequencer, getStoredProcedureFactory(), getPartitionMetaMgr(),
-				getMigrationManager());
+				getMigrationManager(nodeId));
 
 		if (logger.isLoggable(Level.INFO))
 			logger.info("ElaSQL server ready");
@@ -164,16 +164,16 @@ public class ElasqlStartUp implements SutStartUp {
 		return metaMgr;
 	}
 	
-	private MigrationManager getMigrationManager() {
+	private MigrationManager getMigrationManager(int nodeId) {
 		MigrationManager migraMgr = null;
 		switch (BenchmarkerParameters.BENCH_TYPE) {
 		case MICRO:
-			migraMgr = new MicroMigrationManager();
+			migraMgr = new MicroMigrationManager(nodeId);
 			break;
 		case TPCC:
 			throw new UnsupportedOperationException("No TPC-C for now");
 		case YCSB:
-			migraMgr = new YcsbMigrationManager();
+			migraMgr = new YcsbMigrationManager(nodeId);
 			break;
 		case TPCE:
 			throw new UnsupportedOperationException("No TPC-E for now");

@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.elasql.bench.micro.ElasqlMicrobenchConstants;
 import org.elasql.bench.rte.micro.ElasqlMiroChangingbenchmarkParamGen;
-import org.elasql.bench.rte.ycsb.GoogleWorkloadsParamGen;
 import org.elasql.remote.groupcomm.StoredProcedureCall;
 import org.elasql.server.Elasql;
 import org.elasql.server.migration.MigrationManager;
@@ -21,20 +20,13 @@ public class MicroMigrationManager extends MigrationManager {
 	private static final int COUNTS_FOR_SLEEP = 10000;
 	private int parameterCounter = 0;
 
-	public MicroMigrationManager() {
-		super(RECORD_PERIOD);
+	public MicroMigrationManager(int nodeId) {
+		super(RECORD_PERIOD, nodeId);
 	}
 	
 	@Override
 	public int getRecordCount() {
 		return PartitionMetaMgr.NUM_PARTITIONS * ElasqlMicrobenchConstants.NUM_ITEMS_PER_NODE;
-	}
-	
-	@Override
-	public int getPartitioningKey(RecordKey key)
-	{
-		int iid = (int) key.getKeyVal("i_id").asJavaVal();
-		return (iid - 1) / MigrationManager.DATA_RANGE_SIZE;
 	}
 	
 	@Override

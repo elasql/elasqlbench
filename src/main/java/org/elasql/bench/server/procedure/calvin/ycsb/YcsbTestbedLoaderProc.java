@@ -1,5 +1,6 @@
 package org.elasql.bench.server.procedure.calvin.ycsb;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,12 +12,16 @@ import org.elasql.server.Elasql;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.bench.ycsb.YcsbConstants;
 import org.vanilladb.core.server.VanillaDb;
+import org.vanilladb.core.sql.Constant;
+import org.vanilladb.core.sql.VarcharConstant;
 import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
 import org.vanilladb.core.storage.tx.recovery.CheckpointTask;
 import org.vanilladb.core.storage.tx.recovery.RecoveryMgr;
 
 public class YcsbTestbedLoaderProc extends AllExecuteProcedure<StoredProcedureParamHelper> {
 	private static Logger logger = Logger.getLogger(YcsbTestbedLoaderProc.class.getName());
+	
+	private int loadedCount = 0;
 	
 	public YcsbTestbedLoaderProc(long txNum) {
 		super(txNum, StoredProcedureParamHelper.DefaultParamHelper());
@@ -41,8 +46,10 @@ public class YcsbTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 		RecoveryMgr.enableLogging(false);
 		
 		// Generate item records
-		int startIId = Elasql.serverId() * ElasqlYcsbConstants.MAX_RECORD_PER_PART + 1;
-		generateItems(startIId, ElasqlYcsbConstants.RECORD_PER_PART);
+//		int startIId = Elasql.serverId() * ElasqlYcsbConstants.MAX_RECORD_PER_PART + 1;
+//		generateItems(startIId, ElasqlYcsbConstants.RECORD_PER_PART);
+		int numOfParts = Elasql.partitionMetaMgr().getCurrentNumOfParts();
+		generateItems(1, ElasqlYcsbConstants.RECORD_PER_PART * numOfParts);
 
 		if (logger.isLoggable(Level.INFO))
 			logger.info("Loading completed. Flush all loading data to disks...");
@@ -63,6 +70,10 @@ public class YcsbTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 	}
 	
 	private void generateItems(int startId, int recordCount) {
+		// For scaling-out experiments
+//		if (Elasql.serverId() > 2)
+//			return;
+		
 		int endId = startId + recordCount - 1;
 		
 		if (logger.isLoggable(Level.INFO))
@@ -78,28 +89,38 @@ public class YcsbTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 		
 		String sql;
 		String ycsbId, ycsbValue;
-		for (int id = startId, recCount = 1; id <= endId; id++, recCount++) {
+		Map<String, Constant> keyEntryMap;
+		RecordKey key;
+		for (int id = startId; id <= endId; id++) {
 			
 			// The primary key of YCSB is the string format of id
 			ycsbId = String.format(YcsbConstants.ID_FORMAT, id);
 			
-			sql = sqlPrefix + "'" + ycsbId + "'";
+			// Check if it is a local record
+			keyEntryMap = new HashMap<String, Constant>();
+			keyEntryMap.put("ycsb_id", new VarcharConstant(ycsbId));
+			key = new RecordKey("ycsb", keyEntryMap);
+			if (Elasql.partitionMetaMgr().getPartition(key) == Elasql.serverId()) {
 			
-			// All values of the fields use the same value
-			ycsbValue = ycsbId;
-			
-			for (int count = 1; count < YcsbConstants.FIELD_COUNT; count++) {
-				sql += ", '" + ycsbValue + "'";
+				sql = sqlPrefix + "'" + ycsbId + "'";
+				
+				// All values of the fields use the same value
+				ycsbValue = ycsbId;
+				
+				for (int count = 1; count < YcsbConstants.FIELD_COUNT; count++) {
+					sql += ", '" + ycsbValue + "'";
+				}
+				sql += ")";
+	
+				int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+				if (result <= 0)
+					throw new RuntimeException();
+				
+				loadedCount++;
+				if (loadedCount % 50000 == 0)
+					if (logger.isLoggable(Level.INFO))
+						logger.info(loadedCount + " YCSB records has been populated.");
 			}
-			sql += ")";
-
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
-			if (result <= 0)
-				throw new RuntimeException();
-			
-			if (recCount % 50000 == 0)
-				if (logger.isLoggable(Level.INFO))
-					logger.info(recCount + " YCSB records has been populated.");
 		}
 
 		if (logger.isLoggable(Level.INFO))

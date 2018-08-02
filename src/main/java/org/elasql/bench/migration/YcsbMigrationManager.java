@@ -23,24 +23,13 @@ public class YcsbMigrationManager extends MigrationManager {
 	
 //	public static final int VERTEX_PER_PART = ElasqlYcsbConstants.RECORD_PER_PART / DATA_RANGE_SIZE;
 
-	public YcsbMigrationManager() {
-		super(RECORD_PERIOD);
+	public YcsbMigrationManager(int nodeId) {
+		super(RECORD_PERIOD, nodeId);
 	}
 	
 	@Override
 	public int getRecordCount() {
 		return PartitionMetaMgr.NUM_PARTITIONS * ElasqlYcsbConstants.RECORD_PER_PART;
-	}
-	
-	@Override
-	public int getPartitioningKey(RecordKey key)
-	{
-//		int ycsbId = (int) Integer.parseInt(key.getKeyVal("ycsb_id").toString());
-//		ycsbId -= 1; // [1, N] => [0, N-1]
-//		int partId = ycsbId / ElasqlYcsbConstants.MAX_RECORD_PER_PART;
-//		int vertexIdInPart = (ycsbId % ElasqlYcsbConstants.MAX_RECORD_PER_PART) / DATA_RANGE_SIZE;
-//		return partId * VERTEX_PER_PART + vertexIdInPart;
-		return (int) Integer.parseInt(key.getKeyVal("ycsb_id").toString());
 	}
 	
 	@Override
