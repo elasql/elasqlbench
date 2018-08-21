@@ -1,4 +1,4 @@
-package org.elasql.bench.micro;
+package org.elasql.bench.benchmarks.micro;
 
 import org.elasql.bench.util.ElasqlBenchProperties;
 
