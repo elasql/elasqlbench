@@ -23,6 +23,7 @@
 	<packaging>jar</packaging>
 
 	<name>elasqlbench</name>
+	<description>A framework aiming to test ElaSQL using various types of academic and industrial benchmarks.</description>
 	<url>http://www.elasql.org</url>
 	
 	
