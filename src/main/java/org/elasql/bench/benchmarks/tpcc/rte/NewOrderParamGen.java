@@ -1,22 +1,22 @@
-package org.elasql.bench.rte.tpcc;
+package org.elasql.bench.benchmarks.tpcc.rte;
 
-import org.vanilladb.bench.TransactionType;
-import org.vanilladb.bench.tpcc.TpccConstants;
-import org.vanilladb.bench.tpcc.TpccTransactionType;
-import org.vanilladb.bench.tpcc.TpccValueGenerator;
-import org.vanilladb.bench.tpcc.rte.TpccTxParamGenerator;
+import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
+import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
+import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
+import org.vanilladb.bench.benchmarks.tpcc.rte.TpccTxParamGenerator;
 
 public class NewOrderParamGen implements TpccTxParamGenerator {
 
-	private int homeWid;
+	private int homeWid, homeDid;
 	private TpccValueGenerator valueGen = new TpccValueGenerator();
 
-	public NewOrderParamGen(int homeWarehouseId) {
+	public NewOrderParamGen(int homeWarehouseId, int homeDistrictId) {
 		homeWid = homeWarehouseId;
+		homeDid = homeDistrictId;
 	}
 
 	@Override
-	public TransactionType getTxnType() {
+	public TpccTransactionType getTxnType() {
 		return TpccTransactionType.NEW_ORDER;
 	}
 
@@ -38,7 +38,7 @@ public class NewOrderParamGen implements TpccTxParamGenerator {
 
 		Object[] pars = new Object[50];
 		pars[0] = homeWid;
-		pars[1] = valueGen.number(1, 10);
+		pars[1] = homeDid;
 		pars[2] = valueGen.NURand(TpccValueGenerator.NU_CID, 1, TpccConstants.CUSTOMERS_PER_DISTRICT);
 		int olCount = valueGen.number(5, 15);
 		pars[3] = olCount;

@@ -7,7 +7,7 @@ import org.elasql.bench.server.param.tpcc.PaymentProcParamHelper;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.sql.RecordKey;
-import org.vanilladb.bench.tpcc.TpccConstants;
+import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.core.sql.BigIntConstant;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.DoubleConstant;

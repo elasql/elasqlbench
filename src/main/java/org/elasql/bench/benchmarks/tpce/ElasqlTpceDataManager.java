@@ -1,10 +1,10 @@
-package org.elasql.bench.tpce;
+package org.elasql.bench.benchmarks.tpce;
 
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.elasql.storage.metadata.PartitionMetaMgr;
-import org.vanilladb.bench.tpce.TpceConstants;
-import org.vanilladb.bench.tpce.data.TpceDataManager;
+import org.vanilladb.bench.benchmarks.tpce.TpceConstants;
+import org.vanilladb.bench.benchmarks.tpce.data.TpceDataManager;
 
 public class ElasqlTpceDataManager extends TpceDataManager {
 	

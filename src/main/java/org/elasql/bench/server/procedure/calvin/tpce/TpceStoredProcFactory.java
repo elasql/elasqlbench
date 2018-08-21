@@ -4,7 +4,7 @@ import org.elasql.bench.server.procedure.calvin.StartProfilingProc;
 import org.elasql.bench.server.procedure.calvin.StopProfilingProc;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.procedure.calvin.CalvinStoredProcedureFactory;
-import org.vanilladb.bench.tpce.TpceTransactionType;
+import org.vanilladb.bench.benchmarks.tpce.TpceTransactionType;
 
 public class TpceStoredProcFactory implements CalvinStoredProcedureFactory {
 

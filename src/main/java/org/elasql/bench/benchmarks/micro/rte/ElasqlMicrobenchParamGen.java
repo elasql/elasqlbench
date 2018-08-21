@@ -1,20 +1,19 @@
-package org.elasql.bench.rte.micro;
+package org.elasql.bench.benchmarks.micro.rte;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import org.elasql.bench.micro.ElasqlMicrobenchConstants;
+import org.elasql.bench.benchmarks.micro.ElasqlMicrobenchConstants;
 import org.elasql.bench.util.ElasqlBenchProperties;
 import org.elasql.storage.metadata.PartitionMetaMgr;
-import org.vanilladb.bench.TransactionType;
-import org.vanilladb.bench.micro.MicroTransactionType;
+import org.vanilladb.bench.benchmarks.micro.MicrobenchmarkTxnType;
+import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
 import org.vanilladb.bench.rte.TxParamGenerator;
-import org.vanilladb.bench.tpcc.TpccValueGenerator;
 import org.vanilladb.bench.util.RandomNonRepeatGenerator;
 
-public class ElasqlMicrobenchParamGen implements TxParamGenerator {
+public class ElasqlMicrobenchParamGen implements TxParamGenerator<MicrobenchmarkTxnType> {
 	
 	// Transaaction Type
 	private static final double DIST_TX_RATE;
@@ -112,8 +111,8 @@ public class ElasqlMicrobenchParamGen implements TxParamGenerator {
 	}
 
 	@Override
-	public TransactionType getTxnType() {
-		return MicroTransactionType.MICRO;
+	public MicrobenchmarkTxnType getTxnType() {
+		return MicrobenchmarkTxnType.MICRO_TXN;
 	}
 
 	// a main application for debugging

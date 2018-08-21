@@ -57,6 +57,7 @@ public class TpccPartitionMetaMgr extends PartitionMetaMgr {
 		if (key.getTableName().equals("item"))
 			return Elasql.serverId();
 
-		return getWarehouseId(key) - 1;
+//		return getWarehouseId(key) - 1;
+		return 0;
 	}
 }

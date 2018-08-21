@@ -1,5 +1,6 @@
 package org.elasql.bench.remote.sp;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.elasql.remote.groupcomm.client.GroupCommConnection;
@@ -21,6 +22,11 @@ public class ElasqlSpConnection implements SutConnection {
 			throws SQLException {
 		SpResultSet r = conn.callStoredProc(connectionId, pid, pars);
 		return new ElasqlSpResultSet(r);
+	}
+
+	@Override
+	public Connection toJdbcConnection() {
+		throw new RuntimeException("ElaSQL does not support JDBC.");
 	}
 }
 

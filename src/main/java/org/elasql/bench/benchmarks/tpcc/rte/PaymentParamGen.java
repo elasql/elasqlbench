@@ -1,10 +1,9 @@
-package org.elasql.bench.rte.tpcc;
+package org.elasql.bench.benchmarks.tpcc.rte;
 
-import org.vanilladb.bench.TransactionType;
-import org.vanilladb.bench.tpcc.TpccConstants;
-import org.vanilladb.bench.tpcc.TpccTransactionType;
-import org.vanilladb.bench.tpcc.TpccValueGenerator;
-import org.vanilladb.bench.tpcc.rte.TpccTxParamGenerator;
+import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
+import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
+import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
+import org.vanilladb.bench.benchmarks.tpcc.rte.TpccTxParamGenerator;
 
 public class PaymentParamGen implements TpccTxParamGenerator {
 
@@ -16,7 +15,7 @@ public class PaymentParamGen implements TpccTxParamGenerator {
 	}
 
 	@Override
-	public TransactionType getTxnType() {
+	public TpccTransactionType getTxnType() {
 		return TpccTransactionType.PAYMENT;
 	}
 

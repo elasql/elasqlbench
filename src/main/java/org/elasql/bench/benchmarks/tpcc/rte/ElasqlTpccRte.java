@@ -1,4 +1,4 @@
-package org.elasql.bench.rte.tpcc;
+package org.elasql.bench.benchmarks.tpcc.rte;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,25 +6,25 @@ import java.util.Random;
 
 import org.vanilladb.bench.StatisticMgr;
 import org.vanilladb.bench.TransactionType;
+import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
+import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
+import org.vanilladb.bench.benchmarks.tpcc.rte.TpccTxExecutor;
 import org.vanilladb.bench.remote.SutConnection;
 import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 import org.vanilladb.bench.rte.TransactionExecutor;
-import org.vanilladb.bench.tpcc.TpccConstants;
-import org.vanilladb.bench.tpcc.TpccTransactionType;
-import org.vanilladb.bench.tpcc.rte.TpccTxExecutor;
 
-public class ElasqlTpccRte extends RemoteTerminalEmulator {
+public class ElasqlTpccRte extends RemoteTerminalEmulator<TpccTransactionType> {
 	
 	private int homeWid;
 	private static Random txnTypeRandom;
 	private Map<TransactionType, TpccTxExecutor> executors;
 
-	public ElasqlTpccRte(SutConnection conn, StatisticMgr statMgr, int homeWarehouseId) {
+	public ElasqlTpccRte(SutConnection conn, StatisticMgr statMgr, int homeWarehouseId, int homeDistrictId) {
 		super(conn, statMgr);
 		homeWid = homeWarehouseId;
 		txnTypeRandom = new Random();
 		executors = new HashMap<TransactionType, TpccTxExecutor>();
-		executors.put(TpccTransactionType.NEW_ORDER, new TpccTxExecutor(new NewOrderParamGen(homeWid)));
+		executors.put(TpccTransactionType.NEW_ORDER, new TpccTxExecutor(new NewOrderParamGen(homeWid, homeDistrictId)));
 		executors.put(TpccTransactionType.PAYMENT, new TpccTxExecutor(new PaymentParamGen(homeWid)));
 		// TODO: Not implemented
 //		executors.put(TpccTransactionType.ORDER_STATUS, new TpccTxExecutor(new OrderStatusParamGen(homeWid)));
@@ -32,7 +32,7 @@ public class ElasqlTpccRte extends RemoteTerminalEmulator {
 //		executors.put(TpccTransactionType.STOCK_LEVEL, new TpccTxExecutor(new StockLevelParamGen(homeWid)));
 	}
 	
-	protected TransactionType getNextTxType() {
+	protected TpccTransactionType getNextTxType() {
 		int index = txnTypeRandom.nextInt(TpccConstants.FREQUENCY_TOTAL);
 		if (index < TpccConstants.RANGE_NEW_ORDER)
 			return TpccTransactionType.NEW_ORDER;
@@ -46,7 +46,7 @@ public class ElasqlTpccRte extends RemoteTerminalEmulator {
 			return TpccTransactionType.STOCK_LEVEL;
 	}
 	
-	protected TransactionExecutor getTxExeutor(TransactionType type) {
+	protected TransactionExecutor<TpccTransactionType> getTxExeutor(TpccTransactionType type) {
 		return executors.get(type);
 	}
 }

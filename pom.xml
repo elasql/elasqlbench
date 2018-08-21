@@ -4,7 +4,7 @@
 
 	<groupId>org.elasql</groupId>
 	<artifactId>bench</artifactId>
-	<version>0.1.0</version>
+	<version>0.2.0</version>
 
 	<name>elasqlbench</name>
 	<url>http://www.elasql.org</url>
@@ -23,12 +23,12 @@
 		<dependency>
 			<groupId>org.vanilladb</groupId>
 			<artifactId>bench</artifactId>
-			<version>0.2.0</version>
+			<version>0.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.elasql</groupId>
 			<artifactId>elasql</artifactId>
-			<version>0.2.0</version>
+			<version>0.2.1</version>
 		</dependency>
 	</dependencies>
 

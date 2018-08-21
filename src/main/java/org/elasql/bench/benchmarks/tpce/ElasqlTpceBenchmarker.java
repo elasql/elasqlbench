@@ -1,4 +1,4 @@
-package org.elasql.bench.tpce;
+package org.elasql.bench.benchmarks.tpce;
 
 import java.sql.SQLException;
 import java.util.HashSet;
@@ -7,19 +7,19 @@ import java.util.Set;
 import org.vanilladb.bench.Benchmarker;
 import org.vanilladb.bench.StatisticMgr;
 import org.vanilladb.bench.TransactionType;
+import org.vanilladb.bench.benchmarks.tpce.TpceTransactionType;
+import org.vanilladb.bench.benchmarks.tpce.data.TpceDataManager;
+import org.vanilladb.bench.benchmarks.tpce.rte.TpceRte;
 import org.vanilladb.bench.remote.SutConnection;
 import org.vanilladb.bench.remote.SutDriver;
 import org.vanilladb.bench.rte.RemoteTerminalEmulator;
-import org.vanilladb.bench.tpce.TpceTransactionType;
-import org.vanilladb.bench.tpce.data.TpceDataManager;
-import org.vanilladb.bench.tpce.rte.TpceRte;
 
 public class ElasqlTpceBenchmarker extends Benchmarker {
 	
 	private TpceDataManager dataMgr;
 
 	public ElasqlTpceBenchmarker(SutDriver sutDriver, int nodeId) {
-		super(sutDriver);
+		super(sutDriver, Integer.toString(nodeId));
 		dataMgr = new ElasqlTpceDataManager(nodeId);
 	}
 
@@ -37,7 +37,7 @@ public class ElasqlTpceBenchmarker extends Benchmarker {
 		conn.callStoredProc(TpceTransactionType.TESTBED_LOADER.ordinal());
 	}
 	
-	protected RemoteTerminalEmulator createRte(SutConnection conn, StatisticMgr statMgr) {
+	protected RemoteTerminalEmulator<TpceTransactionType> createRte(SutConnection conn, StatisticMgr statMgr) {
 		return new TpceRte(conn, statMgr, dataMgr);
 	}
 	

@@ -14,7 +14,7 @@ import java.util.logging.Logger;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.AllExecuteProcedure;
 import org.elasql.sql.RecordKey;
-import org.vanilladb.bench.tpce.data.TpceDataManager;
+import org.vanilladb.bench.benchmarks.tpce.data.TpceDataManager;
 import org.vanilladb.core.server.VanillaDb;
 import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
 import org.vanilladb.core.storage.tx.recovery.CheckpointTask;

@@ -4,17 +4,14 @@ import org.elasql.bench.server.procedure.calvin.StartProfilingProc;
 import org.elasql.bench.server.procedure.calvin.StopProfilingProc;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.procedure.calvin.CalvinStoredProcedureFactory;
-import org.vanilladb.bench.micro.MicroTransactionType;
+import org.vanilladb.bench.benchmarks.micro.MicrobenchmarkTxnType;
 
 public class MicrobenchStoredProcFactory implements CalvinStoredProcedureFactory {
 
 	@Override
 	public CalvinStoredProcedure<?> getStoredProcedure(int pid, long txNum) {
 		CalvinStoredProcedure<?> sp;
-		switch (MicroTransactionType.fromProcedureId(pid)) {
-		case SCHEMA_BUILDER:
-			sp = new MicroSchemaBuilderProc(txNum);
-			break;
+		switch (MicrobenchmarkTxnType.fromProcedureId(pid)) {
 		case TESTBED_LOADER:
 			sp = new MicroTestbedLoaderProc(txNum);
 			break;
@@ -24,11 +21,11 @@ public class MicrobenchStoredProcFactory implements CalvinStoredProcedureFactory
 		case STOP_PROFILING:
 			sp = new StopProfilingProc(txNum);
 			break;
-		case MICRO:
-			sp = new MicroBenchmarkProc(txNum);
+		case MICRO_TXN:
+			sp = new MicroTxnProc(txNum);
 			break;
 		default:
-			throw new UnsupportedOperationException("Procedure " + MicroTransactionType.fromProcedureId(pid) + " is not supported for now");
+			throw new UnsupportedOperationException("Procedure " + MicrobenchmarkTxnType.fromProcedureId(pid) + " is not supported for now");
 		}
 		return sp;
 	}

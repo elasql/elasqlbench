@@ -1,9 +1,9 @@
 package org.elasql.bench;
 
-import org.elasql.bench.micro.ElasqlMicroBenchmarker;
+import org.elasql.bench.benchmarks.micro.ElasqlMicroBenchmarker;
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmarker;
+import org.elasql.bench.benchmarks.tpce.ElasqlTpceBenchmarker;
 import org.elasql.bench.remote.sp.ElasqlSpDriver;
-import org.elasql.bench.tpcc.ElasqlTpccBenchmarker;
-import org.elasql.bench.tpce.ElasqlTpceBenchmarker;
 import org.vanilladb.bench.Benchmarker;
 import org.vanilladb.bench.BenchmarkerParameters;
 import org.vanilladb.bench.remote.SutDriver;
@@ -36,10 +36,10 @@ public class App {
 		// Create a benchmarker
 		switch (BenchmarkerParameters.BENCH_TYPE) {
 		case MICRO:
-			benchmarker = new ElasqlMicroBenchmarker(driver);
+			benchmarker = new ElasqlMicroBenchmarker(driver, nodeId);
 			break;
 		case TPCC:
-			benchmarker = new ElasqlTpccBenchmarker(driver);
+			benchmarker = new ElasqlTpccBenchmarker(driver, nodeId);
 			break;
 		case TPCE:
 			benchmarker = new ElasqlTpceBenchmarker(driver, nodeId);

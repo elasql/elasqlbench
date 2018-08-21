@@ -4,22 +4,22 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.elasql.bench.micro.ElasqlMicrobenchConstants;
+import org.elasql.bench.benchmarks.micro.ElasqlMicrobenchConstants;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.AllExecuteProcedure;
 import org.elasql.server.Elasql;
 import org.elasql.sql.RecordKey;
-import org.vanilladb.bench.tpcc.TpccConstants;
+import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
+import org.vanilladb.bench.server.param.micro.TestbedLoaderParamHelper;
 import org.vanilladb.core.server.VanillaDb;
-import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
 import org.vanilladb.core.storage.tx.recovery.CheckpointTask;
 import org.vanilladb.core.storage.tx.recovery.RecoveryMgr;
 
-public class MicroTestbedLoaderProc extends AllExecuteProcedure<StoredProcedureParamHelper> {
+public class MicroTestbedLoaderProc extends AllExecuteProcedure<TestbedLoaderParamHelper> {
 	private static Logger logger = Logger.getLogger(MicroTestbedLoaderProc.class.getName());
 
 	public MicroTestbedLoaderProc(long txNum) {
-		super(txNum, StoredProcedureParamHelper.DefaultParamHelper());
+		super(txNum, new TestbedLoaderParamHelper());
 	}
 
 	@Override
@@ -39,6 +39,9 @@ public class MicroTestbedLoaderProc extends AllExecuteProcedure<StoredProcedureP
 		// turn off logging set value to speed up loading process
 		// TODO: remove this hack code in the future
 		RecoveryMgr.enableLogging(false);
+		
+		dropOldData();
+		createSchemas();
 
 		// Generate item records
 		int startIId = Elasql.serverId() * ElasqlMicrobenchConstants.NUM_ITEMS_PER_NODE + 1;
@@ -61,6 +64,29 @@ public class MicroTestbedLoaderProc extends AllExecuteProcedure<StoredProcedureP
 		if (logger.isLoggable(Level.INFO))
 			logger.info("Loading procedure finished.");
 
+	}
+	
+	private void dropOldData() {
+		// TODO: Implement this
+		if (logger.isLoggable(Level.WARNING))
+			logger.warning("Dropping is skipped.");
+	}
+	
+	private void createSchemas() {
+		if (logger.isLoggable(Level.FINE))
+			logger.info("Create tables...");
+		
+		for (String cmd : paramHelper.getTableSchemas())
+			VanillaDb.newPlanner().executeUpdate(cmd, tx);
+		
+		if (logger.isLoggable(Level.FINE))
+			logger.info("Create indexes...");
+
+		for (String cmd : paramHelper.getIndexSchemas())
+			VanillaDb.newPlanner().executeUpdate(cmd, tx);
+		
+		if (logger.isLoggable(Level.FINE))
+			logger.info("Finish creating schemas.");
 	}
 
 	private void generateItems(int startIId, int endIId) {

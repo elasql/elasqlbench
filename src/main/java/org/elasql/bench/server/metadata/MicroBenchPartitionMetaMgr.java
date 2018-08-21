@@ -1,6 +1,6 @@
 package org.elasql.bench.server.metadata;
 
-import org.elasql.bench.micro.ElasqlMicrobenchConstants;
+import org.elasql.bench.benchmarks.micro.ElasqlMicrobenchConstants;
 import org.elasql.server.Elasql;
 import org.elasql.sql.RecordKey;
 import org.elasql.storage.metadata.PartitionMetaMgr;

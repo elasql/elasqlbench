@@ -6,17 +6,17 @@ import java.util.Map;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.sql.RecordKey;
-import org.vanilladb.bench.server.param.micro.MicroBenchmarkProcParamHelper;
+import org.vanilladb.bench.server.param.micro.MicroTxnProcParamHelper;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.DoubleConstant;
 import org.vanilladb.core.sql.IntegerConstant;
 
-public class MicroBenchmarkProc extends CalvinStoredProcedure<MicroBenchmarkProcParamHelper> {
+public class MicroTxnProc extends CalvinStoredProcedure<MicroTxnProcParamHelper> {
 
 	private Map<RecordKey, Constant> writeConstantMap = new HashMap<RecordKey, Constant>();
 
-	public MicroBenchmarkProc(long txNum) {
-		super(txNum, new MicroBenchmarkProcParamHelper());
+	public MicroTxnProc(long txNum) {
+		super(txNum, new MicroTxnProcParamHelper());
 	}
 
 	@Override

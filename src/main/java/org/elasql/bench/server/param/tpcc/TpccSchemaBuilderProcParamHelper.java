@@ -45,12 +45,16 @@ public class TpccSchemaBuilderProcParamHelper extends StoredProcedureParamHelper
 	private final String TPCC_INDEXES_DDL[] = {
 			"CREATE INDEX idx_warehouse ON warehouse (w_id)",
 			"CREATE INDEX idx_district ON district (d_id)",
+//			"CREATE INDEX idx_district ON district (d_id, d_w_id)",
 			"CREATE INDEX idx_customer ON customer (c_id)",
-			"CREATE INDEX idx_history ON history (h_c_id)",
+//			"CREATE INDEX idx_customer ON customer (c_id, c_d_id, c_w_id)",
+//			"CREATE INDEX idx_history ON history (h_c_id)",
+//			"CREATE INDEX idx_history ON history (h_c_id, h_c_d_id, h_c_w_id)",
 			"CREATE INDEX idx_order ON orders (o_id)",
 			"CREATE INDEX idx_new_order ON new_order (no_o_id)",
 			"CREATE INDEX idx_order_line ON order_line (ol_o_id)",
 			"CREATE INDEX idx_stock ON stock (s_i_id)",
+//			"CREATE INDEX idx_stock ON stock (s_i_id, s_w_id)",
 			"CREATE INDEX idx_item ON item (i_id)" };
 
 	private final String TPCC_TABLES[] = { "warehouse", "district", "customer",
