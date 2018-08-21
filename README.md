@@ -31,7 +31,7 @@ TBA
 ```xml
 <dependency>
   <groupId>org.elasql</groupId>
-  <artifactId>elasql</artifactId>
+  <artifactId>bench</artifactId>
   <version>0.2.0</version>
 </dependency>
 ```
