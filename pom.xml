@@ -19,7 +19,7 @@
 
 	<groupId>org.elasql</groupId>
 	<artifactId>bench</artifactId>
-	<version>0.2.0</version>
+	<version>0.2.1</version>
 	<packaging>jar</packaging>
 
 	<name>elasqlbench</name>
@@ -90,7 +90,7 @@
 		<dependency>
 			<groupId>org.vanilladb</groupId>
 			<artifactId>bench</artifactId>
-			<version>0.2.1</version>
+			<version>0.3.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.elasql</groupId>
