@@ -1,8 +1,8 @@
 # ElaSQL-Bench
 
-[![Build Status](https://travis-ci.org/elasql/elasqlbench.svg?branch=master)](https://travis-ci.org/elasql/elasqlbench)
+[![Build Status](https://travis-ci.org/elasql/elasqlbench.svg?branch=master)](https://travis-ci.org/elasql/bench)
 [![Apache 2.0 License](https://img.shields.io/badge/license-apache%202.0-orange.svg)](https://www.apache.org/licenses/LICENSE-2.0)
-[![Maven Central](https://img.shields.io/maven-central/v/org.elasql/elasqlbench.svg)](https://maven-badges.herokuapp.com/maven-central/org.elasql/elasqlbench)
+[![Maven Central](https://img.shields.io/maven-central/v/org.elasql/elasqlbench.svg)](https://maven-badges.herokuapp.com/maven-central/org.elasql/bench)
 
 ElaSQL-Bench is a framework aiming to test ElaSQL using various types of academic and industrial benchmarks.
 
