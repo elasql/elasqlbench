@@ -180,8 +180,8 @@ public class ElasqlStartUp implements SutStartUp {
 //			if (LOAD_METIS_PARTITIONS)
 //				partPlan = new YcsbMetisPartitionPlan(partPlan, METIS_FILE_PATH);
 			// For elastic experiments
-			int numOfPartitions = MigrationMgr.IS_SCALING_OUT? PartitionMetaMgr.NUM_PARTITIONS - 1:
-				PartitionMetaMgr.NUM_PARTITIONS;
+			int numOfPartitions = (MigrationMgr.ENABLE_PARTITION_CHANGE && MigrationMgr.IS_SCALING_OUT)?
+					PartitionMetaMgr.NUM_PARTITIONS - 1: PartitionMetaMgr.NUM_PARTITIONS;
 			
 			partPlan = new RangePartitionPlan("ycsb_id", ElasqlYcsbConstants.RECORD_PER_PART *
 					numOfPartitions, numOfPartitions);
