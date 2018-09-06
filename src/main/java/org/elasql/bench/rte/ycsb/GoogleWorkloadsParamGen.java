@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.elasql.bench.util.ElasqlBenchProperties;
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
+import org.elasql.server.migration.MigrationManager;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.util.PeriodicalJob;
 import org.vanilladb.bench.Benchmarker;
@@ -30,7 +31,10 @@ public class GoogleWorkloadsParamGen implements TxParamGenerator {
 	private static final double DIST_TX_RATE;
 	private static final double SKEW_PARAMETER;
 
-	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
+//	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
+	private static final int NUM_PARTITIONS =
+			(MigrationManager.SCALING_FLAG && MigrationManager.IS_SCALING_OUT)?
+			PartitionMetaMgr.NUM_PARTITIONS - 1: PartitionMetaMgr.NUM_PARTITIONS;
 	private static final int DATA_SIZE = ElasqlYcsbConstants.RECORD_PER_PART * NUM_PARTITIONS;
 
 	private static final int TOTAL_READ_COUNT = 2;

@@ -42,12 +42,12 @@ public class YcsbMigrationManager extends MigrationManager {
 		return GoogleWorkloadsParamGen.WARMUP_TIME;
 //		return SingleSkewWorkloadsParamGen.WARMUP_TIME;
 //		return MultiTanentsParamGen.WARMUP_TIME;
-//		return 90 * 1000; // for scaling-out & consolidation
+//		return 120 * 1000; // for scaling-out & consolidation
 	}
 	
 	@Override
 	public long getMigrationPreiod() {
-		return 55 * 1000; // For Google workloads
+		return 100 * 1000; // For Google workloads
 //		return SingleSkewWorkloadsParamGen.CHANGING_PERIOD;
 //		return MultiTanentsParamGen.CHANGING_PERIOD;
 //		return 1000 * 1000; // for scaling-out & consolidation

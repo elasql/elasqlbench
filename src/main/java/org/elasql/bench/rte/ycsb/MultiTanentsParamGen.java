@@ -27,7 +27,8 @@ public class MultiTanentsParamGen implements TxParamGenerator {
 	private static final double RW_TX_RATE;
 	private static final double SKEW_PARAMETER;
 //	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
-	private static final int NUM_PARTITIONS = MigrationManager.IS_SCALING_OUT?
+	private static final int NUM_PARTITIONS =
+			(MigrationManager.SCALING_FLAG && MigrationManager.IS_SCALING_OUT)?
 			PartitionMetaMgr.NUM_PARTITIONS - 1: PartitionMetaMgr.NUM_PARTITIONS;
 	private static final int TANENTS_PER_PART = 4;
 	private static final int NUM_TANENTS = NUM_PARTITIONS * TANENTS_PER_PART;
