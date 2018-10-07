@@ -32,7 +32,7 @@ public class GoogleWorkloadsParamGen implements TxParamGenerator {
 	private static final double SKEW_PARAMETER;
 
 //	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
-	private static final int NUM_PARTITIONS = (MigrationMgr.ENABLE_PARTITION_CHANGE && MigrationMgr.IS_SCALING_OUT)?
+	private static final int NUM_PARTITIONS = (MigrationMgr.ENABLE_NODE_SCALING && MigrationMgr.IS_SCALING_OUT)?
 			PartitionMetaMgr.NUM_PARTITIONS - 1: PartitionMetaMgr.NUM_PARTITIONS;
 	private static final int DATA_SIZE = ElasqlYcsbConstants.RECORD_PER_PART * NUM_PARTITIONS;
 
