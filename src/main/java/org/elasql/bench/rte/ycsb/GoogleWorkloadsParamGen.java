@@ -33,7 +33,7 @@ public class GoogleWorkloadsParamGen implements TxParamGenerator {
 
 //	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
 	private static final int NUM_PARTITIONS =
-			(MigrationManager.SCALING_FLAG && MigrationManager.IS_SCALING_OUT)?
+			(MigrationManager.ENABLE_NODE_SCALING && MigrationManager.IS_SCALING_OUT)?
 			PartitionMetaMgr.NUM_PARTITIONS - 1: PartitionMetaMgr.NUM_PARTITIONS;
 	private static final int DATA_SIZE = ElasqlYcsbConstants.RECORD_PER_PART * NUM_PARTITIONS;
 
