@@ -40,6 +40,8 @@ public class MultiTanentsParamGen implements TxParamGenerator {
 	public static final long WARMUP_TIME = 60 * 1000;
 	public static final long CHANGING_PERIOD = 90 * 1000;
 	private static final double SKEW_RATIO = 0.9;
+	private static final long SENDING_DELAY = 0;
+//	private static final long SENDING_DELAY = 100;
 
 	private static final AtomicReference<YcsbLatestGenerator> STATIC_GEN_FOR_TANENT;
 
@@ -196,6 +198,14 @@ public class MultiTanentsParamGen implements TxParamGenerator {
 
 		// Insert count
 		paramList.add(0);
+		
+		if (SENDING_DELAY > 0) {
+			try {
+				Thread.sleep(SENDING_DELAY);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 
 		return paramList.toArray(new Object[0]);
 	}
