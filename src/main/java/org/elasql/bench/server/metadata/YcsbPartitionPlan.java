@@ -20,6 +20,8 @@ public class YcsbPartitionPlan extends PartitionPlan {
 			
 			// Range-based
 			return ycsbId / ElasqlYcsbConstants.MAX_RECORD_PER_PART;
+			// Hash-based
+//			return ycsbId % PartitionMetaMgr.NUM_PARTITIONS;
 		} else {
 			// Fully replicated
 			return Elasql.serverId();
