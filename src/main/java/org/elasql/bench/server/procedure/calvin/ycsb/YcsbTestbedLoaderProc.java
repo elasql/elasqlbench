@@ -67,7 +67,7 @@ public class YcsbTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 		VanillaDb.logMgr().removeAndCreateNewLog();
 
 		if (logger.isLoggable(Level.INFO))
-			logger.info("Loading procedure finished.");
+			logger.info("Loading procedure finished. " + loadedCount + " YCSB records are loaded.");
 
 	}
 	

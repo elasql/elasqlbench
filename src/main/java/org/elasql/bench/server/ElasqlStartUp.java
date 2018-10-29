@@ -7,6 +7,7 @@ import org.elasql.bench.server.metadata.MicroBenchMetisPartitionPlan;
 import org.elasql.bench.server.metadata.MicroBenchPartitionPlan;
 import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.bench.server.metadata.TpcePartitionPlan;
+import org.elasql.bench.server.metadata.YcsbMetisPartitionPlan;
 import org.elasql.bench.server.migraion.YcsbMigrationMgr;
 import org.elasql.bench.server.procedure.calvin.tpce.TpceStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.ycsb.YcsbStoredProcFactory;
@@ -14,6 +15,7 @@ import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.migration.MigrationMgr;
 import org.elasql.procedure.DdStoredProcedureFactory;
 import org.elasql.server.Elasql;
+import org.elasql.storage.metadata.HashPartitionPlan;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.elasql.storage.metadata.RangePartitionPlan;
@@ -26,7 +28,7 @@ public class ElasqlStartUp implements SutStartUp {
 	
 	// Metis
 	public static final boolean LOAD_METIS_PARTITIONS = false;
-	private static final String METIS_FILE_PATH = ""; 
+	private static final String METIS_FILE_PATH = "/opt/shared/metis-partitions/google-20/default/tail.part"; 
 	
 	private static String dbName;
 	private static int nodeId;
@@ -175,16 +177,21 @@ public class ElasqlStartUp implements SutStartUp {
 			partPlan = new TpcePartitionPlan();
 			break;
 		case YCSB:
-			// For normal situation
-//			partPlan = new YcsbPartitionPlan();
-//			if (LOAD_METIS_PARTITIONS)
-//				partPlan = new YcsbMetisPartitionPlan(partPlan, METIS_FILE_PATH);
-			// For elastic experiments
-			int numOfPartitions = (MigrationMgr.ENABLE_NODE_SCALING && MigrationMgr.IS_SCALING_OUT)?
-					PartitionMetaMgr.NUM_PARTITIONS - 1: PartitionMetaMgr.NUM_PARTITIONS;
+			if (MigrationMgr.ENABLE_NODE_SCALING) {
+				// For elastic experiments
+				int numOfPartitions = MigrationMgr.IS_SCALING_OUT?
+						PartitionMetaMgr.NUM_PARTITIONS - 1: PartitionMetaMgr.NUM_PARTITIONS;
+				partPlan = new RangePartitionPlan("ycsb_id", ElasqlYcsbConstants.RECORD_PER_PART *
+						numOfPartitions, numOfPartitions);
+			} else {
+//				partPlan =  new RangePartitionPlan("ycsb_id", ElasqlYcsbConstants.RECORD_PER_PART *
+//						PartitionMetaMgr.NUM_PARTITIONS, PartitionMetaMgr.NUM_PARTITIONS);
+				partPlan =  new HashPartitionPlan("ycsb_id");
+			}
 			
-			partPlan = new RangePartitionPlan("ycsb_id", ElasqlYcsbConstants.RECORD_PER_PART *
-					numOfPartitions, numOfPartitions);
+			if (LOAD_METIS_PARTITIONS)
+				partPlan = new YcsbMetisPartitionPlan(partPlan, METIS_FILE_PATH);
+			
 			break;
 		}
 		return partPlan;

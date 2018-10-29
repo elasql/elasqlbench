@@ -19,7 +19,7 @@ public class YcsbPartitionPlan extends PartitionPlan {
 			int ycsbId = Integer.parseInt((String) idCon.asJavaVal());
 			
 			// Range-based
-			return ycsbId / ElasqlYcsbConstants.MAX_RECORD_PER_PART;
+			return ycsbId / ElasqlYcsbConstants.RECORD_PER_PART;
 			// Hash-based
 //			return ycsbId % PartitionMetaMgr.NUM_PARTITIONS;
 		} else {

@@ -17,10 +17,7 @@ public class YcsbStoredProcFactory implements CalvinStoredProcedureFactory {
 				sp = new YcsbSchemaBuilderProc(txNum);
 				break;
 			case TESTBED_LOADER:
-				if (ElasqlStartUp.LOAD_METIS_PARTITIONS)
-					sp = new SchismYcsbTestbedLoader(txNum);
-				else
-					sp = new YcsbTestbedLoaderProc(txNum);
+				sp = new YcsbTestbedLoaderProc(txNum);
 				break;
 			case START_PROFILING:
 				sp = new StartProfilingProc(txNum);
