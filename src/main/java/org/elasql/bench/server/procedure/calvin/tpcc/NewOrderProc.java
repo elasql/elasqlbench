@@ -21,6 +21,7 @@ import java.util.Map;
 import org.elasql.bench.server.param.tpcc.NewOrderProcParamHelper;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
+import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.core.sql.BigIntConstant;
@@ -73,7 +74,7 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 	}
 
 	@Override
-	protected void prepareKeys() {
+	protected void prepareKeys(ReadWriteSetAnalyzer analyzer) {
 		Map<String, Constant> keyEntryMap = null;
 
 		// Construct constant from parameters
@@ -94,17 +95,17 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 		keyEntryMap = new HashMap<String, Constant>();
 		keyEntryMap.put("w_id", widCon);
 		warehouseKey = new RecordKey("warehouse", keyEntryMap);
-		addReadKey(warehouseKey);
+		analyzer.addReadKey(warehouseKey);
 
 		// SELECT ... FROM district WHERE d_w_id = wid AND d_id = did
 		keyEntryMap = new HashMap<String, Constant>();
 		keyEntryMap.put("d_w_id", widCon);
 		keyEntryMap.put("d_id", didCon);
 		districtKey = new RecordKey("district", keyEntryMap);
-		addReadKey(districtKey);
+		analyzer.addReadKey(districtKey);
 
 		// UPDATE ... WHERE d_w_id = wid AND d_id = did
-		addWriteKey(districtKey);
+		analyzer.addUpdateKey(districtKey);
 
 		// SELECT ... WHERE c_w_id = wid AND c_d_id = did AND c_id = cid
 		keyEntryMap = new HashMap<String, Constant>();
@@ -112,7 +113,7 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 		keyEntryMap.put("c_d_id", didCon);
 		keyEntryMap.put("c_id", cidCon);
 		customerKey = new RecordKey("customer", keyEntryMap);
-		addReadKey(customerKey);
+		analyzer.addReadKey(customerKey);
 
 		// INSERT INTO orders (o_id, o_w_id, o_d_id, ...) VALUES (nextOId, wid,
 		// did, ...)
@@ -121,7 +122,7 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 		keyEntryMap.put("o_d_id", didCon);
 		keyEntryMap.put("o_id", oidCon);
 		orderKey = new RecordKey("orders", keyEntryMap);
-		addInsertKey(orderKey);
+		analyzer.addInsertKey(orderKey);
 
 		// INSERT INTO new_order (no_o_id, no_w_id, no_d_id) VALUES
 		// (nextOId, wid, did)
@@ -130,7 +131,7 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 		keyEntryMap.put("no_d_id", didCon);
 		keyEntryMap.put("no_o_id", oidCon);
 		newOrderKey = new RecordKey("new_order", keyEntryMap);
-		addInsertKey(newOrderKey);
+		analyzer.addInsertKey(newOrderKey);
 
 		// =================== Keys for steps 2 ===================
 		int orderLineCount = paramHelper.getOlCount();
@@ -149,7 +150,7 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 			keyEntryMap = new HashMap<String, Constant>();
 			keyEntryMap.put("i_id", olIIdCon);
 			orderLineKeys[i][0] = new RecordKey("item", keyEntryMap);
-			addReadKey(orderLineKeys[i][0]);
+			analyzer.addReadKey(orderLineKeys[i][0]);
 
 			// SELECT ... FROM stock WHERE s_i_id = olIId AND s_w_id =
 			// olSupplyWId
@@ -157,10 +158,10 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 			keyEntryMap.put("s_i_id", olIIdCon);
 			keyEntryMap.put("s_w_id", supWidCon);
 			orderLineKeys[i][1] = new RecordKey("stock", keyEntryMap);
-			addReadKey(orderLineKeys[i][1]);
+			analyzer.addReadKey(orderLineKeys[i][1]);
 
 			// UPDATE ... WHERE s_i_id = olIId AND s_w_id = olSupplyWId
-			addWriteKey(orderLineKeys[i][1]);
+			analyzer.addUpdateKey(orderLineKeys[i][1]);
 
 			// INSERT INTO order_line (ol_o_id, ol_w_id, ol_d_id, ol_number,
 			// ...)
@@ -171,7 +172,7 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 			keyEntryMap.put("ol_w_id", widCon);
 			keyEntryMap.put("ol_number", olNumCon);
 			orderLineKeys[i][2] = new RecordKey("order_line", keyEntryMap);
-			addInsertKey(orderLineKeys[i][2]);
+			analyzer.addInsertKey(orderLineKeys[i][2]);
 		}
 	}
 

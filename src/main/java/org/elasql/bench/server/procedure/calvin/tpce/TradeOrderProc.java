@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
+import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.bench.server.param.tpce.TradeOrderParamHelper;
 import org.vanilladb.core.sql.BigIntConstant;
@@ -44,46 +45,46 @@ public class TradeOrderProc extends CalvinStoredProcedure<TradeOrderParamHelper>
 	}
 
 	@Override
-	protected void prepareKeys() {
+	protected void prepareKeys(ReadWriteSetAnalyzer analyzer) {
 		/***************** Construct Read Keys *******************/
 		// Customer Account
 		Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
 		keyEntryMap.put("ca_id", new BigIntConstant(paramHelper.getAcctId()));
 		cusAcctKey = new RecordKey("customer_account", keyEntryMap);
-		addReadKey(cusAcctKey);
+		analyzer.addReadKey(cusAcctKey);
 
 		// Customer
 		keyEntryMap = new HashMap<String, Constant>();
 		keyEntryMap
 				.put("c_id", new BigIntConstant(paramHelper.getCustomerId()));
 		customerKey = new RecordKey("customer", keyEntryMap);
-		addReadKey(customerKey);
+		analyzer.addReadKey(customerKey);
 
 		// Broker
 		keyEntryMap = new HashMap<String, Constant>();
 		keyEntryMap.put("b_id", new BigIntConstant(paramHelper.getBrokerId()));
 		brokerKey = new RecordKey("broker", keyEntryMap);
-		addReadKey(brokerKey);
+		analyzer.addReadKey(brokerKey);
 
 		// Security
 		keyEntryMap = new HashMap<String, Constant>();
 		keyEntryMap.put("s_symb", new VarcharConstant(paramHelper.getSymbol()));
 		securityKey = new RecordKey("security", keyEntryMap);
-		addReadKey(securityKey);
+		analyzer.addReadKey(securityKey);
 
 		// Last Trade
 		keyEntryMap = new HashMap<String, Constant>();
 		keyEntryMap.put("lt_s_symb",
 				new VarcharConstant(paramHelper.getSymbol()));
 		lastTradeKey = new RecordKey("last_trade", keyEntryMap);
-		addReadKey(lastTradeKey);
+		analyzer.addReadKey(lastTradeKey);
 
 		// Trade Type
 		keyEntryMap = new HashMap<String, Constant>();
 		keyEntryMap.put("tt_id",
 				new VarcharConstant(paramHelper.getTradeTypeId()));
 		tradeTypeKey = new RecordKey("trade_type", keyEntryMap);
-		addReadKey(tradeTypeKey);
+		analyzer.addReadKey(tradeTypeKey);
 
 		
 		/***************** Construct Write Keys *******************/
@@ -91,14 +92,14 @@ public class TradeOrderProc extends CalvinStoredProcedure<TradeOrderParamHelper>
 		keyEntryMap = new HashMap<String, Constant>();
 		keyEntryMap.put("t_id", new BigIntConstant(paramHelper.getTradeId()));
 		tradeKey = new RecordKey("trade", keyEntryMap);
-		addInsertKey(tradeKey);
+		analyzer.addInsertKey(tradeKey);
 
 		// Insert new history
 		keyEntryMap = new HashMap<String, Constant>();
 		keyEntryMap
 				.put("th_t_id", new BigIntConstant(paramHelper.getTradeId()));
 		tradeHistoryKey = new RecordKey("trade_history", keyEntryMap);
-		addInsertKey(tradeHistoryKey);
+		analyzer.addInsertKey(tradeHistoryKey);
 	}
 
 	@Override

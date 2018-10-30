@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
+import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.bench.server.param.tpce.TradeResultParamHelper;
 import org.vanilladb.core.sql.BigIntConstant;
@@ -36,39 +37,39 @@ public class TradeResultProc extends CalvinStoredProcedure<TradeResultParamHelpe
 	}
 
 	@Override
-	protected void prepareKeys() {
+	protected void prepareKeys(ReadWriteSetAnalyzer analyzer) {
 		// account
 		Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
 		keyEntryMap.put("ca_id", new BigIntConstant(paramHelper.getAcctId()));
 		cusAcctKey = new RecordKey("customer_account", keyEntryMap);
-		addReadKey(cusAcctKey);
-		addWriteKey(cusAcctKey);
+		analyzer.addReadKey(cusAcctKey);
+		analyzer.addUpdateKey(cusAcctKey);
 
 		// customer
 		keyEntryMap = new HashMap<String, Constant>();
 		keyEntryMap
 				.put("c_id", new BigIntConstant(paramHelper.getCustomerId()));
 		customerKey = new RecordKey("customer", keyEntryMap);
-		addReadKey(customerKey);
+		analyzer.addReadKey(customerKey);
 
 		// broker
 		keyEntryMap = new HashMap<String, Constant>();
 		keyEntryMap.put("b_id", new BigIntConstant(paramHelper.getBrokerId()));
 		brokerKey = new RecordKey("broker", keyEntryMap);
-		addReadKey(brokerKey);
+		analyzer.addReadKey(brokerKey);
 
 		// trade
 		keyEntryMap = new HashMap<String, Constant>();
 		keyEntryMap.put("t_id", new BigIntConstant(paramHelper.getTradeId()));
 		tradeKey = new RecordKey("trade", keyEntryMap);
-		addReadKey(tradeKey);
+		analyzer.addReadKey(tradeKey);
 
 		// insert new history
 		keyEntryMap = new HashMap<String, Constant>();
 		keyEntryMap
 				.put("th_t_id", new BigIntConstant(paramHelper.getTradeId()));
 		tradeHistoryKey = new RecordKey("trade_history", keyEntryMap);
-		addInsertKey(tradeHistoryKey);
+		analyzer.addInsertKey(tradeHistoryKey);
 	}
 
 	@Override

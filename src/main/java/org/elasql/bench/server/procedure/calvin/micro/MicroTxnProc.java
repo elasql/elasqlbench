@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
+import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.bench.server.param.micro.MicroTxnProcParamHelper;
 import org.vanilladb.core.sql.Constant;
@@ -35,7 +36,7 @@ public class MicroTxnProc extends CalvinStoredProcedure<MicroTxnProcParamHelper>
 	}
 
 	@Override
-	public void prepareKeys() {
+	public void prepareKeys(ReadWriteSetAnalyzer analyzer) {
 		// set read keys
 		for (int idx = 0; idx < paramHelper.getReadCount(); idx++) {
 			int iid = paramHelper.getReadItemId(idx);
@@ -44,7 +45,7 @@ public class MicroTxnProc extends CalvinStoredProcedure<MicroTxnProcParamHelper>
 			Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
 			keyEntryMap.put("i_id", new IntegerConstant(iid));
 			RecordKey key = new RecordKey("item", keyEntryMap);
-			addReadKey(key);
+			analyzer.addReadKey(key);
 		}
 
 		// set write keys
@@ -56,7 +57,7 @@ public class MicroTxnProc extends CalvinStoredProcedure<MicroTxnProcParamHelper>
 			Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
 			keyEntryMap.put("i_id", new IntegerConstant(iid));
 			RecordKey key = new RecordKey("item", keyEntryMap);
-			addWriteKey(key);
+			analyzer.addUpdateKey(key);
 
 			// Create key-value pairs for writing
 			Constant c = new DoubleConstant(newPrice);

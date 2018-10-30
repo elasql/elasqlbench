@@ -30,14 +30,7 @@ public class StartProfilingProc extends AllExecuteProcedure<StoredProcedureParam
 	}
 
 	@Override
-	protected void prepareKeys() {
-		// do nothing
-
-	}
-
-	@Override
 	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
 		Elasql.initAndStartProfiler();
-
 	}
 }

@@ -21,6 +21,7 @@ import java.util.Map;
 import org.elasql.bench.server.param.tpcc.PaymentProcParamHelper;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
+import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.core.sql.BigIntConstant;
@@ -66,7 +67,7 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 	private double Hamount;
 
 	@Override
-	protected void prepareKeys() {
+	protected void prepareKeys(ReadWriteSetAnalyzer analyzer) {
 		Map<String, Constant> keyEntryMap = null;
 		widCon = new IntegerConstant(paramHelper.getWid());
 		didCon = new IntegerConstant(paramHelper.getDid());
@@ -86,19 +87,19 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 		keyEntryMap = new HashMap<String, Constant>();
 		keyEntryMap.put("w_id", widCon);
 		warehouseKey = new RecordKey("warehouse", keyEntryMap);
-		addReadKey(warehouseKey);
+		analyzer.addReadKey(warehouseKey);
 		// UPDATE ... FROM warehous WHERE w_id = wid
-		addWriteKey(warehouseKey);
+		analyzer.addUpdateKey(warehouseKey);
 
 		// SELECT ... FROM district WHERE d_w_id = wid AND d_id = did
 		keyEntryMap = new HashMap<String, Constant>();
 		keyEntryMap.put("d_w_id", widCon);
 		keyEntryMap.put("d_id", didCon);
 		districtKey = new RecordKey("district", keyEntryMap);
-		addReadKey(districtKey);
+		analyzer.addReadKey(districtKey);
 
 		// UPDATE ... WHERE d_w_id = wid AND d_id = did
-		addWriteKey(districtKey);
+		analyzer.addUpdateKey(districtKey);
 
 		cidIntCon = new IntegerConstant(paramHelper.getcid());
 
@@ -109,11 +110,11 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 		keyEntryMap.put("c_d_id", cdidCon);
 		keyEntryMap.put("c_id", cidIntCon);
 		customerKey = new RecordKey("customer", keyEntryMap);
-		addReadKey(customerKey);
+		analyzer.addReadKey(customerKey);
 
 		// UPDATE ... FROM customer WHERE c_w_id = cwid AND c_d_id = cdid
 		// AND c_id = cidInt
-		addWriteKey(customerKey);
+		analyzer.addUpdateKey(customerKey);
 
 		// INSERT INTO history INSERT INTO history h_id, h_c_id, h_c_d_id,
 		// h_c_w_id,
@@ -124,7 +125,7 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 		keyEntryMap.put("h_c_d_id", cdidCon);
 		keyEntryMap.put("h_c_w_id", cwidCon);
 		historyKey = new RecordKey("history", keyEntryMap);
-		addInsertKey(historyKey);
+		analyzer.addInsertKey(historyKey);
 
 	}
 

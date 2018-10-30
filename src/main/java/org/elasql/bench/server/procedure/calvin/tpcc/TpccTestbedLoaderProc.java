@@ -23,6 +23,7 @@ import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmarker;
 import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.AllExecuteProcedure;
+import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
 import org.elasql.server.Elasql;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
@@ -44,7 +45,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 	}
 
 	@Override
-	protected void prepareKeys() {
+	protected void prepareKeys(ReadWriteSetAnalyzer analyzer) {
 		// do nothing
 		// XXX: We should lock those tables
 		// List<String> writeTables = Arrays.asList(paramHelper.getTables());

@@ -30,15 +30,8 @@ public class StopProfilingProc extends AllExecuteProcedure<StoredProcedureParamH
 	}
 
 	@Override
-	protected void prepareKeys() {
-		// do nothing
-
-	}
-
-	@Override
 	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
 		Elasql.stopProfilerAndReport();
-
 	}
 
 }

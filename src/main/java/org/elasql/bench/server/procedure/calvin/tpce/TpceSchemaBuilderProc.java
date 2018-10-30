@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.AllExecuteProcedure;
+import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.bench.server.param.tpce.TpceSchemaBuilderParamHelper;
 import org.vanilladb.core.server.VanillaDb;
@@ -33,7 +34,7 @@ public class TpceSchemaBuilderProc extends AllExecuteProcedure<TpceSchemaBuilder
 	}
 
 	@Override
-	protected void prepareKeys() {
+	protected void prepareKeys(ReadWriteSetAnalyzer analyzer) {
 		// Do nothing
 		// XXX: We should lock those tables
 		// localWriteTables.addAll(Arrays.asList(paramHelper.getTableNames()));
