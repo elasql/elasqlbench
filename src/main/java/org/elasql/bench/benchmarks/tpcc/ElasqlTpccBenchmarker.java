@@ -16,6 +16,7 @@
 package org.elasql.bench.benchmarks.tpcc;
 
 import org.elasql.bench.benchmarks.tpcc.rte.ElasqlTpccRte;
+import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.vanilladb.bench.StatisticMgr;
 import org.vanilladb.bench.benchmarks.tpcc.TpccBenchmarker;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
@@ -27,6 +28,12 @@ import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 public class ElasqlTpccBenchmarker extends TpccBenchmarker {
 	
 	private int nextWid = 0;
+	
+	private static final TpccPartitionPlan partPlan = new TpccPartitionPlan();
+	
+	public static TpccPartitionPlan getPartitionPlan() {
+		return partPlan;
+	}
 	
 	public ElasqlTpccBenchmarker(SutDriver sutDriver, int nodeId) {
 		super(sutDriver, Integer.toString(nodeId));

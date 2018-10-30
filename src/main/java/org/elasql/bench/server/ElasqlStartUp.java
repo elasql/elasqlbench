@@ -18,15 +18,15 @@ package org.elasql.bench.server;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.elasql.bench.server.metadata.MicroBenchPartitionMetaMgr;
-import org.elasql.bench.server.metadata.TpccPartitionMetaMgr;
-import org.elasql.bench.server.metadata.TpcePartitionMetaMgr;
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmarker;
+import org.elasql.bench.server.metadata.MicroBenchPartitionPlan;
+import org.elasql.bench.server.metadata.TpcePartitionPlan;
 import org.elasql.bench.server.procedure.calvin.micro.MicrobenchStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.tpcc.TpccStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.tpce.TpceStoredProcFactory;
 import org.elasql.procedure.DdStoredProcedureFactory;
 import org.elasql.server.Elasql;
-import org.elasql.storage.metadata.PartitionMetaMgr;
+import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.bench.BenchmarkerParameters;
 import org.vanilladb.bench.server.SutStartUp;
 
@@ -34,9 +34,9 @@ public class ElasqlStartUp implements SutStartUp {
 	private static Logger logger = Logger.getLogger(ElasqlStartUp.class
 			.getName());
 	
-	private static String dbName;
-	private static int nodeId;
-	private static boolean isSequencer;
+	private String dbName;
+	private int nodeId;
+	private boolean isSequencer;
 
 	public void startup(String[] args) {
 		if (logger.isLoggable(Level.INFO))
@@ -49,13 +49,13 @@ public class ElasqlStartUp implements SutStartUp {
 			System.out.println("Usage: ./startup [DB Name] [Node Id] ([Is Sequencer])");
 		}
 		
-		Elasql.init(dbName, nodeId, isSequencer, getStoredProcedureFactory(), getPartitionMetaMgr());
+		Elasql.init(dbName, nodeId, isSequencer, getStoredProcedureFactory(), getPartitionPlan());
 
 		if (logger.isLoggable(Level.INFO))
 			logger.info("ElaSQL server ready");
 	}
 	
-	private static void parseArguments(String[] args) throws IllegalArgumentException {
+	private void parseArguments(String[] args) throws IllegalArgumentException {
 		if (args.length < 2) {
 			throw new IllegalArgumentException("The number of arguments is less than 2");
 		}
@@ -147,19 +147,19 @@ public class ElasqlStartUp implements SutStartUp {
 		return factory;
 	}
 	
-	private PartitionMetaMgr getPartitionMetaMgr() {
-		PartitionMetaMgr metaMgr = null;
+	private PartitionPlan getPartitionPlan() {
+		PartitionPlan partPlan = null;
 		switch (BenchmarkerParameters.BENCH_TYPE) {
 		case MICRO:
-			metaMgr = new MicroBenchPartitionMetaMgr();
+			partPlan = new MicroBenchPartitionPlan();
 			break;
 		case TPCC:
-			metaMgr = new TpccPartitionMetaMgr();
+			partPlan = ElasqlTpccBenchmarker.getPartitionPlan();
 			break;
 		case TPCE:
-			metaMgr = new TpcePartitionMetaMgr();
+			partPlan = new TpcePartitionPlan();
 			break;
 		}
-		return metaMgr;
+		return partPlan;
 	}
 }
