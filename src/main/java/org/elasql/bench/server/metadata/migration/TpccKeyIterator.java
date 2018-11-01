@@ -1,5 +1,6 @@
 package org.elasql.bench.server.metadata.migration;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -12,7 +13,9 @@ import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.IntegerConstant;
 
-public class TpccKeyIterator implements Iterator<RecordKey> {
+public class TpccKeyIterator implements Iterator<RecordKey>, Serializable {
+	
+	private static final long serialVersionUID = 20181101001L;
 	
 	private enum Table {
 		WAREHOUSE, DISTRICT, CUSTOMER, HISTORY, NEW_ORDER, ORDERS, ORDER_LINE, STOCK, NONE;
@@ -67,6 +70,30 @@ public class TpccKeyIterator implements Iterator<RecordKey> {
 				maxOrderIds[wi][di] = NewOrderProc.getNextOrderId(wi + startWid, di + 1) - 1;
 				for (int ci = 0; ci < 3000; ci++)
 					maxHistoryIds[wi][di][ci] = PaymentProc.getNextHistoryId(wi + startWid, di + 1, ci + 1) - 1;
+			}
+	}
+	
+	public TpccKeyIterator(TpccKeyIterator iter) {
+		this.currentTable = iter.currentTable;
+		this.wid = iter.wid;
+		this.did = iter.did;
+		this.cid = iter.cid;
+		this.hid = iter.hid;
+		this.oid = iter.oid;
+		this.olnum = iter.olnum;
+		this.iid = iter.iid;
+		
+		this.startWid = iter.startWid;
+		this.endWid = iter.endWid;
+		int wcount = endWid - startWid + 1;
+		
+		maxOrderIds = new int[wcount][10];
+		maxHistoryIds = new int[wcount][10][3000];
+		for (int wi = 0; wi < wcount; wi++)
+			for (int di = 0; di < 10; di++) {
+				maxOrderIds[wi][di] = iter.maxOrderIds[wi][di];
+				for (int ci = 0; ci < 3000; ci++)
+					maxHistoryIds[wi][di][ci] = iter.maxHistoryIds[wi][di][ci];
 			}
 	}
 	
@@ -303,7 +330,7 @@ public class TpccKeyIterator implements Iterator<RecordKey> {
 		
 		// move to the next
 		hid++;
-		if (hid > maxHistoryIds[wid][did][cid]) {
+		if (hid > maxHistoryIds[wid - startWid][did - 1][cid - 1]) {
 			cid++;
 			hid = 1;
 			
@@ -336,7 +363,7 @@ public class TpccKeyIterator implements Iterator<RecordKey> {
 		
 		// move to the next
 		oid++;
-		if (oid > maxOrderIds[wid][did]) {
+		if (oid > maxOrderIds[wid - startWid][did - 1]) {
 			did++;
 			oid = TpccConstants.NEW_ORDER_START_ID;
 			
@@ -364,7 +391,7 @@ public class TpccKeyIterator implements Iterator<RecordKey> {
 		
 		// move to the next
 		oid++;
-		if (oid > maxOrderIds[wid][did]) {
+		if (oid > maxOrderIds[wid - startWid][did - 1]) {
 			did++;
 			oid = 1;
 			
@@ -398,7 +425,7 @@ public class TpccKeyIterator implements Iterator<RecordKey> {
 			oid++;
 			olnum = 1;
 		
-			if (oid > maxOrderIds[wid][did]) {
+			if (oid > maxOrderIds[wid - startWid][did - 1]) {
 				did++;
 				oid = 1;
 				

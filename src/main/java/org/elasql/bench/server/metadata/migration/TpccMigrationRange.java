@@ -3,11 +3,12 @@ package org.elasql.bench.server.metadata.migration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.migration.MigrationRange;
+import org.elasql.migration.MigrationRangeUpdate;
 import org.elasql.sql.RecordKey;
-import org.elasql.util.PeriodicalJob;
 
 public class TpccMigrationRange implements MigrationRange {
 	
@@ -16,7 +17,10 @@ public class TpccMigrationRange implements MigrationRange {
 	
 	private int sourcePartId, destPartId;
 	
-	private TpccKeyIterator keyIter;
+	private TpccKeyIterator unmigratedKeys;
+	private TpccKeyIterator chunkGenerator;
+	
+	// We does not remove the contents until the entire migration finishes
 	private Set<RecordKey> migratedKeys = new HashSet<RecordKey>();
 	private AtomicInteger migratedCounts = new AtomicInteger(0);
 	
@@ -26,14 +30,16 @@ public class TpccMigrationRange implements MigrationRange {
 		this.maxWid = maxWid;
 		this.sourcePartId = sourcePartId;
 		this.destPartId = destPartId;
-		this.keyIter = new TpccKeyIterator(minWid, maxWid - minWid + 1);
-
-		new PeriodicalJob(3000, 500000, new Runnable() {
-			@Override
-			public void run() {
-				System.out.println("" + migratedCounts.get() + " has been migrated for warehouse " + minWid);
-			}
-		}).start();
+		this.unmigratedKeys = new TpccKeyIterator(minWid, maxWid - minWid + 1);
+		this.chunkGenerator = new TpccKeyIterator(minWid, maxWid - minWid + 1);
+		
+		// Debug
+//		new PeriodicalJob(3000, 500000, new Runnable() {
+//			@Override
+//			public void run() {
+//				System.out.println("" + migratedCounts.get() + " has been migrated for warehouse " + minWid);
+//			}
+//		}).start();
 	}
 
 	@Override
@@ -44,30 +50,45 @@ public class TpccMigrationRange implements MigrationRange {
 	
 	public boolean isMigrated(RecordKey key) {
 		if (!migratedKeys.contains(key))
-			return !keyIter.isInSubsequentKeys(key);
+			return !unmigratedKeys.isInSubsequentKeys(key);
 		return true;
 	}
 	
 	public void setMigrated(RecordKey key) {
-		if (keyIter.isInSubsequentKeys(key)) {
+		if (unmigratedKeys.isInSubsequentKeys(key)) {
 			if (!migratedKeys.contains(key))
 				migratedCounts.incrementAndGet();
 			migratedKeys.add(key);
 		}
 	}
 	
+	// This may be called by another thread on the destination node
 	public Set<RecordKey> generateNextMigrationChunk(int maxChunkSize) {
 		Set<RecordKey> chunk = new HashSet<RecordKey>();
 		int chunkSize = 0;
 		
-		while (keyIter.hasNext() && chunkSize < maxChunkSize) {
-			RecordKey key = keyIter.next();
+		while (chunkGenerator.hasNext() && chunkSize < maxChunkSize) {
+			RecordKey key = chunkGenerator.next();
 			chunkSize += recordSize(key.getTableName());
 			chunk.add(key);
-			migratedKeys.remove(key);
 		}
 		
 		return chunk;
+	}
+
+	@Override
+	public MigrationRangeUpdate generateStatusUpdate() {
+		return new TpccMigrationRangeUpdate(minWid, new TpccKeyIterator(chunkGenerator));
+	}
+
+	@Override
+	public boolean updateMigrationStatus(MigrationRangeUpdate update) {
+		TpccMigrationRangeUpdate tpccUpdate = (TpccMigrationRangeUpdate) update;
+		if (tpccUpdate.minWid == minWid) {
+			unmigratedKeys = new TpccKeyIterator(tpccUpdate.unmigratedKeys);
+			return true;
+		} else
+			return false;
 	}
 
 	@Override
