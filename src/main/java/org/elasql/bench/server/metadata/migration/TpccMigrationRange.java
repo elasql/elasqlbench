@@ -2,10 +2,12 @@ package org.elasql.bench.server.metadata.migration;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.migration.MigrationRange;
 import org.elasql.sql.RecordKey;
+import org.elasql.util.PeriodicalJob;
 
 public class TpccMigrationRange implements MigrationRange {
 	
@@ -15,7 +17,8 @@ public class TpccMigrationRange implements MigrationRange {
 	private int sourcePartId, destPartId;
 	
 	private TpccKeyIterator keyIter;
-	private Set<RecordKey> migratedKeys;
+	private Set<RecordKey> migratedKeys = new HashSet<RecordKey>();
+	private AtomicInteger migratedCounts = new AtomicInteger(0);
 	
 	// Note: this can only be called from the scheduler
 	public TpccMigrationRange(int minWid, int maxWid, int sourcePartId, int destPartId) {
@@ -24,6 +27,13 @@ public class TpccMigrationRange implements MigrationRange {
 		this.sourcePartId = sourcePartId;
 		this.destPartId = destPartId;
 		this.keyIter = new TpccKeyIterator(minWid, maxWid - minWid + 1);
+
+		new PeriodicalJob(3000, 500000, new Runnable() {
+			@Override
+			public void run() {
+				System.out.println("" + migratedCounts.get() + " has been migrated for warehouse " + minWid);
+			}
+		}).start();
 	}
 
 	@Override
@@ -39,8 +49,11 @@ public class TpccMigrationRange implements MigrationRange {
 	}
 	
 	public void setMigrated(RecordKey key) {
-		if (keyIter.isInSubsequentKeys(key))
+		if (keyIter.isInSubsequentKeys(key)) {
+			if (!migratedKeys.contains(key))
+				migratedCounts.incrementAndGet();
 			migratedKeys.add(key);
+		}
 	}
 	
 	public Set<RecordKey> generateNextMigrationChunk(int maxChunkSize) {

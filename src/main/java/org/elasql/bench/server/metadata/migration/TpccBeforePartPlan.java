@@ -5,7 +5,7 @@ import org.elasql.storage.metadata.PartitionMetaMgr;
 
 public class TpccBeforePartPlan extends TpccPartitionPlan {
 	
-	public static final int NORMAL_WAREHOUSE_PER_PART = 10;
+	public static final int NORMAL_WAREHOUSE_PER_PART = 1;
 	
 	// "HOT_WAREHOUSE_PER_HOT_PART * NUM_HOT_PARTS" should be <= NUM_PARTITIONS
 	public static final int HOT_WAREHOUSE_PER_HOT_PART = 2;
@@ -27,7 +27,7 @@ public class TpccBeforePartPlan extends TpccPartitionPlan {
 	 * - Node 3 {31~40}
 	 */
 	public int getPartition(int wid) {
-		if (wid < MAX_NORMAL_WID)
+		if (wid <= MAX_NORMAL_WID)
 			return (wid - 1) / NORMAL_WAREHOUSE_PER_PART;
 		else
 			return (wid - MAX_NORMAL_WID - 1) % HOT_WAREHOUSE_PER_HOT_PART;

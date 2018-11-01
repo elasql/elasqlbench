@@ -18,6 +18,8 @@ package org.elasql.bench.benchmarks.tpcc.rte;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.vanilladb.bench.StatisticMgr;
 import org.vanilladb.bench.TransactionType;
@@ -29,6 +31,7 @@ import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 import org.vanilladb.bench.rte.TransactionExecutor;
 
 public class ElasqlTpccRte extends RemoteTerminalEmulator<TpccTransactionType> {
+	private static Logger logger = Logger.getLogger(ElasqlTpccRte.class.getName());
 	
 	private int homeWid;
 	private static Random txnTypeRandom;
@@ -36,6 +39,11 @@ public class ElasqlTpccRte extends RemoteTerminalEmulator<TpccTransactionType> {
 
 	public ElasqlTpccRte(SutConnection conn, StatisticMgr statMgr, int homeWarehouseId, int homeDistrictId) {
 		super(conn, statMgr);
+		
+		if (logger.isLoggable(Level.FINE))
+			logger.fine(String.format("TPCC RTE for warehouse %d, district %d is created.",
+					homeWarehouseId, homeDistrictId));
+		
 		homeWid = homeWarehouseId;
 		txnTypeRandom = new Random();
 		executors = new HashMap<TransactionType, TpccTxExecutor>();

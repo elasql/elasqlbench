@@ -90,7 +90,7 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 		keyEntryMap.put("w_id", widCon);
 		warehouseKey = new RecordKey("warehouse", keyEntryMap);
 		analyzer.addReadKey(warehouseKey);
-		// UPDATE ... FROM warehous WHERE w_id = wid
+		// UPDATE ... FROM warehouse WHERE w_id = wid
 		analyzer.addUpdateKey(warehouseKey);
 
 		// SELECT ... FROM district WHERE d_w_id = wid AND d_id = did

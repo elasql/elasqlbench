@@ -27,7 +27,6 @@ import org.elasql.bench.server.procedure.calvin.micro.MicrobenchStoredProcFactor
 import org.elasql.bench.server.procedure.calvin.tpcc.TpccStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.tpce.TpceStoredProcFactory;
 import org.elasql.migration.MigrationMgr;
-import org.elasql.migration.MigrationSystemController;
 import org.elasql.procedure.DdStoredProcedureFactory;
 import org.elasql.server.Elasql;
 import org.elasql.storage.metadata.PartitionPlan;
@@ -54,7 +53,7 @@ public class ElasqlStartUp implements SutStartUp {
 		}
 		
 		Elasql.init(dbName, nodeId, isSequencer, getStoredProcedureFactory(), getPartitionPlan(),
-				getMigrationMgr(), getMigrationSystemController());
+				getMigrationMgr(), getMigrationSystemControllerCls());
 
 		if (logger.isLoggable(Level.INFO))
 			logger.info("ElaSQL server ready");
@@ -182,17 +181,17 @@ public class ElasqlStartUp implements SutStartUp {
 		return migraMgr;
 	}
 	
-	private MigrationSystemController getMigrationSystemController() {
-		MigrationSystemController sysCon = null;
+	private Class<?> getMigrationSystemControllerCls() {
+		Class<?> sysConCls = null;
 		switch (BenchmarkerParameters.BENCH_TYPE) {
 		case MICRO:
 			throw new UnsupportedOperationException("No Micro for now");
 		case TPCC:
-			sysCon = new TpccMigrationSystemController();
+			sysConCls = TpccMigrationSystemController.class;
 			break;
 		case TPCE:
 			throw new UnsupportedOperationException("No TPC-E for now");
 		}
-		return sysCon;
+		return sysConCls;
 	}
 }
