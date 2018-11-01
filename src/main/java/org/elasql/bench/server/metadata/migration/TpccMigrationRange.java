@@ -78,7 +78,8 @@ public class TpccMigrationRange implements MigrationRange {
 
 	@Override
 	public MigrationRangeUpdate generateStatusUpdate() {
-		return new TpccMigrationRangeUpdate(minWid, new TpccKeyIterator(chunkGenerator));
+		return new TpccMigrationRangeUpdate(sourcePartId, destPartId,
+				minWid, new TpccKeyIterator(chunkGenerator));
 	}
 
 	@Override

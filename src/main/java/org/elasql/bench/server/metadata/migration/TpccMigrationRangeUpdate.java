@@ -10,10 +10,23 @@ public class TpccMigrationRangeUpdate implements MigrationRangeUpdate, Serializa
 	
 	int minWid;
 	TpccKeyIterator unmigratedKeys;
+	int sourcePartId, destPartId;
 	
-	TpccMigrationRangeUpdate(int minWid, TpccKeyIterator unmigratedKeys) {
+	TpccMigrationRangeUpdate(int sourcePartId, int destPartId,
+			int minWid, TpccKeyIterator unmigratedKeys) {
 		this.minWid = minWid;
 		this.unmigratedKeys = unmigratedKeys;
+		this.sourcePartId = sourcePartId;
+		this.destPartId = destPartId;
+	}
+	
+	@Override
+	public int getSourcePartId() {
+		return sourcePartId;
 	}
 
+	@Override
+	public int getDestPartId() {
+		return destPartId;
+	}
 }
