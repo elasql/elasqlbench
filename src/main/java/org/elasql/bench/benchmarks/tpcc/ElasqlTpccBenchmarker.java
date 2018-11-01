@@ -17,6 +17,7 @@ package org.elasql.bench.benchmarks.tpcc;
 
 import org.elasql.bench.benchmarks.tpcc.rte.ElasqlTpccRte;
 import org.elasql.bench.server.metadata.TpccPartitionPlan;
+import org.elasql.bench.server.metadata.migration.TpccBeforePartPlan;
 import org.vanilladb.bench.StatisticMgr;
 import org.vanilladb.bench.benchmarks.tpcc.TpccBenchmarker;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
@@ -27,12 +28,19 @@ import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 
 public class ElasqlTpccBenchmarker extends TpccBenchmarker {
 	
+	public static final boolean ENABLE_MIGRATION_TEST = true;
+	
 	private int nextWid = 0;
 	
-	private static final TpccPartitionPlan partPlan = new TpccPartitionPlan();
+	private static final TpccPartitionPlan partPlan = 
+			ENABLE_MIGRATION_TEST? new TpccBeforePartPlan() : new TpccPartitionPlan();
 	
 	public static TpccPartitionPlan getPartitionPlan() {
 		return partPlan;
+	}
+	
+	public static int getNumOfWarehouses() {
+		return partPlan.numOfWarehouses();
 	}
 	
 	public ElasqlTpccBenchmarker(SutDriver sutDriver, int nodeId) {
@@ -43,6 +51,7 @@ public class ElasqlTpccBenchmarker extends TpccBenchmarker {
 	protected RemoteTerminalEmulator<TpccTransactionType> createRte(SutConnection conn, StatisticMgr statMgr) {
 		// NOTE: We use a customized version of TpccRte here
 		ElasqlTpccRte rte = new ElasqlTpccRte(conn, statMgr, nextWid / 10 + 1, nextWid % 10 + 1);
+		// TODO: Add for migrations
 		nextWid = (nextWid + 1) % TpccConstants.NUM_WAREHOUSES;
 		return rte;
 	}

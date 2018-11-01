@@ -18,6 +18,7 @@ package org.elasql.bench.server.procedure.calvin.tpcc;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmarker;
 import org.elasql.bench.server.param.tpcc.NewOrderProcParamHelper;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
@@ -54,11 +55,16 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 	// for this to be used in prepareKeys()
 	private static int[] distrOIds;
 	static {
-		distrOIds = new int[TpccConstants.NUM_WAREHOUSES * TpccConstants.DISTRICTS_PER_WAREHOUSE + 100];
+		int warehouseCount = ElasqlTpccBenchmarker.getNumOfWarehouses();
+		distrOIds = new int[warehouseCount * TpccConstants.DISTRICTS_PER_WAREHOUSE + 100];
 		for (int i = 0; i < distrOIds.length; i++)
 			distrOIds[i] = 3001;
 	}
 	private int fakeOid;
+	
+	public static int getNextOrderId(int wid, int did)  {
+		return distrOIds[(wid - 1) * 10 + did - 1];
+	}
 
 	// Record keys for retrieving data
 	private RecordKey warehouseKey, districtKey, customerKey;

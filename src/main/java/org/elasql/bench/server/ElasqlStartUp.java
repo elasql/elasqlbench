@@ -21,9 +21,13 @@ import java.util.logging.Logger;
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmarker;
 import org.elasql.bench.server.metadata.MicroBenchPartitionPlan;
 import org.elasql.bench.server.metadata.TpcePartitionPlan;
+import org.elasql.bench.server.migration.tpcc.TpccMigrationMgr;
+import org.elasql.bench.server.migration.tpcc.TpccMigrationSystemController;
 import org.elasql.bench.server.procedure.calvin.micro.MicrobenchStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.tpcc.TpccStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.tpce.TpceStoredProcFactory;
+import org.elasql.migration.MigrationMgr;
+import org.elasql.migration.MigrationSystemController;
 import org.elasql.procedure.DdStoredProcedureFactory;
 import org.elasql.server.Elasql;
 import org.elasql.storage.metadata.PartitionPlan;
@@ -49,7 +53,8 @@ public class ElasqlStartUp implements SutStartUp {
 			System.out.println("Usage: ./startup [DB Name] [Node Id] ([Is Sequencer])");
 		}
 		
-		Elasql.init(dbName, nodeId, isSequencer, getStoredProcedureFactory(), getPartitionPlan());
+		Elasql.init(dbName, nodeId, isSequencer, getStoredProcedureFactory(), getPartitionPlan(),
+				getMigrationMgr(), getMigrationSystemController());
 
 		if (logger.isLoggable(Level.INFO))
 			logger.info("ElaSQL server ready");
@@ -161,5 +166,33 @@ public class ElasqlStartUp implements SutStartUp {
 			break;
 		}
 		return partPlan;
+	}
+	
+	private MigrationMgr getMigrationMgr() {
+		MigrationMgr migraMgr = null;
+		switch (BenchmarkerParameters.BENCH_TYPE) {
+		case MICRO:
+			throw new UnsupportedOperationException("No Micro for now");
+		case TPCC:
+			migraMgr = new TpccMigrationMgr();
+			break;
+		case TPCE:
+			throw new UnsupportedOperationException("No TPC-E for now");
+		}
+		return migraMgr;
+	}
+	
+	private MigrationSystemController getMigrationSystemController() {
+		MigrationSystemController sysCon = null;
+		switch (BenchmarkerParameters.BENCH_TYPE) {
+		case MICRO:
+			throw new UnsupportedOperationException("No Micro for now");
+		case TPCC:
+			sysCon = new TpccMigrationSystemController();
+			break;
+		case TPCE:
+			throw new UnsupportedOperationException("No TPC-E for now");
+		}
+		return sysCon;
 	}
 }

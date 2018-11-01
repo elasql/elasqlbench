@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.elasql.bench.benchmarks.tpcc.rte;
 
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmarker;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
 import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
@@ -24,6 +25,7 @@ public class NewOrderParamGen implements TpccTxParamGenerator {
 
 	private int homeWid, homeDid;
 	private TpccValueGenerator valueGen = new TpccValueGenerator();
+	private int numOfWarehouses = ElasqlTpccBenchmarker.getNumOfWarehouses();
 
 	public NewOrderParamGen(int homeWarehouseId, int homeDistrictId) {
 		homeWid = homeWarehouseId;
@@ -55,7 +57,8 @@ public class NewOrderParamGen implements TpccTxParamGenerator {
 		pars[0] = homeWid;
 		pars[1] = homeDid;
 		pars[2] = valueGen.NURand(TpccValueGenerator.NU_CID, 1, TpccConstants.CUSTOMERS_PER_DISTRICT);
-		int olCount = valueGen.number(5, 15);
+//		int olCount = valueGen.number(5, 15);
+		int olCount = 10;
 		pars[3] = olCount;
 
 		for (int i = 0; i < olCount; i++) {
@@ -71,8 +74,8 @@ public class NewOrderParamGen implements TpccTxParamGenerator {
 
 			// TODO: Verify this
 			// ol_supply_w_id. 1% of items are supplied by remote warehouse
-			if (valueGen.rng().nextDouble() < 0.05 && TpccConstants.NUM_WAREHOUSES > 1) {
-				pars[++j] = valueGen.numberExcluding(1, TpccConstants.NUM_WAREHOUSES, homeWid);
+			if (valueGen.rng().nextDouble() < 0.05 && numOfWarehouses > 1) {
+				pars[++j] = valueGen.numberExcluding(1, numOfWarehouses, homeWid);
 				allLocal = false;
 			} else
 				pars[++j] = homeWid;

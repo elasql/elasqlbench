@@ -18,6 +18,7 @@ package org.elasql.bench.server.procedure.calvin.tpcc;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmarker;
 import org.elasql.bench.server.param.tpcc.PaymentProcParamHelper;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
@@ -37,8 +38,9 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 	// TODO: This should be another way to solve the problem
 	private static int[][][] historyIds;
 	static {
-		historyIds = new int[TpccConstants.NUM_WAREHOUSES][TpccConstants.DISTRICTS_PER_WAREHOUSE][TpccConstants.CUSTOMERS_PER_DISTRICT];
-		for (int i = 0; i < TpccConstants.NUM_WAREHOUSES; i++)
+		int warehouseCount = ElasqlTpccBenchmarker.getNumOfWarehouses();
+		historyIds = new int[warehouseCount][TpccConstants.DISTRICTS_PER_WAREHOUSE][TpccConstants.CUSTOMERS_PER_DISTRICT];
+		for (int i = 0; i < warehouseCount; i++)
 			for (int j = 0; j < TpccConstants.DISTRICTS_PER_WAREHOUSE; j++)
 				for (int k = 0; k < TpccConstants.CUSTOMERS_PER_DISTRICT; k++)
 					historyIds[i][j][k] = 2;
