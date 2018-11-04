@@ -21,12 +21,11 @@ import java.util.logging.Logger;
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmarker;
 import org.elasql.bench.server.metadata.MicroBenchPartitionPlan;
 import org.elasql.bench.server.metadata.TpcePartitionPlan;
-import org.elasql.bench.server.migration.tpcc.TpccMigrationMgr;
-import org.elasql.bench.server.migration.tpcc.TpccMigrationSystemController;
+import org.elasql.bench.server.migration.tpcc.TpccMigrationComponentFactory;
 import org.elasql.bench.server.procedure.calvin.micro.MicrobenchStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.tpcc.TpccStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.tpce.TpceStoredProcFactory;
-import org.elasql.migration.MigrationMgr;
+import org.elasql.migration.MigrationComponentFactory;
 import org.elasql.procedure.DdStoredProcedureFactory;
 import org.elasql.server.Elasql;
 import org.elasql.storage.metadata.PartitionPlan;
@@ -53,7 +52,7 @@ public class ElasqlStartUp implements SutStartUp {
 		}
 		
 		Elasql.init(dbName, nodeId, isSequencer, getStoredProcedureFactory(), getPartitionPlan(),
-				getMigrationMgr(), getMigrationSystemControllerCls());
+				getMigrationComponentFactory());
 
 		if (logger.isLoggable(Level.INFO))
 			logger.info("ElaSQL server ready");
@@ -167,31 +166,17 @@ public class ElasqlStartUp implements SutStartUp {
 		return partPlan;
 	}
 	
-	private MigrationMgr getMigrationMgr() {
-		MigrationMgr migraMgr = null;
+	private MigrationComponentFactory getMigrationComponentFactory() {
+		MigrationComponentFactory comFactory = null;
 		switch (BenchmarkerParameters.BENCH_TYPE) {
 		case MICRO:
 			throw new UnsupportedOperationException("No Micro for now");
 		case TPCC:
-			migraMgr = new TpccMigrationMgr();
+			comFactory = new TpccMigrationComponentFactory();
 			break;
 		case TPCE:
 			throw new UnsupportedOperationException("No TPC-E for now");
 		}
-		return migraMgr;
-	}
-	
-	private Class<?> getMigrationSystemControllerCls() {
-		Class<?> sysConCls = null;
-		switch (BenchmarkerParameters.BENCH_TYPE) {
-		case MICRO:
-			throw new UnsupportedOperationException("No Micro for now");
-		case TPCC:
-			sysConCls = TpccMigrationSystemController.class;
-			break;
-		case TPCE:
-			throw new UnsupportedOperationException("No TPC-E for now");
-		}
-		return sysConCls;
+		return comFactory;
 	}
 }
