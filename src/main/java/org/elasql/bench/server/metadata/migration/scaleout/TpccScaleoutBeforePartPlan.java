@@ -1,4 +1,4 @@
-package org.elasql.bench.server.metadata.migration;
+package org.elasql.bench.server.metadata.migration.scaleout;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,17 +8,20 @@ import java.util.Map;
 import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 
-public class TpccBeforePartPlan extends TpccPartitionPlan {
+public class TpccScaleoutBeforePartPlan extends TpccPartitionPlan {
 	
+	public static final int NUM_HOT_PARTS = 3;
+	public static final int HOT_WAREHOUSE_PER_HOT_PART = 2;
+	
+	// we wish to distribute the hot warehouses to the empty partitions
+	// each empty partition should get one hot warehouse.
+	public static final int NUM_EMPTY_PARTS = NUM_HOT_PARTS * HOT_WAREHOUSE_PER_HOT_PART;
+	public static final int NUM_NORMAL_PARTS = PartitionMetaMgr.NUM_PARTITIONS - NUM_HOT_PARTS - NUM_EMPTY_PARTS;
+
 	public static final int NORMAL_WAREHOUSE_PER_PART = 10;
 	
-	// "HOT_WAREHOUSE_PER_HOT_PART * NUM_HOT_PARTS" should be <= NUM_PARTITIONS
-	public static final int HOT_WAREHOUSE_PER_HOT_PART = 3; // Test Set 4
-//	public static final int HOT_WAREHOUSE_PER_HOT_PART = 2; // Test Set 3
-	public static final int NUM_HOT_PARTS = 2;
-	
 	public static final int MAX_NORMAL_WID = NORMAL_WAREHOUSE_PER_PART
-			* PartitionMetaMgr.NUM_PARTITIONS;
+			* (NUM_HOT_PARTS + NUM_NORMAL_PARTS);
 	
 	public int numOfWarehouses() {
 		return MAX_NORMAL_WID +
@@ -26,11 +29,10 @@ public class TpccBeforePartPlan extends TpccPartitionPlan {
 	}
 	
 	/**
-	 * E.g. 4 Nodes:
-	 * - Node 0 {1~10,41,43}
-	 * - Node 1 {11~20,42,44}
-	 * - Node 2 {21~30}
-	 * - Node 3 {31~40}
+	 * E.g. 3 Nodes:
+	 * - Node 0 {1~10,21}
+	 * - Node 1 {11~20}
+	 * - Node 2 {}
 	 */
 	public int getPartition(int wid) {
 		if (wid <= MAX_NORMAL_WID)

@@ -92,13 +92,13 @@ public class MicroTestbedLoaderProc extends AllExecuteProcedure<TestbedLoaderPar
 			logger.info("Create tables...");
 		
 		for (String cmd : paramHelper.getTableSchemas())
-			VanillaDb.newPlanner().executeUpdate(cmd, tx);
+			VanillaDb.newPlanner().executeUpdate(cmd, getTransaction());
 		
 		if (logger.isLoggable(Level.FINE))
 			logger.info("Create indexes...");
 
 		for (String cmd : paramHelper.getIndexSchemas())
-			VanillaDb.newPlanner().executeUpdate(cmd, tx);
+			VanillaDb.newPlanner().executeUpdate(cmd, getTransaction());
 		
 		if (logger.isLoggable(Level.FINE))
 			logger.info("Finish creating schemas.");
@@ -124,7 +124,7 @@ public class MicroTestbedLoaderProc extends AllExecuteProcedure<TestbedLoaderPar
 			sql = "INSERT INTO item(i_id, i_im_id, i_name, i_price, i_data) VALUES (" + iid + ", " + iimid + ", '"
 					+ iname + "', " + iprice + ", '" + idata + "' )";
 
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
 				throw new RuntimeException();
 		}

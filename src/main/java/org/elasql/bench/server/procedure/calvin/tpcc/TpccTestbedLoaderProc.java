@@ -54,8 +54,9 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 
 	@Override
 	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
+		TpccPartitionPlan partPlan = ElasqlTpccBenchmarker.getPartitionPlan();
 		if (logger.isLoggable(Level.INFO))
-			logger.info("Start loading testbed...");
+			logger.info("Start loading testbed. Using partition plan: " + partPlan);
 
 		// turn off logging set value to speed up loading process
 		// TODO: remove this hack code in the future
@@ -65,7 +66,6 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 		generateItems(1, TpccConstants.NUM_ITEMS);
 
 		// Generate warehouse
-		TpccPartitionPlan partPlan = ElasqlTpccBenchmarker.getPartitionPlan();
 		for (int wid = 1; wid <= partPlan.numOfWarehouses(); wid++) {
 			if (partPlan.getPartition(wid) == Elasql.serverId())
 				generateWarehouseInstance(wid);
@@ -121,7 +121,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 			sql = "INSERT INTO item(i_id, i_im_id, i_name, i_price, i_data) VALUES (" + iid + ", " + iimid + ", '"
 					+ iname + "', " + DoublePlainPrinter.toPlainString(iprice) + ", '" + idata + "' )";
 
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
 				throw new RuntimeException();
 		}
@@ -176,7 +176,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 		sb.append("', '").append(wcity).append("', '").append(wstate);
 		sb.append("', '").append(wzip).append("', ").append(DoublePlainPrinter.toPlainString(wtax));
 		sb.append(", ").append(DoublePlainPrinter.toPlainString(wytd)).append(" )");
-		int result = VanillaDb.newPlanner().executeUpdate(sb.toString(), tx);
+		int result = VanillaDb.newPlanner().executeUpdate(sb.toString(), getTransaction());
 		if (result <= 0)
 			throw new RuntimeException();
 	}
@@ -210,7 +210,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 					+ "s_ytd, s_order_cnt, s_remote_cnt, s_data) VALUES (" + siid + ", " + swid + ", " + squantity
 					+ ", '" + sd1 + "', '" + sd2 + "', '" + sd3 + "', '" + sd4 + "', '" + sd5 + "', '" + sd6 + "', '"
 					+ sd7 + "', '" + sd8 + "', '" + sd9 + "', '" + sd10 + "', 0, 0, 0, '" + sdata + "')";
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
 				throw new RuntimeException();
 		}
@@ -238,7 +238,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 					+ "', '" + dst2 + "', '" + dcity + "', '" + dstate + "', '" + dzip + "', "
 					+ DoublePlainPrinter.toPlainString(dtax) + ", " + DoublePlainPrinter.toPlainString(dytd) + ", "
 					+ (TpccConstants.CUSTOMERS_PER_DISTRICT + 1) + ")";
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
 				throw new RuntimeException();
 		}
@@ -288,7 +288,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 					+ DoublePlainPrinter.toPlainString(cbal) + ", " + DoublePlainPrinter.toPlainString(cytdpay)
 					+ ", 1, 0, '" + cdata + "')";
 
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
 				throw new RuntimeException();
 		}
@@ -310,7 +310,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 					+ "h_d_id,h_w_id, h_date, h_amount, h_data ) VALUES (1, " + hcid + ", " + did + "," + wid + ","
 					+ did + "," + wid + "," + hdate + "," + DoublePlainPrinter.toPlainString(hamount) + ", '" + hdata
 					+ "')";
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
 				throw new RuntimeException();
 		}
@@ -335,7 +335,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 					+ "o_w_id, o_entry_d, o_carrier_id, o_ol_cnt, o_all_local) VALUES (" + oid + ", " + ocid + ", "
 					+ did + "," + wid + "," + oenrtyd + "," + ocarid + ", " + ol_cnt + ",1)";
 
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
 				throw new RuntimeException();
 
@@ -367,7 +367,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 					+ "," + warehouseId + "," + olnum + "," + oliid + ", " + warehouseId + ", " + oldeld + ", 5, "
 					+ DoublePlainPrinter.toPlainString(olamount) + ", '" + oldistinfo + "')";
 
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
 				throw new RuntimeException();
 		}
@@ -379,7 +379,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 			nooid = i;
 			String sql = "INSERT INTO new_order(no_o_id, no_d_id, no_w_id) VALUES (" + nooid + "," + did + "," + wid
 					+ ")";
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
 				throw new RuntimeException();
 		}

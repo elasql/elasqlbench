@@ -40,9 +40,9 @@ public class TpccSchemaBuilderProc extends AllExecuteProcedure<TpccSchemaBuilder
 	@Override
 	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
 		for (String cmd : paramHelper.getTableSchemas())
-			VanillaDb.newPlanner().executeUpdate(cmd, tx);
+			VanillaDb.newPlanner().executeUpdate(cmd, getTransaction());
 		for (String cmd : paramHelper.getIndexSchemas())
-			VanillaDb.newPlanner().executeUpdate(cmd, tx);
+			VanillaDb.newPlanner().executeUpdate(cmd, getTransaction());
 
 	}
 }

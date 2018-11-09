@@ -1,4 +1,4 @@
-package org.elasql.bench.server.metadata.migration;
+package org.elasql.bench.server.migration.tpcc;
 
 import java.io.Serializable;
 

@@ -1,42 +1,28 @@
-package org.elasql.bench.server.metadata.migration;
+package org.elasql.bench.server.metadata.migration.scaleout;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 
-public class TpccBeforePartPlan extends TpccPartitionPlan {
+public class TpccScaleoutAfterPartPlan extends TpccScaleoutBeforePartPlan implements Serializable {
 	
-	public static final int NORMAL_WAREHOUSE_PER_PART = 10;
-	
-	// "HOT_WAREHOUSE_PER_HOT_PART * NUM_HOT_PARTS" should be <= NUM_PARTITIONS
-	public static final int HOT_WAREHOUSE_PER_HOT_PART = 3; // Test Set 4
-//	public static final int HOT_WAREHOUSE_PER_HOT_PART = 2; // Test Set 3
-	public static final int NUM_HOT_PARTS = 2;
-	
-	public static final int MAX_NORMAL_WID = NORMAL_WAREHOUSE_PER_PART
-			* PartitionMetaMgr.NUM_PARTITIONS;
-	
-	public int numOfWarehouses() {
-		return MAX_NORMAL_WID +
-				HOT_WAREHOUSE_PER_HOT_PART * NUM_HOT_PARTS;
-	}
-	
+	private static final long serialVersionUID = 20181031001l;
+
 	/**
-	 * E.g. 4 Nodes:
-	 * - Node 0 {1~10,41,43}
-	 * - Node 1 {11~20,42,44}
-	 * - Node 2 {21~30}
-	 * - Node 3 {31~40}
+	 * E.g. 3 Nodes:
+	 * - Node 0 {1~10}
+	 * - Node 1 {11~20}
+	 * - Node 2 {21}
 	 */
 	public int getPartition(int wid) {
 		if (wid <= MAX_NORMAL_WID)
 			return (wid - 1) / NORMAL_WAREHOUSE_PER_PART;
 		else
-			return (wid - MAX_NORMAL_WID - 1) % NUM_HOT_PARTS;
+			return (wid - MAX_NORMAL_WID - 1) % NUM_EMPTY_PARTS + (NUM_HOT_PARTS + NUM_NORMAL_PARTS);
 	}
 	
 	@Override
@@ -47,7 +33,7 @@ public class TpccBeforePartPlan extends TpccPartitionPlan {
 		
 		for (int wid = 1; wid <= numOfWarehouses(); wid++)
 			wids.get(getPartition(wid)).add(wid);
-
+		
 		StringBuilder sb = new StringBuilder("TPC-C Plan: { Warehouse Ids:");
 		for (int partId = 0; partId < PartitionMetaMgr.NUM_PARTITIONS; partId++) {
 			sb.append(String.format("Part %d:[", partId));

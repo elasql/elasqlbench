@@ -46,9 +46,9 @@ public class TpceSchemaBuilderProc extends AllExecuteProcedure<TpceSchemaBuilder
 			logger.info("Create schema for tpce testbed...");
 		
 		for (String cmd : paramHelper.getTableSchemas())
-			VanillaDb.newPlanner().executeUpdate(cmd, tx);
+			VanillaDb.newPlanner().executeUpdate(cmd, getTransaction());
 		for (String cmd : paramHelper.getIndexSchemas())
-			VanillaDb.newPlanner().executeUpdate(cmd, tx);
+			VanillaDb.newPlanner().executeUpdate(cmd, getTransaction());
 
 	}
 }

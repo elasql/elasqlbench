@@ -1,9 +1,8 @@
-package org.elasql.bench.server.metadata.migration;
+package org.elasql.bench.server.migration.tpcc;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.migration.MigrationRange;
@@ -34,7 +33,7 @@ public class TpccMigrationRange implements MigrationRange {
 		this.chunkGenerator = new TpccKeyIterator(minWid, maxWid - minWid + 1);
 		
 		// Debug
-//		new PeriodicalJob(3000, 500000, new Runnable() {
+//		new PeriodicalJob(3000, 1500000, new Runnable() {
 //			@Override
 //			public void run() {
 //				System.out.println("" + migratedCounts.get() + " has been migrated for warehouse " + minWid);
@@ -63,13 +62,22 @@ public class TpccMigrationRange implements MigrationRange {
 	}
 	
 	// This may be called by another thread on the destination node
-	public Set<RecordKey> generateNextMigrationChunk(int maxChunkSize) {
+	/**
+	 * If 'useBytesForSize' is enabled, it will use the bytes to represent the chunk size. If not,
+	 * it will use the number of records. 
+	 */
+	public Set<RecordKey> generateNextMigrationChunk(boolean useBytesForSize, int maxChunkSize) {
 		Set<RecordKey> chunk = new HashSet<RecordKey>();
 		int chunkSize = 0;
 		
 		while (chunkGenerator.hasNext() && chunkSize < maxChunkSize) {
 			RecordKey key = chunkGenerator.next();
-			chunkSize += recordSize(key.getTableName());
+			
+			if (useBytesForSize)
+				chunkSize += recordSize(key.getTableName());
+			else
+				chunkSize++;
+			
 			chunk.add(key);
 		}
 		

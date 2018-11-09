@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.elasql.migration.MigrationRange;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 
 public class TpccAfterPartPlan extends TpccBeforePartPlan implements Serializable {
@@ -25,19 +24,6 @@ public class TpccAfterPartPlan extends TpccBeforePartPlan implements Serializabl
 			return (wid - 1) / NORMAL_WAREHOUSE_PER_PART;
 		else
 			return (wid - MAX_NORMAL_WID - 1) % PartitionMetaMgr.NUM_PARTITIONS;
-	}
-	
-	public List<MigrationRange> generateMigrationRanges() {
-		List<MigrationRange> list = new ArrayList<MigrationRange>();
-		
-		for (int wid = MAX_NORMAL_WID + 1; wid <= numOfWarehouses(); wid++) {
-			int sourceNodeId = super.getPartition(wid);
-			int destNodeId = getPartition(wid);
-			if (sourceNodeId != destNodeId)
-				list.add(new TpccMigrationRange(wid, wid, sourceNodeId, destNodeId));
-		}
-		
-		return list;
 	}
 	
 	@Override

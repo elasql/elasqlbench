@@ -297,7 +297,7 @@ public class TpceTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 	}
 	
 	private void executeUpdate(String sql) {
-		int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+		int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 		if (result <= 0)
 			throw new RuntimeException();
 	}

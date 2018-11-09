@@ -15,13 +15,11 @@
  *******************************************************************************/
 package org.elasql.bench.benchmarks.tpcc;
 
-import org.elasql.bench.benchmarks.tpcc.rte.ElasqlTpccRte;
 import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.bench.server.metadata.migration.TpccBeforePartPlan;
-import org.vanilladb.bench.BenchmarkerParameters;
+import org.elasql.bench.server.metadata.migration.scaleout.TpccScaleoutBeforePartPlan;
 import org.vanilladb.bench.StatisticMgr;
 import org.vanilladb.bench.benchmarks.tpcc.TpccBenchmarker;
-import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
 import org.vanilladb.bench.remote.SutConnection;
 import org.vanilladb.bench.remote.SutDriver;
@@ -30,22 +28,19 @@ import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 public class ElasqlTpccBenchmarker extends TpccBenchmarker {
 	
 	public static final boolean ENABLE_MIGRATION_TEST = true;
+	public static final boolean ENABLE_SCALE_OUT_TEST = true;
 	
-	// For migration test
-	private static final int RTE_PER_NORMAL_WAREHOUSE = 5;
-	private static final int RTE_PER_HOT_WAREHOUSE = 50;
-	private static final int TOTAL_RETS_FOR_NORMALS_PER_NODE = RTE_PER_NORMAL_WAREHOUSE * 
-			TpccBeforePartPlan.NORMAL_WAREHOUSE_PER_PART;
-	private static final int NUM_OF_NORMAL_WAREHOUSE = TpccBeforePartPlan.MAX_NORMAL_WID;
-	private static final int NUM_OF_HOT_WAREHOUSES = TpccBeforePartPlan.NUM_HOT_PARTS *
-			TpccBeforePartPlan.HOT_WAREHOUSE_PER_HOT_PART;
-	
-	private int nodeId;
-	private int nextWid = 0;
-	private int nextRteId = 0;
-	
-	private static final TpccPartitionPlan partPlan = 
-			ENABLE_MIGRATION_TEST? new TpccBeforePartPlan() : new TpccPartitionPlan();
+	private static final TpccPartitionPlan partPlan;
+			
+	static {
+		if (ENABLE_MIGRATION_TEST) {
+			if (ENABLE_SCALE_OUT_TEST)
+				partPlan = new TpccScaleoutBeforePartPlan();
+			else
+				partPlan = new TpccBeforePartPlan();
+		} else
+			partPlan = new TpccPartitionPlan();
+	}
 	
 	public static TpccPartitionPlan getPartitionPlan() {
 		return partPlan;
@@ -55,42 +50,27 @@ public class ElasqlTpccBenchmarker extends TpccBenchmarker {
 		return partPlan.numOfWarehouses();
 	}
 	
-	public int getNumOfRTEs() {
-		if (ENABLE_MIGRATION_TEST) {
-			if (nodeId < NUM_OF_HOT_WAREHOUSES)
-				return TOTAL_RETS_FOR_NORMALS_PER_NODE + RTE_PER_HOT_WAREHOUSE;
-			else
-				return TOTAL_RETS_FOR_NORMALS_PER_NODE;
-		} else
-			return BenchmarkerParameters.NUM_RTES;
-	}
+	private TpccRteGenerator rteGenerator;
 	
 	public ElasqlTpccBenchmarker(SutDriver sutDriver, int nodeId) {
 		super(sutDriver, Integer.toString(nodeId));
-		this.nodeId = nodeId;
+
+		if (ENABLE_MIGRATION_TEST) {
+			if (ENABLE_SCALE_OUT_TEST)
+				rteGenerator = new TpccScaleoutTestRteGenerator(nodeId);
+			else
+				rteGenerator = new TpccMigrationTestRteGenerator(nodeId);
+		} else
+			rteGenerator = new TpccStandardRteGenerator();
+	}
+
+	@Override
+	public int getNumOfRTEs() {
+		return rteGenerator.getNumOfRTEs();
 	}
 	
 	@Override
 	protected RemoteTerminalEmulator<TpccTransactionType> createRte(SutConnection conn, StatisticMgr statMgr) {
-		if (ENABLE_MIGRATION_TEST) {
-			int warehouseId;
-			int districtId;
-			if (nextRteId < TOTAL_RETS_FOR_NORMALS_PER_NODE) { // for normal warehouses
-				warehouseId = nextRteId / RTE_PER_NORMAL_WAREHOUSE +
-						TpccBeforePartPlan.NORMAL_WAREHOUSE_PER_PART * nodeId + 1;
-				districtId = nextRteId % RTE_PER_NORMAL_WAREHOUSE % TpccConstants.DISTRICTS_PER_WAREHOUSE + 1;
-			} else { // for hot warehouses
-				int offset = nextRteId - TOTAL_RETS_FOR_NORMALS_PER_NODE;
-				warehouseId = offset / RTE_PER_HOT_WAREHOUSE + NUM_OF_NORMAL_WAREHOUSE + nodeId + 1;
-				districtId = offset % RTE_PER_HOT_WAREHOUSE % TpccConstants.DISTRICTS_PER_WAREHOUSE + 1;
-			}
-			nextRteId++;
-			return new ElasqlTpccRte(conn, statMgr, warehouseId, districtId);
-		} else {
-			// NOTE: We use a customized version of TpccRte here
-			ElasqlTpccRte rte = new ElasqlTpccRte(conn, statMgr, nextWid / 10 + 1, nextWid % 10 + 1);
-			nextWid = (nextWid + 1) % TpccConstants.NUM_WAREHOUSES;
-			return rte;
-		}
+		return rteGenerator.createRte(conn, statMgr);
 	}
 }
