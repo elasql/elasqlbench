@@ -184,9 +184,9 @@ public class ElasqlStartUp implements SutStartUp {
 				partPlan = new RangePartitionPlan("ycsb_id", ElasqlYcsbConstants.RECORD_PER_PART *
 						numOfPartitions, numOfPartitions);
 			} else {
-//				partPlan =  new RangePartitionPlan("ycsb_id", ElasqlYcsbConstants.RECORD_PER_PART *
-//						PartitionMetaMgr.NUM_PARTITIONS, PartitionMetaMgr.NUM_PARTITIONS);
-				partPlan =  new HashPartitionPlan("ycsb_id");
+				partPlan =  new RangePartitionPlan("ycsb_id", ElasqlYcsbConstants.RECORD_PER_PART *
+						PartitionMetaMgr.NUM_PARTITIONS, PartitionMetaMgr.NUM_PARTITIONS);
+//				partPlan =  new HashPartitionPlan("ycsb_id");
 			}
 			
 			if (LOAD_METIS_PARTITIONS)
