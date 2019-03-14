@@ -39,8 +39,9 @@ public class YcsbMigrationManager extends MigrationManager {
 	
 	@Override
 	public long getWaitingTime() {
-//		return 10000 * 1000; // very long time
-		return GoogleWorkloadsParamGen.WARMUP_TIME;
+//		return 1000 * 1000 * 1000; // very long time
+		// 30 seconds for the delay of starting sending transactions
+		return GoogleWorkloadsParamGen.WARMUP_TIME + 30 * 1000;
 //		return SingleSkewWorkloadsParamGen.WARMUP_TIME;
 //		return MultiTanentsParamGen.WARMUP_TIME;
 //		return 120 * 1000; // for scaling-out & consolidation
@@ -48,7 +49,11 @@ public class YcsbMigrationManager extends MigrationManager {
 	
 	@Override
 	public long getMigrationPreiod() {
-		return 100 * 1000; // For Google workloads
+		// For Google workloads
+		if (PartitionMetaMgr.USE_SCHISM)
+			return GoogleWorkloadsParamGen.REPLAY_PREIOD - 30 * 1000;
+		else
+			return 100 * 1000;
 //		return SingleSkewWorkloadsParamGen.CHANGING_PERIOD;
 //		return MultiTanentsParamGen.CHANGING_PERIOD;
 //		return 1000 * 1000; // for scaling-out & consolidation
