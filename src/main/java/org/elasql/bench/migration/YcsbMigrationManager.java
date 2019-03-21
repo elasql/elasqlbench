@@ -51,7 +51,7 @@ public class YcsbMigrationManager extends MigrationManager {
 	public long getMigrationPreiod() {
 		// For Google workloads
 		if (PartitionMetaMgr.USE_SCHISM)
-			return GoogleWorkloadsParamGen.REPLAY_PREIOD - 30 * 1000;
+			return GoogleWorkloadsParamGen.REPLAY_PREIOD - MONITORING_TIME;
 		else
 			return 100 * 1000;
 //		return SingleSkewWorkloadsParamGen.CHANGING_PERIOD;
