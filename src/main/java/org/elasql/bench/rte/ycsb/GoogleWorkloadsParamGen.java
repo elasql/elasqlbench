@@ -43,7 +43,8 @@ public class GoogleWorkloadsParamGen implements TxParamGenerator {
 	private static final AtomicInteger[] GLOBAL_COUNTERS;
 
 	// Real parameter
-	private static final int DATA_LEN = 51;
+//	private static final int DATA_LEN = 51;
+	private static final int DATA_LEN = 30;
 	private static double DATA[][] = new double[DATA_LEN][NUM_PARTITIONS]; // [Time][Partition]
 
 	private static AtomicLong globalStartTime = new AtomicLong(-1);
@@ -65,7 +66,8 @@ public class GoogleWorkloadsParamGen implements TxParamGenerator {
 				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".SKEW_PARAMETER", 0.0);
 
 		WARMUP_TIME = 90 * 1000;
-		REPLAY_PREIOD = 255 * 1000;
+//		REPLAY_PREIOD = 255 * 1000;
+		REPLAY_PREIOD = 300 * 1000;
 		// SKEW_WEIGHT = 6.5;
 
 		// Get data from Google Cluster
@@ -126,7 +128,7 @@ public class GoogleWorkloadsParamGen implements TxParamGenerator {
 				if (hit) {
 					// System.out.println(line);
 					loads = line.split(",");
-					for (int j = 0; j < loads.length; j++) {
+					for (int j = 0; j < DATA_LEN; j++) {
 						DATA[j][partId] = Double.parseDouble(loads[j]);
 					}
 				}
@@ -210,7 +212,7 @@ public class GoogleWorkloadsParamGen implements TxParamGenerator {
 
 		STATIC_GEN_FOR_PART = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(ElasqlYcsbConstants.RECORD_PER_PART, SKEW_PARAMETER));
-		STATIC_GLOBAL_GEN = new AtomicReference<TwoSidedSkewGenerator>(new TwoSidedSkewGenerator(DATA_SIZE, 0.99));
+		STATIC_GLOBAL_GEN = new AtomicReference<TwoSidedSkewGenerator>(new TwoSidedSkewGenerator(DATA_SIZE, 0.9));
 
 		new PeriodicalJob(5000, BenchmarkerParameters.BENCHMARK_INTERVAL, new Runnable() {
 
