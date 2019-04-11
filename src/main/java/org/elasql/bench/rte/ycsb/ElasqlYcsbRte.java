@@ -1,9 +1,9 @@
 package org.elasql.bench.rte.ycsb;
 
 
+import org.elasql.bench.rte.ycsb.google.GoogleComplexWorkloadsParamGen;
 import org.vanilladb.bench.StatisticMgr;
 import org.vanilladb.bench.TransactionType;
-
 import org.vanilladb.bench.remote.SutConnection;
 import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 import org.vanilladb.bench.rte.TransactionExecutor;
@@ -16,7 +16,8 @@ public class ElasqlYcsbRte extends RemoteTerminalEmulator {
 	
 	public ElasqlYcsbRte(SutConnection conn, StatisticMgr statMgr, int nodeId) {
 		super(conn, statMgr);
-		executor = new YcsbTxExecutor(new GoogleWorkloadsParamGen(nodeId));
+		executor = new YcsbTxExecutor(new GoogleComplexWorkloadsParamGen(nodeId));
+//		executor = new YcsbTxExecutor(new GoogleWorkloadsParamGen(nodeId));
 //		executor = new YcsbTxExecutor(new SingleSkewWorkloadsParamGen(nodeId));
 //		executor = new YcsbTxExecutor(new MultiTanentsParamGen(nodeId));
 	}
