@@ -31,6 +31,7 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 	private static final double DIST_TX_RATE;
 	private static final double SKEW_PARAMETER;
 	private static final double GLOBAL_SKEW;
+	private static final int GLOBAL_SKEW_CHANGE_PERIOD = 1; // in seconds
 	
 	private static final int TOTAL_READ_COUNT = 2;
 	private static final int REMOTE_READ_COUNT = 1;
@@ -45,7 +46,7 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 	private static final double DATA[][]
 			= new double[DATA_LEN][NUM_PARTITIONS]; // [Time][Partition]
 
-	public static final long WARMUP_TIME = 90_000;
+	public static final long WARMUP_TIME = 150_000;
 	
 	private static AtomicLong globalStartTime = new AtomicLong(-1);
 	
@@ -61,10 +62,9 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".RW_TX_RATE", 0.5);
 //		SKEW_PARAMETER = ElasqlBenchProperties.getLoader()
 //				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".SKEW_PARAMETER", 0.9);
-		SKEW_PARAMETER = 0.9;
-		GLOBAL_SKEW = ElasqlBenchProperties.getLoader()
+		SKEW_PARAMETER = ElasqlBenchProperties.getLoader()
 				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".SKEW_PARAMETER", 0.9);
-		System.out.println("Global skew is " + GLOBAL_SKEW);
+		GLOBAL_SKEW = SKEW_PARAMETER;
 		STATIC_GEN_FOR_PART = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(ElasqlYcsbConstants.RECORD_PER_PART, SKEW_PARAMETER));
 		STATIC_GLOBAL_GEN = new AtomicReference<TwoSidedSkewGenerator>(new TwoSidedSkewGenerator(DATA_SIZE, GLOBAL_SKEW));
@@ -166,6 +166,10 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 			long currentTime = (System.nanoTime() - Benchmarker.BENCH_START_TIME) / 1_000_000_000;
 			System.out.println("Benchmark starts at " + currentTime);
 		}
+		
+		// Check current time
+		long pt = (System.currentTimeMillis() - startTime) - WARMUP_TIME;
+		int timePoint = (int) (pt / 1000);
 
 		// ================================
 		// Decide the types of transactions
@@ -177,6 +181,11 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 
 		if (NUM_PARTITIONS < 2)
 			isDistributedTx = false;
+		
+		// There is no distributed tx in non-replay time
+		if (timePoint < 0 || timePoint > DATA_LEN) {
+			isDistributedTx = false;
+		}
 
 		/////////////////////////////
 
@@ -186,9 +195,6 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 
 		// Choose the main partition
 		int mainPartition = 0;
-
-		long pt = (System.currentTimeMillis() - startTime) - WARMUP_TIME;
-		int timePoint = (int) (pt / 1000);
 
 		// Replay time
 		if (pt > 0 && timePoint >= 0 && timePoint < DATA_LEN) {
@@ -223,8 +229,8 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 			int center = DATA_SIZE / 2;
 			if (timePoint >= 0 && timePoint < DATA_LEN) {
 				// Note that it might be overflowed here.
-				center = DATA_SIZE / DATA_LEN;
-				center *= (timePoint + 1); 
+				center = DATA_SIZE / (DATA_LEN / GLOBAL_SKEW_CHANGE_PERIOD);
+				center *= ((timePoint / GLOBAL_SKEW_CHANGE_PERIOD) + 1); 
 			}
 			
 			for (int i = 0; i < REMOTE_READ_COUNT; i++) {
