@@ -15,7 +15,6 @@ import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.migration.MigrationMgr;
 import org.elasql.procedure.DdStoredProcedureFactory;
 import org.elasql.server.Elasql;
-import org.elasql.storage.metadata.HashPartitionPlan;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.elasql.storage.metadata.RangePartitionPlan;
@@ -134,6 +133,7 @@ public class ElasqlStartUp implements SutStartUp {
 			if (logger.isLoggable(Level.INFO))
 				logger.info("using YCSB stored procedures for Calvin");
 			factory = new YcsbStoredProcFactory();
+			org.elasql.bench.server.procedure.calvin.ycsb.YcsbBenchmarkProc.preloadKeys();
 			break;
 		}
 		return factory;
@@ -158,6 +158,7 @@ public class ElasqlStartUp implements SutStartUp {
 			if (logger.isLoggable(Level.INFO))
 				logger.info("using YCSB stored procedures for T-Part");
 			factory = new org.elasql.bench.server.procedure.tpart.ycsb.YcsbStoredProcFactory();
+			org.elasql.bench.server.procedure.tpart.ycsb.YcsbBenchmarkProc.preloadKeys();
 		}
 		return factory;
 	}

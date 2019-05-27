@@ -26,9 +26,7 @@ public class MicroBenchmarkProc extends CalvinStoredProcedure<MicroBenchmarkProc
 			int iid = paramHelper.getReadItemId(idx);
 			
 			// create record key for reading
-			Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
-			keyEntryMap.put("i_id", new IntegerConstant(iid));
-			RecordKey key = new RecordKey("item", keyEntryMap);
+			RecordKey key = new RecordKey("item", "i_id", new IntegerConstant(iid));
 			addReadKey(key);
 		}
 
@@ -38,9 +36,7 @@ public class MicroBenchmarkProc extends CalvinStoredProcedure<MicroBenchmarkProc
 			double newPrice = paramHelper.getNewItemPrice(idx);
 			
 			// create record key for writing
-			Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
-			keyEntryMap.put("i_id", new IntegerConstant(iid));
-			RecordKey key = new RecordKey("item", keyEntryMap);
+			RecordKey key = new RecordKey("item", "i_id", new IntegerConstant(iid));
 			addWriteKey(key);
 
 			// Create key-value pairs for writing

@@ -1,6 +1,5 @@
 package org.elasql.bench.server.procedure.calvin.ycsb;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,7 +12,6 @@ import org.elasql.sql.RecordKey;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.ycsb.YcsbConstants;
 import org.vanilladb.core.server.VanillaDb;
-import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.VarcharConstant;
 import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
 import org.vanilladb.core.storage.tx.recovery.CheckpointTask;
@@ -95,7 +93,6 @@ public class SchismYcsbTestbedLoader extends AllExecuteProcedure<StoredProcedure
 		
 		String sql;
 		String ycsbId, ycsbValue;
-		Map<String, Constant> keyEntryMap;
 		RecordKey key;
 		for (int id = startId; id <= endId; id++) {
 			
@@ -103,9 +100,7 @@ public class SchismYcsbTestbedLoader extends AllExecuteProcedure<StoredProcedure
 			ycsbId = String.format(YcsbConstants.ID_FORMAT, id);
 			
 			// Check if it is a local record
-			keyEntryMap = new HashMap<String, Constant>();
-			keyEntryMap.put("ycsb_id", new VarcharConstant(ycsbId));
-			key = new RecordKey("ycsb", keyEntryMap);
+			key = new RecordKey("ycsb", "ycsb_id", new VarcharConstant(ycsbId));
 			if (Elasql.partitionMetaMgr().getPartition(key) == Elasql.serverId()) {
 			
 				sql = sqlPrefix + "'" + ycsbId + "'";

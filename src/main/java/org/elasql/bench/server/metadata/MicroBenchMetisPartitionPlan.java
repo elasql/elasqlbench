@@ -11,7 +11,6 @@ import java.util.logging.Logger;
 
 import org.elasql.sql.RecordKey;
 import org.elasql.storage.metadata.PartitionPlan;
-import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class MicroBenchMetisPartitionPlan extends PartitionPlan {
@@ -44,13 +43,12 @@ public class MicroBenchMetisPartitionPlan extends PartitionPlan {
 		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
 
 			String sCurrentLine;
-			Map<String, Constant> keyEntryMap;
 			int line_c = 0;
 			while ((sCurrentLine = br.readLine()) != null) {
 				for (int i = 1; i <= METIS_DATA_RANGE; i++) {
-					keyEntryMap = new HashMap<String, Constant>();
-					keyEntryMap.put("i_id", new IntegerConstant(METIS_DATA_RANGE * line_c + i));
-					metisPlan.put(new RecordKey("item", keyEntryMap), Integer.parseInt(sCurrentLine));
+					metisPlan.put(
+							new RecordKey("item", "i_id", new IntegerConstant(METIS_DATA_RANGE * line_c + i)),
+							Integer.parseInt(sCurrentLine));
 				}
 				line_c++;
 

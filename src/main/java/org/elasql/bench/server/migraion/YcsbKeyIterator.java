@@ -1,12 +1,10 @@
 package org.elasql.bench.server.migraion;
 
-import java.util.HashMap;
 import java.util.Iterator;
 
 import org.elasql.migration.MigrationRange;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.bench.ycsb.YcsbConstants;
-import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.VarcharConstant;
 
 public class YcsbKeyIterator implements Iterator<RecordKey> {
@@ -30,10 +28,8 @@ public class YcsbKeyIterator implements Iterator<RecordKey> {
 
 	@Override
 	public RecordKey next() {
-		HashMap<String, Constant> fldVals = new HashMap<String, Constant>();
-		fldVals.put(keyField, new VarcharConstant(
+		RecordKey key = new RecordKey(table, keyField, new VarcharConstant(
 				String.format(YcsbConstants.ID_FORMAT, nextId)));
-		RecordKey key = new RecordKey(table, fldVals);
 		nextId++;
 		return key;
 	}

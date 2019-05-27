@@ -28,9 +28,7 @@ public class MicroBenchmarkProc extends TPartStoredProcedure<MicroBenchmarkProcP
 		for (int idx = 0; idx < paramHelper.getReadCount(); idx++) {
 			iid = paramHelper.getReadItemId(idx);
 			// create record key for reading
-			Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
-			keyEntryMap.put("i_id", new IntegerConstant(iid));
-			RecordKey key = new RecordKey("item", keyEntryMap);
+			RecordKey key = new RecordKey("item", "i_id", new IntegerConstant(iid));
 			readKeys[idx] = key;
 			addReadKey(key);
 		}
@@ -42,9 +40,7 @@ public class MicroBenchmarkProc extends TPartStoredProcedure<MicroBenchmarkProcP
 			iid = paramHelper.getWriteItemId(idx);
 			newPrice = paramHelper.getNewItemPrice(idx);
 
-			Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
-			keyEntryMap.put("i_id", new IntegerConstant(iid));
-			RecordKey key = new RecordKey("item", keyEntryMap);
+			RecordKey key = new RecordKey("item", "i_id", new IntegerConstant(iid));
 			addWriteKey(key);
 
 			// Create key-value pairs for writing

@@ -1,6 +1,5 @@
 package org.elasql.bench.server.procedure.calvin.micro;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,7 +13,6 @@ import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.tpcc.TpccConstants;
 import org.vanilladb.bench.util.DoublePlainPrinter;
 import org.vanilladb.core.server.VanillaDb;
-import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.IntegerConstant;
 import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
 import org.vanilladb.core.storage.tx.recovery.CheckpointTask;
@@ -85,14 +83,11 @@ public class SchismMicroTestbedLoader extends AllExecuteProcedure<StoredProcedur
 
 		int cout = 0;
 
-		Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
 		RecordKey key;
 		for (int i = startIId; i <= endIId; i++) {
-			keyEntryMap.clear();
 			iid = i;
 
-			keyEntryMap.put("i_id", new IntegerConstant(iid));
-			key = new RecordKey("item", keyEntryMap);
+			key = new RecordKey("item", "i_id", new IntegerConstant(iid));
 			if (Elasql.partitionMetaMgr().getCurrentLocation(key) == Elasql.serverId()) {
 
 				// Deterministic value generation by item id
