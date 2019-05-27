@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -31,20 +32,23 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 	private static final double DIST_TX_RATE;
 	private static final double SKEW_PARAMETER;
 	private static final double GLOBAL_SKEW;
+	private static final int GLOBAL_SKEW_CHANGE_PERIOD = 1; // in seconds
 	
 	private static final int TOTAL_READ_COUNT = 2;
 	private static final int REMOTE_READ_COUNT = 1;
-	
+
 	private static final int NUM_PARTITIONS =
 			(MigrationManager.ENABLE_NODE_SCALING && MigrationManager.IS_SCALING_OUT)?
 			PartitionMetaMgr.NUM_PARTITIONS - 1: PartitionMetaMgr.NUM_PARTITIONS;
 	private static final int DATA_SIZE = ElasqlYcsbConstants.RECORD_PER_PART * NUM_PARTITIONS;
 	
 	// Google workloads
-	private static final String DATA_PATH = "/opt/shared/google-workloads.csv";
-	private static final int DATA_LEN = 1440;
+	private static final String DATA_PATH = "/opt/shared/google-workloads-2min-3days.csv";
+	private static final int DATA_LEN = 2160;
 	private static final double DATA[][]
 			= new double[DATA_LEN][NUM_PARTITIONS]; // [Time][Partition]
+	private static final boolean USE_EVEN_LOAD = false;
+	private static final int GLOBAL_SKEW_REPEAT = 3; // 3 runs for 3 days
 
 	public static final long WARMUP_TIME = 90_000;
 	
@@ -62,26 +66,31 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".RW_TX_RATE", 0.5);
 //		SKEW_PARAMETER = ElasqlBenchProperties.getLoader()
 //				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".SKEW_PARAMETER", 0.9);
-		SKEW_PARAMETER = 0.9;
-		GLOBAL_SKEW = ElasqlBenchProperties.getLoader()
+		SKEW_PARAMETER = ElasqlBenchProperties.getLoader()
 				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".SKEW_PARAMETER", 0.9);
-		System.out.println("Global skew is " + GLOBAL_SKEW);
+		GLOBAL_SKEW = SKEW_PARAMETER;
 		STATIC_GEN_FOR_PART = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(ElasqlYcsbConstants.RECORD_PER_PART, SKEW_PARAMETER));
 		STATIC_GLOBAL_GEN = new AtomicReference<TwoSidedSkewGenerator>(new TwoSidedSkewGenerator(DATA_SIZE, GLOBAL_SKEW));
 		
 		// Get data from Google Cluster
-		try (BufferedReader reader = new BufferedReader(new FileReader(DATA_PATH))) {
-			// Data Format: Each row is a workload of a node, each value is the
-			for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
-				String line = reader.readLine();
-				String[] loads = line.split(",");
-				for (int time = 0; time < DATA_LEN; time++) {
-					DATA[time][partId] = Double.parseDouble(loads[time]);
+		if (USE_EVEN_LOAD) {
+			double load = 1.0 / NUM_PARTITIONS;
+			for (int time = 0; time < DATA_LEN; time++)
+				Arrays.fill(DATA[time], load);
+		} else {
+			try (BufferedReader reader = new BufferedReader(new FileReader(DATA_PATH))) {
+				// Data Format: Each row is a workload of a node, each value is the
+				for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
+					String line = reader.readLine();
+					String[] loads = line.split(",");
+					for (int time = 0; time < DATA_LEN; time++) {
+						DATA[time][partId] = Double.parseDouble(loads[time]);
+					}
 				}
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 		
 		// A logger for debug
@@ -167,6 +176,10 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 			long currentTime = (System.nanoTime() - Benchmarker.BENCH_START_TIME) / 1_000_000_000;
 			System.out.println("Benchmark starts at " + currentTime);
 		}
+		
+		// Check current time
+		long pt = (System.currentTimeMillis() - startTime) - WARMUP_TIME;
+		int timePoint = (int) (pt / 1000);
 
 		// ================================
 		// Decide the types of transactions
@@ -178,6 +191,11 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 
 		if (NUM_PARTITIONS < 2)
 			isDistributedTx = false;
+		
+		// There is no distributed tx in non-replay time
+		if (timePoint < 0 || timePoint > DATA_LEN) {
+			isDistributedTx = false;
+		}
 
 		/////////////////////////////
 
@@ -187,9 +205,6 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 
 		// Choose the main partition
 		int mainPartition = 0;
-
-		long pt = (System.currentTimeMillis() - startTime) - WARMUP_TIME;
-		int timePoint = (int) (pt / 1000);
 
 		// Replay time
 		if (pt > 0 && timePoint >= 0 && timePoint < DATA_LEN) {
@@ -224,8 +239,9 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 			int center = DATA_SIZE / 2;
 			if (timePoint >= 0 && timePoint < DATA_LEN) {
 				// Note that it might be overflowed here.
-				center = DATA_SIZE / DATA_LEN;
-				center *= (timePoint + 1); 
+				int windowSize = DATA_LEN / GLOBAL_SKEW_REPEAT;
+				center = DATA_SIZE / (windowSize / GLOBAL_SKEW_CHANGE_PERIOD);
+				center *= (((timePoint % windowSize) / GLOBAL_SKEW_CHANGE_PERIOD) + 1); 
 			}
 			
 			for (int i = 0; i < REMOTE_READ_COUNT; i++) {
@@ -262,9 +278,14 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 
 		return paramList.toArray(new Object[0]);
 	}
+	
+//	private static int lastTimePoint;
 
 	private int chooseARecordGlobally(int center) {
+		// Original
 		return (int) globalDistribution.nextValue(center);
+		// Uniform chooses
+//		return random.nextInt(DATA_SIZE) + 1;
 	}
 	
 	private int chooseARecord(int partition) {

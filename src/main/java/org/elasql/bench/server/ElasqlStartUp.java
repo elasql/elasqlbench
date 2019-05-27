@@ -118,6 +118,7 @@ public class ElasqlStartUp implements SutStartUp {
 			if (logger.isLoggable(Level.INFO))
 				logger.info("using YCSB stored procedures for Calvin");
 			factory = new YcsbStoredProcFactory();
+			org.elasql.bench.server.procedure.calvin.ycsb.YcsbBenchmarkProc.preloadKeys();
 			break;
 		case TPCE:
 			throw new UnsupportedOperationException("No TPC-E for now");
