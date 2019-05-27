@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -41,12 +42,14 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 	private static final int DATA_SIZE = ElasqlYcsbConstants.RECORD_PER_PART * NUM_PARTITIONS;
 	
 	// Google workloads
-	private static final String DATA_PATH = "/opt/shared/google-workloads.csv";
-	private static final int DATA_LEN = 1440;
+	private static final String DATA_PATH = "/opt/shared/google-workloads-2min-3days.csv";
+	private static final int DATA_LEN = 2160;
 	private static final double DATA[][]
 			= new double[DATA_LEN][NUM_PARTITIONS]; // [Time][Partition]
+	private static final boolean USE_EVEN_LOAD = false;
+	private static final int GLOBAL_SKEW_REPEAT = 3; // 3 runs for 3 days
 
-	public static final long WARMUP_TIME = 150_000;
+	public static final long WARMUP_TIME = 90_000;
 	
 	private static AtomicLong globalStartTime = new AtomicLong(-1);
 	
@@ -70,17 +73,23 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 		STATIC_GLOBAL_GEN = new AtomicReference<TwoSidedSkewGenerator>(new TwoSidedSkewGenerator(DATA_SIZE, GLOBAL_SKEW));
 		
 		// Get data from Google Cluster
-		try (BufferedReader reader = new BufferedReader(new FileReader(DATA_PATH))) {
-			// Data Format: Each row is a workload of a node, each value is the
-			for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
-				String line = reader.readLine();
-				String[] loads = line.split(",");
-				for (int time = 0; time < DATA_LEN; time++) {
-					DATA[time][partId] = Double.parseDouble(loads[time]);
+		if (USE_EVEN_LOAD) {
+			double load = 1.0 / NUM_PARTITIONS;
+			for (int time = 0; time < DATA_LEN; time++)
+				Arrays.fill(DATA[time], load);
+		} else {
+			try (BufferedReader reader = new BufferedReader(new FileReader(DATA_PATH))) {
+				// Data Format: Each row is a workload of a node, each value is the
+				for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
+					String line = reader.readLine();
+					String[] loads = line.split(",");
+					for (int time = 0; time < DATA_LEN; time++) {
+						DATA[time][partId] = Double.parseDouble(loads[time]);
+					}
 				}
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 		
 		// A logger for debug
@@ -229,8 +238,9 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 			int center = DATA_SIZE / 2;
 			if (timePoint >= 0 && timePoint < DATA_LEN) {
 				// Note that it might be overflowed here.
-				center = DATA_SIZE / (DATA_LEN / GLOBAL_SKEW_CHANGE_PERIOD);
-				center *= ((timePoint / GLOBAL_SKEW_CHANGE_PERIOD) + 1); 
+				int windowSize = DATA_LEN / GLOBAL_SKEW_REPEAT;
+				center = DATA_SIZE / (windowSize / GLOBAL_SKEW_CHANGE_PERIOD);
+				center *= (((timePoint % windowSize) / GLOBAL_SKEW_CHANGE_PERIOD) + 1); 
 			}
 			
 			for (int i = 0; i < REMOTE_READ_COUNT; i++) {
@@ -267,9 +277,14 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 
 		return paramList.toArray(new Object[0]);
 	}
+	
+//	private static int lastTimePoint;
 
 	private int chooseARecordGlobally(int center) {
+		// Original
 		return (int) globalDistribution.nextValue(center);
+		// Uniform chooses
+//		return random.nextInt(DATA_SIZE) + 1;
 	}
 	
 	private int chooseARecord(int partition) {
