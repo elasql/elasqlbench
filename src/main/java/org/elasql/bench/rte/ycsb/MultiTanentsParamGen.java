@@ -22,7 +22,7 @@ import org.vanilladb.bench.ycsb.YcsbTransactionType;
 
 public class MultiTanentsParamGen implements TxParamGenerator {
 	
-	private static final boolean HAS_HOTSPOT = false;
+	private static final boolean HAS_HOTSPOT = true;
 	
 	private static final double RW_TX_RATE;
 	private static final double SKEW_PARAMETER;
@@ -36,9 +36,9 @@ public class MultiTanentsParamGen implements TxParamGenerator {
 	private static final int TOTAL_READ_COUNT = 2;
 	
 	private static AtomicLong globalStartTime = new AtomicLong(-1);
-	public static final long WARMUP_TIME = 60 * 1000;
-//	public static final long CHANGING_PERIOD = 90 * 1000;
-	public static final long CHANGING_PERIOD = 1000 * 1000;
+	public static final long WARMUP_TIME = 90 * 1000;
+	public static final long CHANGING_PERIOD = 300 * 1000;
+//	public static final long CHANGING_PERIOD = 1000 * 1000;
 	private static final double SKEW_RATIO = 0.9;
 	private static final long SENDING_DELAY = 0;
 //	private static final long SENDING_DELAY = 100;
