@@ -13,6 +13,9 @@ public class YcsbPartitionMetaMgr extends PartitionMetaMgr {
 	private static Logger logger = Logger.getLogger(YcsbPartitionMetaMgr.class.getName());
 	
 	private static final String LOC_FILE_PATH = "/opt/shared/metis_ycsb_table.part";
+	private static final int NUM_RECORDS = ElasqlYcsbConstants.RECORD_PER_PART * 4;
+	private static final int RECORDS_ON_FIRST = NUM_RECORDS / 16 * 7;
+	private static final int RECORDS_ON_OTHER = NUM_RECORDS / 16 * 3;
 	
 //	public static int getStartYcsbId(int vertexId) {
 //		int higherPart = vertexId / YcsbMigrationManager.VERTEX_PER_PART; // 123 => 1
@@ -72,6 +75,28 @@ public class YcsbPartitionMetaMgr extends PartitionMetaMgr {
 	public static int getRangeIndex(int id) {
 		return (id - 1) / ElasqlYcsbConstants.MAX_RECORD_PER_PART;
 	}
+	
+	public static int getIndexByHashPartition(RecordKey key) {
+		Constant idCon = key.getKeyVal("ycsb_id");
+		int id = Integer.parseInt((String) idCon.asJavaVal());
+		return id % NUM_PARTITIONS;
+	}
+
+	public int skewedPartition(RecordKey key) {
+		Constant idCon = key.getKeyVal("ycsb_id");
+		if (idCon != null) {
+			int ycsbId = Integer.parseInt((String) idCon.asJavaVal());
+			
+			if (ycsbId <= RECORDS_ON_FIRST) {
+				return 0;
+			} else {
+				return (ycsbId - RECORDS_ON_FIRST - 1) / RECORDS_ON_OTHER + 1;
+			}
+		} else {
+			// Fully replicated
+			return Elasql.serverId();
+		}
+	}
 
 	public int getLocation(RecordKey key) {
 		/*
@@ -90,8 +115,12 @@ public class YcsbPartitionMetaMgr extends PartitionMetaMgr {
 			// Fully replicated
 			return Elasql.serverId();
 		}
-
+		
+		// Range-partition
 		return getRangeIndex(key);
-		// return key.hashCode() % NUM_PARTITIONS;
+		// Hash-partition
+//		return getIndexByHashPartition(key);
+		// Skewed-partition
+//		return skewedPartition(key);
 	}
 }

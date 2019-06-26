@@ -51,6 +51,7 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 	private static final int GLOBAL_SKEW_REPEAT = 3; // 3 runs for 3 days
 
 	public static final long WARMUP_TIME = 90_000;
+	public static final long REPLAY_TIME = DATA_LEN * 1000;
 	
 	private static AtomicLong globalStartTime = new AtomicLong(-1);
 	

@@ -3,13 +3,16 @@ package org.elasql.bench.migration;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.elasql.bench.rte.ycsb.GoogleWorkloadsParamGen;
+import org.elasql.bench.rte.ycsb.ElasqlYcsbRte;
+import org.elasql.bench.rte.ycsb.MultiTanentsParamGen;
+import org.elasql.bench.rte.ycsb.google.GoogleComplexWorkloadsParamGen;
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.remote.groupcomm.StoredProcedureCall;
 import org.elasql.server.Elasql;
 import org.elasql.server.migration.MigrationManager;
 import org.elasql.sql.RecordKey;
 import org.elasql.storage.metadata.PartitionMetaMgr;
+import org.vanilladb.bench.BenchmarkerParameters;
 import org.vanilladb.bench.micro.MicroTransactionType;
 import org.vanilladb.bench.ycsb.YcsbConstants;
 import org.vanilladb.core.sql.Constant;
@@ -39,14 +42,17 @@ public class YcsbMigrationManager extends MigrationManager {
 	
 	@Override
 	public long getWaitingTime() {
-//		return 1000 * 1000 * 1000; // very long time
 		// 30 seconds for the delay of starting sending transactions
 		if (PartitionMetaMgr.USE_SCHISM)
-			return GoogleWorkloadsParamGen.WARMUP_TIME + 30 * 1000 + 120 * 1000;
-		else
-			return GoogleWorkloadsParamGen.WARMUP_TIME + 30 * 1000;
-//		return SingleSkewWorkloadsParamGen.WARMUP_TIME;
-//		return MultiTanentsParamGen.WARMUP_TIME;
+			return GoogleComplexWorkloadsParamGen.WARMUP_TIME + 30 * 1000 + 120 * 1000;
+		else {
+			if (ElasqlYcsbRte.WORKLOAD_TYPE == 1) {
+				return GoogleComplexWorkloadsParamGen.WARMUP_TIME + 30 * 1000;
+			} else {
+				return MultiTanentsParamGen.WARMUP_TIME + 30 * 1000;
+			}
+		}
+//			return 1000 * 1000 * 1000; // very long time
 //		return 120 * 1000; // for scaling-out & consolidation
 	}
 	
@@ -57,14 +63,18 @@ public class YcsbMigrationManager extends MigrationManager {
 //			return GoogleWorkloadsParamGen.REPLAY_PREIOD - MONITORING_TIME;
 			return 1000 * 1000 * 1000;
 		else
-			return 100 * 1000;
+			return 30 * 1000;
 //		return SingleSkewWorkloadsParamGen.CHANGING_PERIOD;
 //		return MultiTanentsParamGen.CHANGING_PERIOD;
 //		return 1000 * 1000; // for scaling-out & consolidation
 	}
 	
 	public long getMigrationStopTime() {
-		return GoogleWorkloadsParamGen.REPLAY_PREIOD;
+		if (ElasqlYcsbRte.WORKLOAD_TYPE == 1) {
+			return GoogleComplexWorkloadsParamGen.REPLAY_TIME + 30 * 1000;
+		} else {
+			return BenchmarkerParameters.WARM_UP_INTERVAL + BenchmarkerParameters.BENCHMARK_INTERVAL;
+		}
 //		return 400 * 1000;
 //		return 1000 * 1000; // only stop after long time (scaling-out & consolidation, multitanent)
 	}

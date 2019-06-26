@@ -12,13 +12,22 @@ import org.vanilladb.bench.ycsb.rte.YcsbTxExecutor;
 
 public class ElasqlYcsbRte extends RemoteTerminalEmulator {
 	
+	public static final int WORKLOAD_TYPE = 1;
+	
 	private YcsbTxExecutor executor;
 	
 	public ElasqlYcsbRte(SutConnection conn, StatisticMgr statMgr, int nodeId) {
 		super(conn, statMgr);
-//		executor = new YcsbTxExecutor(new MultiTanentsParamGen(nodeId));
+		
+		if (WORKLOAD_TYPE == 1)
+			// Hermes Experiments - Google Workloads
+			executor = new YcsbTxExecutor(new GoogleComplexWorkloadsParamGen(nodeId));
+		else if (WORKLOAD_TYPE == 2)
+			// Hermes Experiments - Hotspot Workloads
+			executor = new YcsbTxExecutor(new MultiTanentsParamGen(nodeId));
+		
 //		executor = new YcsbTxExecutor(new GoogleWorkloadsParamGen(nodeId));
-		executor = new YcsbTxExecutor(new GoogleComplexWorkloadsParamGen(nodeId));
+//		executor = new YcsbTxExecutor(new SingleSkewWorkloadsParamGen(nodeId));
 	}
 	
 	protected TransactionType getNextTxType() {
