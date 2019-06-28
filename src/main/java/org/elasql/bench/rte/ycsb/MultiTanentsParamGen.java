@@ -37,7 +37,7 @@ public class MultiTanentsParamGen implements TxParamGenerator {
 	
 	private static AtomicLong globalStartTime = new AtomicLong(-1);
 	public static final long WARMUP_TIME = 90 * 1000;
-	public static final long CHANGING_PERIOD = 300 * 1000;
+	public static final long CHANGING_PERIOD = 500 * 1000;
 //	public static final long CHANGING_PERIOD = 1000 * 1000;
 	private static final double SKEW_RATIO = 0.9;
 	private static final long SENDING_DELAY = 0;
