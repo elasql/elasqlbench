@@ -41,8 +41,8 @@ public class MultiTanentsParamGen implements TxParamGenerator {
 	public static final long CHANGING_PERIOD = 500 * 1000;
 //	public static final long CHANGING_PERIOD = 1000 * 1000;
 	private static final double SKEW_RATIO = 0.9;
-	private static final long SENDING_DELAY = 0;
-//	private static final long SENDING_DELAY = 100;
+	private static final long SENDING_DELAY = 0; // Normal
+//	private static final long SENDING_DELAY = 100; // Under loaded
 
 	private static final AtomicReference<YcsbLatestGenerator> STATIC_GEN_FOR_TANENT;
 
