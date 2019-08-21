@@ -89,18 +89,7 @@ public class TpccMigrationRange implements MigrationRange {
 		Set<RecordKey> chunk = new HashSet<RecordKey>();
 		int chunkSize = 0;
 		
-		while (chunkGenerator.hasNext() && chunkSize < maxChunkSize) {
-			RecordKey key = chunkGenerator.next();
-			
-			if (useBytesForSize)
-				chunkSize += recordSize(key.getTableName());
-			else
-				chunkSize++;
-			
-			chunk.add(key);
-		}
-		
-		// If there is no more keys in the generator, add the new inserted keys
+		// Migrate the new inserted keys
 		while (!nextMigratingNewKeys.isEmpty() && chunkSize < maxChunkSize) {
 			RecordKey key = nextMigratingNewKeys.poll();
 			
@@ -114,6 +103,18 @@ public class TpccMigrationRange implements MigrationRange {
 			
 			chunk.add(key);
 			newKeysInRecentChunk.add(key);
+		}
+		
+		// Migrate the other existing keys
+		while (chunkGenerator.hasNext() && chunkSize < maxChunkSize) {
+			RecordKey key = chunkGenerator.next();
+			
+			if (useBytesForSize)
+				chunkSize += recordSize(key.getTableName());
+			else
+				chunkSize++;
+			
+			chunk.add(key);
 		}
 		
 		return chunk;

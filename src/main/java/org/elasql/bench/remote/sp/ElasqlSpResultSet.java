@@ -28,6 +28,13 @@ public class ElasqlSpResultSet implements SutResultSet {
 		recs = result.getRecords();
 		sch = result.getSchema();
 	}
+	
+	public int getSender() {
+		if (!sch.hasField("sender"))
+			return -1;
+		int nodeId = (int) recs[0].getVal("sender").asJavaVal();
+		return nodeId;
+	}
 
 	public boolean isCommitted() {
 		if (!sch.hasField("status"))

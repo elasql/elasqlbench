@@ -13,9 +13,9 @@ public class TpccBeforePartPlan extends TpccPartitionPlan {
 	public static final int NORMAL_WAREHOUSE_PER_PART = 10;
 	
 	// "HOT_WAREHOUSE_PER_HOT_PART * NUM_HOT_PARTS" should be <= NUM_PARTITIONS
-	public static final int HOT_WAREHOUSE_PER_HOT_PART = 3; // Test Set 4
-//	public static final int HOT_WAREHOUSE_PER_HOT_PART = 2; // Test Set 3
-	public static final int NUM_HOT_PARTS = 2;
+//	public static final int HOT_WAREHOUSE_PER_HOT_PART = 3; // Test Set 4
+	public static final int HOT_WAREHOUSE_PER_HOT_PART = 2; // Test Set 3
+	public static final int NUM_HOT_PARTS = 3;
 	
 	public static final int MAX_NORMAL_WID = NORMAL_WAREHOUSE_PER_PART
 			* PartitionMetaMgr.NUM_PARTITIONS;

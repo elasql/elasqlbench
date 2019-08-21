@@ -10,8 +10,17 @@ import org.elasql.storage.metadata.PartitionMetaMgr;
 
 public class TpccScaleoutBeforePartPlan extends TpccPartitionPlan {
 	
-	public static final int NUM_HOT_PARTS = 3;
-	public static final int HOT_WAREHOUSE_PER_HOT_PART = 2;
+	// 1 to 1
+	public static final int NUM_HOT_PARTS = 1;
+	public static final int HOT_WAREHOUSE_PER_HOT_PART = 1;
+	
+	// 3 to 3
+//	public static final int NUM_HOT_PARTS = 3;
+//	public static final int HOT_WAREHOUSE_PER_HOT_PART = 1;
+	
+	// 3 to 6
+//	public static final int NUM_HOT_PARTS = 3;
+//	public static final int HOT_WAREHOUSE_PER_HOT_PART = 2;
 	
 	// we wish to distribute the hot warehouses to the empty partitions
 	// each empty partition should get one hot warehouse.

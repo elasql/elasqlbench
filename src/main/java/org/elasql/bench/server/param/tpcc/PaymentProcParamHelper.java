@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.elasql.bench.server.param.tpcc;
 
+import org.elasql.server.Elasql;
 import org.vanilladb.core.remote.storedprocedure.SpResultSet;
 import org.vanilladb.core.sql.BigIntConstant;
 import org.vanilladb.core.sql.DoubleConstant;
@@ -102,6 +103,11 @@ public class PaymentProcParamHelper extends StoredProcedureParamHelper {
 		rec.setVal("h_date", new BigIntConstant(hDateLong));
 		if (isBadCredit)
 			rec.setVal("c_data", new VarcharConstant(cDataStr, Type.VARCHAR(200)));
+		
+		// Sender
+		sch.addField("sender", Type.INTEGER);
+		rec.setVal("sender", new IntegerConstant(Elasql.serverId()));
+		
 		return new SpResultSet(sch, rec);
 	}
 

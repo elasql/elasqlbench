@@ -25,7 +25,6 @@ import org.vanilladb.bench.StatisticMgr;
 import org.vanilladb.bench.TransactionType;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
-import org.vanilladb.bench.benchmarks.tpcc.rte.TpccTxExecutor;
 import org.vanilladb.bench.remote.SutConnection;
 import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 import org.vanilladb.bench.rte.TransactionExecutor;
@@ -35,7 +34,7 @@ public class ElasqlTpccRte extends RemoteTerminalEmulator<TpccTransactionType> {
 	
 	private int homeWid;
 	private static Random txnTypeRandom;
-	private Map<TransactionType, TpccTxExecutor> executors;
+	private Map<TransactionType, ElasqlTpccTxExecutor> executors;
 
 	public ElasqlTpccRte(SutConnection conn, StatisticMgr statMgr, int homeWarehouseId, int homeDistrictId) {
 		super(conn, statMgr);
@@ -46,9 +45,9 @@ public class ElasqlTpccRte extends RemoteTerminalEmulator<TpccTransactionType> {
 		
 		homeWid = homeWarehouseId;
 		txnTypeRandom = new Random();
-		executors = new HashMap<TransactionType, TpccTxExecutor>();
-		executors.put(TpccTransactionType.NEW_ORDER, new TpccTxExecutor(new NewOrderParamGen(homeWid, homeDistrictId)));
-		executors.put(TpccTransactionType.PAYMENT, new TpccTxExecutor(new PaymentParamGen(homeWid)));
+		executors = new HashMap<TransactionType, ElasqlTpccTxExecutor>();
+		executors.put(TpccTransactionType.NEW_ORDER, new ElasqlTpccTxExecutor(new NewOrderParamGen(homeWid, homeDistrictId)));
+		executors.put(TpccTransactionType.PAYMENT, new ElasqlTpccTxExecutor(new PaymentParamGen(homeWid)));
 		// TODO: Not implemented
 //		executors.put(TpccTransactionType.ORDER_STATUS, new TpccTxExecutor(new OrderStatusParamGen(homeWid)));
 //		executors.put(TpccTransactionType.DELIVERY, new TpccTxExecutor(new DeliveryParamGen(homeWid)));

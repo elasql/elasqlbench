@@ -15,10 +15,12 @@
  *******************************************************************************/
 package org.elasql.bench.server.param.tpcc;
 
+import org.elasql.server.Elasql;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.core.remote.storedprocedure.SpResultSet;
 import org.vanilladb.core.sql.BigIntConstant;
 import org.vanilladb.core.sql.DoubleConstant;
+import org.vanilladb.core.sql.IntegerConstant;
 import org.vanilladb.core.sql.Schema;
 import org.vanilladb.core.sql.Type;
 import org.vanilladb.core.sql.VarcharConstant;
@@ -89,6 +91,10 @@ public class NewOrderProcParamHelper extends StoredProcedureParamHelper {
 		String statusMsg = itemNotFound ? TpccConstants.INVALID_ITEM_MESSAGE
 				: " ";
 		rec.setVal("status_msg", new VarcharConstant(statusMsg, statusMsgType));
+		
+		// Sender
+		sch.addField("sender", Type.INTEGER);
+		rec.setVal("sender", new IntegerConstant(Elasql.serverId()));
 
 		return new SpResultSet(sch, rec);
 	}
