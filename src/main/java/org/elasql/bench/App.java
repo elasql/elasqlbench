@@ -40,7 +40,7 @@ public class App {
 			benchmarker = new ElasqlMicroBenchmarker(driver, nodeId);
 			break;
 		case TPCC:
-			benchmarker = new ElasqlTpccBenchmarker(driver);
+			benchmarker = new ElasqlTpccBenchmarker(driver, nodeId);
 			break;
 		case TPCE:
 			benchmarker = new ElasqlTpceBenchmarker(driver, nodeId);

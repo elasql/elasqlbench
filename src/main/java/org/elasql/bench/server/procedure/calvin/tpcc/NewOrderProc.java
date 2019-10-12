@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.elasql.bench.server.param.tpcc.NewOrderProcParamHelper;
+import org.elasql.bench.tpcc.ElasqlTpccConstants;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.sql.RecordKey;
@@ -38,7 +39,8 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 	// for this to be used in prepareKeys()
 	private static int[] distrOIds;
 	static {
-		distrOIds = new int[TpccConstants.NUM_WAREHOUSES * TpccConstants.DISTRICTS_PER_WAREHOUSE + 100];
+		distrOIds = new int[ElasqlTpccConstants.ELASQL_NUM_WAREHOUSES *
+		                    TpccConstants.DISTRICTS_PER_WAREHOUSE + 100];
 		for (int i = 0; i < distrOIds.length; i++)
 			distrOIds[i] = 3001;
 	}

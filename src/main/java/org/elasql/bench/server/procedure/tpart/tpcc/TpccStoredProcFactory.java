@@ -15,7 +15,9 @@ public class TpccStoredProcFactory implements TPartStoredProcedureFactory {
 		case NEW_ORDER:
 			sp = new NewOrderProc(txNum);
 			break;
-
+		case PAYMENT:
+			sp = new PaymentProc(txNum);
+			break;
 		case START_PROFILING:
 			sp = new StartProfilingProc(txNum);
 			break;

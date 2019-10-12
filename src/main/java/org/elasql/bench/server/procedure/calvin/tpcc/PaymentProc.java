@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.elasql.bench.server.param.tpcc.PaymentProcParamHelper;
+import org.elasql.bench.tpcc.ElasqlTpccConstants;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.sql.RecordKey;
@@ -21,8 +22,9 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 	// TODO: This should be another way to solve the problem
 	private static int[][][] historyIds;
 	static {
-		historyIds = new int[TpccConstants.NUM_WAREHOUSES][TpccConstants.DISTRICTS_PER_WAREHOUSE][TpccConstants.CUSTOMERS_PER_DISTRICT];
-		for (int i = 0; i < TpccConstants.NUM_WAREHOUSES; i++)
+		historyIds = new int[ElasqlTpccConstants.ELASQL_NUM_WAREHOUSES]
+				[TpccConstants.DISTRICTS_PER_WAREHOUSE][TpccConstants.CUSTOMERS_PER_DISTRICT];
+		for (int i = 0; i < ElasqlTpccConstants.ELASQL_NUM_WAREHOUSES; i++)
 			for (int j = 0; j < TpccConstants.DISTRICTS_PER_WAREHOUSE; j++)
 				for (int k = 0; k < TpccConstants.CUSTOMERS_PER_DISTRICT; k++)
 					historyIds[i][j][k] = 2;
@@ -72,7 +74,7 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 		keyEntryMap.put("w_id", widCon);
 		warehouseKey = new RecordKey("warehouse", keyEntryMap);
 		addReadKey(warehouseKey);
-		// UPDATE ... FROM warehous WHERE w_id = wid
+		// UPDATE ... FROM warehouse WHERE w_id = wid
 		addWriteKey(warehouseKey);
 
 		// SELECT ... FROM district WHERE d_w_id = wid AND d_id = did

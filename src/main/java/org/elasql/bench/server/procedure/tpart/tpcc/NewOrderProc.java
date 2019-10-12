@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.elasql.bench.server.param.tpcc.NewOrderProcParamHelper;
+import org.elasql.bench.tpcc.ElasqlTpccConstants;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.tpart.TPartStoredProcedure;
 import org.elasql.sql.RecordKey;
@@ -15,9 +16,20 @@ import org.vanilladb.core.sql.IntegerConstant;
 
 
 /**
- * The stored procedure which executes the new order transaction defined in
- * TPC-C 5.11.
+ * Entering a new order is done in a single database transaction with the
+ * following steps:<br />
+ * 1. Create an order header, comprised of: <br />
+ * - 2 row selections with data retrieval <br />
+ * - 1 row selections with data retrieval and update<br />
+ * - 2 row insertions <br />
+ * 2. Order a variable number of items (average ol_cnt = 10), comprised of:
+ * <br />
+ * - (1 * ol_cnt) row selections with data retrieval <br />
+ * - (1 * ol_cnt) row selections with data retrieval and update <br />
+ * - (1 * ol_cnt) row insertions <br />
  * 
+ * @author yslin
+ *
  */
 public class NewOrderProc extends TPartStoredProcedure<NewOrderProcParamHelper> {
 	// hard code the next order id
@@ -26,7 +38,8 @@ public class NewOrderProc extends TPartStoredProcedure<NewOrderProcParamHelper> 
 	// for this to be used in prepareKeys()
 	private static int[] distrOIds;
 	static {
-		distrOIds = new int[TpccConstants.NUM_WAREHOUSES * TpccConstants.DISTRICTS_PER_WAREHOUSE + 100];
+		distrOIds = new int[ElasqlTpccConstants.ELASQL_NUM_WAREHOUSES *
+		                    TpccConstants.DISTRICTS_PER_WAREHOUSE + 100];
 		for (int i = 0; i < distrOIds.length; i++)
 			distrOIds[i] = 3001;
 	}

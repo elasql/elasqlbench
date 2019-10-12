@@ -1,5 +1,6 @@
 package org.elasql.bench.server.metadata;
 
+import org.elasql.bench.tpcc.ElasqlTpccConstants;
 import org.elasql.server.Elasql;
 import org.elasql.sql.RecordKey;
 import org.elasql.storage.metadata.PartitionPlan;
@@ -54,7 +55,7 @@ public class TpccPartitionPlan extends PartitionPlan {
 		// (items are fully replicated over all partitions)
 		if (key.getTableName().equals("item"))
 			return Elasql.serverId();
-
-		return getWarehouseId(key) - 1;
+		
+		return (getWarehouseId(key) - 1) / ElasqlTpccConstants.WAREHOUSE_PER_NODE;
 	}
 }

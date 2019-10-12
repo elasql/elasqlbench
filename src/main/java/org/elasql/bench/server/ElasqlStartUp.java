@@ -8,6 +8,7 @@ import org.elasql.bench.server.metadata.MicroBenchPartitionPlan;
 import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.bench.server.metadata.TpcePartitionPlan;
 import org.elasql.bench.server.metadata.YcsbMetisPartitionPlan;
+import org.elasql.bench.server.migraion.TpccMigrationMgr;
 import org.elasql.bench.server.migraion.YcsbMigrationMgr;
 import org.elasql.bench.server.procedure.calvin.tpce.TpceStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.ycsb.YcsbStoredProcFactory;
@@ -150,7 +151,7 @@ public class ElasqlStartUp implements SutStartUp {
 		case TPCC:
 			if (logger.isLoggable(Level.INFO))
 				logger.info("using TPC-C stored procedures for T-Part");
-			factory = new org.elasql.bench.server.procedure.calvin.tpcc.TpccStoredProcFactory();
+			factory = new org.elasql.bench.server.procedure.tpart.tpcc.TpccStoredProcFactory();
 			break;
 		case TPCE:
 			throw new UnsupportedOperationException("No TPC-E for now");
@@ -203,7 +204,7 @@ public class ElasqlStartUp implements SutStartUp {
 		case MICRO:
 			throw new UnsupportedOperationException("No Micro Migration Manager for now");
 		case TPCC:
-			throw new UnsupportedOperationException("No TPC-C Migration Manager for now");
+			return new TpccMigrationMgr();
 		case TPCE:
 			throw new UnsupportedOperationException("No TPC-E Migration Manager for now");
 		case YCSB:

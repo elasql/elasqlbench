@@ -8,6 +8,7 @@ import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 import org.vanilladb.bench.ycsb.YcsbBenchmarker;
 
 public class ElasqlYcsbBenchmarker extends YcsbBenchmarker {
+	
 	private int nodeId;
 	
 	public ElasqlYcsbBenchmarker(SutDriver sutDriver, int nodeId) {

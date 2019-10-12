@@ -4,11 +4,11 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.elasql.bench.tpcc.ElasqlTpccConstants;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.AllExecuteProcedure;
 import org.elasql.server.Elasql;
 import org.elasql.sql.RecordKey;
-import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.tpcc.TpccConstants;
 import org.vanilladb.bench.tpcc.TpccValueGenerator;
 import org.vanilladb.bench.util.DoublePlainPrinter;
@@ -49,9 +49,11 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 		generateItems(1, TpccConstants.NUM_ITEMS);
 
 		// Generate warehouse
-		int wPerPart = TpccConstants.NUM_WAREHOUSES / PartitionMetaMgr.NUM_PARTITIONS;
-		int startWid = Elasql.serverId() * wPerPart + 1;
-		int endWid = (Elasql.serverId() + 1) * wPerPart;
+		int startWid = Elasql.serverId() * ElasqlTpccConstants.WAREHOUSE_PER_NODE + 1;
+		int endWid = (Elasql.serverId() + 1) * ElasqlTpccConstants.WAREHOUSE_PER_NODE;
+		
+		if (logger.isLoggable(Level.INFO))
+			logger.info(String.format("Loading warehouses %d ~ %d...", startWid, endWid));
 
 		for (int wid = startWid; wid <= endWid; wid++)
 			generateWarehouseInstance(wid);
