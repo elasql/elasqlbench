@@ -2,14 +2,12 @@ package org.elasql.bench.server.procedure.tpart.ycsb;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.elasql.bench.ycsb.ElasqlYcsbConstants;
+import org.elasql.bench.util.InMemoryCache;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.tpart.TPartStoredProcedure;
 import org.elasql.sql.RecordKey;
-import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.server.param.ycsb.YcsbBenchmarkProcParamHelper;
 import org.vanilladb.bench.ycsb.YcsbConstants;
 import org.vanilladb.core.sql.Constant;
@@ -17,30 +15,13 @@ import org.vanilladb.core.sql.VarcharConstant;
 
 public class YcsbBenchmarkProc extends TPartStoredProcedure<YcsbBenchmarkProcParamHelper> {
 	private static Logger logger = Logger.getLogger(YcsbBenchmarkProc.class.getName());
-
-//	private static Map<Integer, RecordKey> keyPool =
-//			new ConcurrentHashMap<Integer, RecordKey>();
 	
-	private static RecordKey[] keyPool = 
-			new RecordKey[ElasqlYcsbConstants.RECORD_PER_PART * PartitionMetaMgr.NUM_PARTITIONS];
-	
-	public static void preloadKeys() {
-		if (logger.isLoggable(Level.INFO))
-			logger.info("Preloading keys for YCSB...");
-		for (int i = 0; i < keyPool.length; i++)
-			toRecordKey(i + 1);
-		if (logger.isLoggable(Level.INFO))
-			logger.info("Preloading keys for YCSB finishes.");
-	}
+	private static InMemoryCache<Integer, RecordKey> cache = new InMemoryCache<Integer, RecordKey>();
+	private static final VarcharConstant WIRTE_VALUE = new VarcharConstant(String.format("%033d", 0));
 	
 	private static RecordKey toRecordKey(int ycsbId) {
-		RecordKey key = keyPool[ycsbId - 1];
-		if (key == null) {
-			String idString = String.format(YcsbConstants.ID_FORMAT, ycsbId);
-			key = new RecordKey("ycsb", "ycsb_id", new VarcharConstant(idString));
-			keyPool[ycsbId - 1] = key;
-		}
-		return key;
+		String idString = String.format(YcsbConstants.ID_FORMAT, ycsbId);
+		return new RecordKey("ycsb", "ycsb_id", new VarcharConstant(idString));
 	}
 
 	private RecordKey[] readKeys;
@@ -69,7 +50,8 @@ public class YcsbBenchmarkProc extends TPartStoredProcedure<YcsbBenchmarkProcPar
 			addWriteKey(key);
 			
 			// Create key-value pairs for writing
-			Constant c = new VarcharConstant(paramHelper.getWriteValue(i));
+//			Constant c = new VarcharConstant(paramHelper.getWriteValue(i));
+			Constant c = WIRTE_VALUE;
 			writeConstantMap.put(key, c);
 		}
 		

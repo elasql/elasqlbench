@@ -18,29 +18,11 @@ import org.vanilladb.core.sql.VarcharConstant;
 public class YcsbBenchmarkProc extends CalvinStoredProcedure<YcsbBenchmarkProcParamHelper> {
 	private static Logger logger = Logger.getLogger(YcsbBenchmarkProc.class.getName());
 
-	// private static Map<Integer, RecordKey> keyPool =
-	// new ConcurrentHashMap<Integer, RecordKey>();
-
-	private static RecordKey[] keyPool = new RecordKey[ElasqlYcsbConstants.RECORD_PER_PART
-			* PartitionMetaMgr.NUM_PARTITIONS];
-	
-	public static void preloadKeys() {
-		if (logger.isLoggable(Level.INFO))
-			logger.info("Preloading keys for YCSB...");
-		for (int i = 0; i < keyPool.length; i++)
-			toRecordKey(i + 1);
-		if (logger.isLoggable(Level.INFO))
-			logger.info("Preloading keys for YCSB finishes.");
-	}
+	private static final VarcharConstant WIRTE_VALUE = new VarcharConstant(String.format("%033d", 0));
 	
 	private static RecordKey toRecordKey(int ycsbId) {
-		RecordKey key = keyPool[ycsbId - 1];
-		if (key == null) {
-			String idString = String.format(YcsbConstants.ID_FORMAT, ycsbId);
-			key = new RecordKey("ycsb", "ycsb_id", new VarcharConstant(idString));
-			keyPool[ycsbId - 1] = key;
-		}
-		return key;
+		String idString = String.format(YcsbConstants.ID_FORMAT, ycsbId);
+		return new RecordKey("ycsb", "ycsb_id", new VarcharConstant(idString));
 	}
 
 	private Map<RecordKey, Constant> writeConstantMap = new HashMap<RecordKey, Constant>();
@@ -66,7 +48,8 @@ public class YcsbBenchmarkProc extends CalvinStoredProcedure<YcsbBenchmarkProcPa
 			addWriteKey(key);
 
 			// Create key-value pairs for writing
-			Constant c = new VarcharConstant(paramHelper.getWriteValue(i));
+//			Constant c = new VarcharConstant(paramHelper.getWriteValue(i));
+			Constant c = WIRTE_VALUE;
 			writeConstantMap.put(key, c);
 		}
 

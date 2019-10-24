@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
@@ -37,10 +38,11 @@ public class GoogleSimpleWorkloadsParamGen implements TxParamGenerator {
 			PartitionMetaMgr.NUM_PARTITIONS - 1: PartitionMetaMgr.NUM_PARTITIONS;
 	
 	// Google workloads
-	private static final String DATA_PATH = "/opt/shared/google-workloads.csv";
-	private static final int DATA_LEN = 1440;
+	private static final String DATA_PATH = "/opt/shared/google-workloads-2min-3days.csv";
+	private static final int DATA_LEN = 2160;
 	private static final double DATA[][]
 			= new double[DATA_LEN][NUM_PARTITIONS]; // [Time][Partition]
+	private static final boolean USE_EVEN_LOAD = false;
 
 	public static final long WARMUP_TIME = 90_000;
 	
@@ -56,22 +58,28 @@ public class GoogleSimpleWorkloadsParamGen implements TxParamGenerator {
 		RW_TX_RATE = ElasqlBenchProperties.getLoader()
 				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".RW_TX_RATE", 0.5);
 		SKEW_PARAMETER = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".SKEW_PARAMETER", 0.0);
+				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".SKEW_PARAMETER", 0.99);
 		STATIC_GEN_FOR_PART = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(ElasqlYcsbConstants.RECORD_PER_PART, SKEW_PARAMETER));
 		
 		// Get data from Google Cluster
-		try (BufferedReader reader = new BufferedReader(new FileReader(DATA_PATH))) {
-			// Data Format: Each row is a workload of a node, each value is the
-			for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
-				String line = reader.readLine();
-				String[] loads = line.split(",");
-				for (int time = 0; time < DATA_LEN; time++) {
-					DATA[time][partId] = Double.parseDouble(loads[time]);
+		if (USE_EVEN_LOAD) {
+			double load = 1.0 / NUM_PARTITIONS;
+			for (int time = 0; time < DATA_LEN; time++)
+				Arrays.fill(DATA[time], load);
+		} else {
+			try (BufferedReader reader = new BufferedReader(new FileReader(DATA_PATH))) {
+				// Data Format: Each row is a workload of a node, each value is the
+				for (int partId = 0; partId < NUM_PARTITIONS; partId++) {
+					String line = reader.readLine();
+					String[] loads = line.split(",");
+					for (int time = 0; time < DATA_LEN; time++) {
+						DATA[time][partId] = Double.parseDouble(loads[time]);
+					}
 				}
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
 		
 		// A logger for debug

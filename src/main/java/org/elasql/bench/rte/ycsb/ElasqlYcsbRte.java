@@ -18,9 +18,11 @@ public class ElasqlYcsbRte extends RemoteTerminalEmulator {
 		super(conn, statMgr);
 		// Hermes Experiments - Google Workloads
 		executor = new YcsbTxExecutor(new GoogleComplexWorkloadsParamGen(nodeId));
+//		executor = new YcsbTxExecutor(new GoogleSimpleWorkloadsParamGen(nodeId));
 		// Hermes Experiments - Hotspot Workloads
 //		executor = new YcsbTxExecutor(new MultiTanentsParamGen(nodeId));
-		
+
+//		executor = new YcsbTxExecutor(new GoogleSimpleWorkloadsParamGen(nodeId));
 //		executor = new YcsbTxExecutor(new GoogleWorkloadsParamGen(nodeId));
 //		executor = new YcsbTxExecutor(new SingleSkewWorkloadsParamGen(nodeId));
 	}
