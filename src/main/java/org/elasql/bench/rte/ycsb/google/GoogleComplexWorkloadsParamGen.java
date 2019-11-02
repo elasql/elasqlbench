@@ -240,9 +240,15 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 			int center = DATA_SIZE / 2;
 			if (timePoint >= 0 && timePoint < DATA_LEN) {
 				// Note that it might be overflowed here.
+				// The center of the 2-sided distribution changes
+				// as the time increases. It moves from 0 to DATA_SIZE
+				// and bounces back when it hits the end of the range. 
 				int windowSize = DATA_LEN / GLOBAL_SKEW_REPEAT;
+				int timeOffset = timePoint % (2 * windowSize);
+				if (timeOffset >= windowSize)
+					timeOffset = 2 * windowSize - timeOffset;
 				center = DATA_SIZE / (windowSize / GLOBAL_SKEW_CHANGE_PERIOD);
-				center *= (((timePoint % windowSize) / GLOBAL_SKEW_CHANGE_PERIOD) + 1); 
+				center *= (((timeOffset % windowSize) / GLOBAL_SKEW_CHANGE_PERIOD) + 1); 
 			}
 			
 			for (int i = 0; i < REMOTE_READ_COUNT; i++) {
