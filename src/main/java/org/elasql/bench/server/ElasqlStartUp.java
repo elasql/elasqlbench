@@ -90,7 +90,9 @@ public class ElasqlStartUp implements SutStartUp {
 			factory = getCalvinSpFactory();
 			break;
 		case TPART:
-		case TPART_LAP:
+		case HERMES:
+		case G_STORE:
+		case LEAP:
 			factory = getTPartSpFactory();
 			break;
 		}

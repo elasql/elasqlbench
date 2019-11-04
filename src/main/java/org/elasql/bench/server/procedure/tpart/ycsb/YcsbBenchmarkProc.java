@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.elasql.bench.util.InMemoryCache;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.tpart.TPartStoredProcedure;
 import org.elasql.sql.RecordKey;
@@ -16,7 +15,6 @@ import org.vanilladb.core.sql.VarcharConstant;
 public class YcsbBenchmarkProc extends TPartStoredProcedure<YcsbBenchmarkProcParamHelper> {
 	private static Logger logger = Logger.getLogger(YcsbBenchmarkProc.class.getName());
 	
-	private static InMemoryCache<Integer, RecordKey> cache = new InMemoryCache<Integer, RecordKey>();
 	private static final VarcharConstant WIRTE_VALUE = new VarcharConstant(String.format("%033d", 0));
 	
 	private static RecordKey toRecordKey(int ycsbId) {
