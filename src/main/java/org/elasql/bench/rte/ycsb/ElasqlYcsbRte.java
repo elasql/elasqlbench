@@ -2,6 +2,8 @@ package org.elasql.bench.rte.ycsb;
 
 
 import org.elasql.bench.rte.ycsb.google.GoogleComplexWorkloadsParamGen;
+import org.elasql.bench.ycsb.ElasqlYcsbConstants;
+import org.elasql.bench.ycsb.ElasqlYcsbConstants.WorkloadType;
 import org.vanilladb.bench.StatisticMgr;
 import org.vanilladb.bench.TransactionType;
 import org.vanilladb.bench.remote.SutConnection;
@@ -16,13 +18,14 @@ public class ElasqlYcsbRte extends RemoteTerminalEmulator {
 	
 	public ElasqlYcsbRte(SutConnection conn, StatisticMgr statMgr, int nodeId) {
 		super(conn, statMgr);
-		// Hermes Experiments - Google Workloads
-		executor = new YcsbTxExecutor(new GoogleComplexWorkloadsParamGen(nodeId));
-//		executor = new YcsbTxExecutor(new GoogleSimpleWorkloadsParamGen(nodeId));
-		// Hermes Experiments - Hotspot Workloads
-//		executor = new YcsbTxExecutor(new MultiTanentsParamGen(nodeId));
-
-//		executor = new YcsbTxExecutor(new GoogleSimpleWorkloadsParamGen(nodeId));
+		
+		if (ElasqlYcsbConstants.WORKLOAD_TYPE == WorkloadType.GOOGLE)
+			// Hermes Experiments - Google Workloads
+			executor = new YcsbTxExecutor(new GoogleComplexWorkloadsParamGen(nodeId));
+		else if (ElasqlYcsbConstants.WORKLOAD_TYPE == WorkloadType.MULTI_TENANTS)
+			// Hermes Experiments - Hotspot Workloads
+			executor = new YcsbTxExecutor(new MultiTanentsParamGen(nodeId));
+		
 //		executor = new YcsbTxExecutor(new GoogleWorkloadsParamGen(nodeId));
 //		executor = new YcsbTxExecutor(new SingleSkewWorkloadsParamGen(nodeId));
 	}
