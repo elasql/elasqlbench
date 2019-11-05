@@ -32,6 +32,7 @@ public class YcsbPartitionMetaMgr extends PartitionMetaMgr {
 	}
 
 	public void loadMetisPartitions() {
+		throw new RuntimeException("Method unimplemented");
 //		File file = new File(LOC_FILE_PATH);
 //		if (!file.exists()) {
 //			if (logger.isLoggable(Level.WARNING))

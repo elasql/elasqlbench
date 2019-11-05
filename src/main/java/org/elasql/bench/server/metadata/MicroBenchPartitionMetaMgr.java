@@ -31,31 +31,32 @@ public class MicroBenchPartitionMetaMgr extends PartitionMetaMgr {
 	}
 
 	public void loadMetisPartitions() {
-		File file = new File(LOC_FILE_PATH);
-		if (!file.exists()) {
-			if (logger.isLoggable(Level.WARNING))
-				logger.warning(String.format("Cannot find Metis partitions at '%s'", LOC_FILE_PATH));
-			return;
-		}
-		
-		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-
-			String sCurrentLine;
-			Map<String, Constant> keyEntryMap;
-			int line_c = 0;
-			while ((sCurrentLine = br.readLine()) != null) {
-				for (int i = 1; i <= MigrationManager.DATA_RANGE_SIZE; i++) {
-					keyEntryMap = new HashMap<String, Constant>();
-					keyEntryMap.put("i_id", new IntegerConstant(MigrationManager.DATA_RANGE_SIZE * line_c + i));
-					this.setPartition(new RecordKey("item", keyEntryMap), Integer.parseInt(sCurrentLine));
-				}
-				line_c++;
-
-			}
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		throw new RuntimeException("Method unimplemented");
+//		File file = new File(LOC_FILE_PATH);
+//		if (!file.exists()) {
+//			if (logger.isLoggable(Level.WARNING))
+//				logger.warning(String.format("Cannot find Metis partitions at '%s'", LOC_FILE_PATH));
+//			return;
+//		}
+//		
+//		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+//
+//			String sCurrentLine;
+//			Map<String, Constant> keyEntryMap;
+//			int line_c = 0;
+//			while ((sCurrentLine = br.readLine()) != null) {
+//				for (int i = 1; i <= MigrationManager.DATA_RANGE_SIZE; i++) {
+//					keyEntryMap = new HashMap<String, Constant>();
+//					keyEntryMap.put("i_id", new IntegerConstant(MigrationManager.DATA_RANGE_SIZE * line_c + i));
+//					this.setPartition(new RecordKey("item", keyEntryMap), Integer.parseInt(sCurrentLine));
+//				}
+//				line_c++;
+//
+//			}
+//
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	public boolean isFullyReplicated(RecordKey key) {

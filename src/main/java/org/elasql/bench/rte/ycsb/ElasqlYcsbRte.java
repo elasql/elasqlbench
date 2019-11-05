@@ -2,6 +2,8 @@ package org.elasql.bench.rte.ycsb;
 
 
 import org.elasql.bench.rte.ycsb.google.GoogleComplexWorkloadsParamGen;
+import org.elasql.bench.ycsb.ElasqlYcsbConstants;
+import org.elasql.bench.ycsb.ElasqlYcsbConstants.WorkloadType;
 import org.vanilladb.bench.StatisticMgr;
 import org.vanilladb.bench.TransactionType;
 import org.vanilladb.bench.remote.SutConnection;
@@ -12,17 +14,15 @@ import org.vanilladb.bench.ycsb.rte.YcsbTxExecutor;
 
 public class ElasqlYcsbRte extends RemoteTerminalEmulator {
 	
-	public static final int WORKLOAD_TYPE = 1;
-	
 	private YcsbTxExecutor executor;
 	
 	public ElasqlYcsbRte(SutConnection conn, StatisticMgr statMgr, int nodeId) {
 		super(conn, statMgr);
 		
-		if (WORKLOAD_TYPE == 1)
+		if (ElasqlYcsbConstants.WORKLOAD_TYPE == WorkloadType.GOOGLE)
 			// Hermes Experiments - Google Workloads
 			executor = new YcsbTxExecutor(new GoogleComplexWorkloadsParamGen(nodeId));
-		else if (WORKLOAD_TYPE == 2)
+		else if (ElasqlYcsbConstants.WORKLOAD_TYPE == WorkloadType.MULTI_TENANTS)
 			// Hermes Experiments - Hotspot Workloads
 			executor = new YcsbTxExecutor(new MultiTanentsParamGen(nodeId));
 		

@@ -30,9 +30,9 @@ public class MultiTanentsParamGen implements TxParamGenerator {
 	private static final int NUM_PARTITIONS =
 			(MigrationManager.ENABLE_NODE_SCALING && MigrationManager.IS_SCALING_OUT)?
 			PartitionMetaMgr.NUM_PARTITIONS - 1: PartitionMetaMgr.NUM_PARTITIONS;
-	private static final int TANENTS_PER_PART = 4;
+	public static final int TANENTS_PER_PART = 4;
 	private static final int NUM_TANENTS = NUM_PARTITIONS * TANENTS_PER_PART;
-	private static final int RECORD_PER_TANENT = ElasqlYcsbConstants.RECORD_PER_PART / TANENTS_PER_PART;
+	public static final int RECORD_PER_TANENT = ElasqlYcsbConstants.RECORD_PER_PART / TANENTS_PER_PART;
 	
 	private static final int TOTAL_READ_COUNT = 2;
 	

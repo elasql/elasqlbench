@@ -6,23 +6,24 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.elasql.bench.rte.micro.ElasqlMiroChangingbenchmarkParamGen;
 import org.elasql.remote.groupcomm.StoredProcedureCall;
 import org.elasql.server.Elasql;
 import org.elasql.server.migration.MigrationManager;
 import org.elasql.server.migration.MigrationPlan;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.bench.micro.MicroTransactionType;
+import org.vanilladb.bench.tpcc.TpccTransactionType;
 
-public class MicroMigrationManager extends MigrationManager {
-	private static Logger logger = Logger.getLogger(MicroMigrationManager.class.getName());
-
-	public static final long RECORD_PERIOD = 3000;
+public class TpccMigrationManager extends MigrationManager {
+	private static Logger logger = Logger.getLogger(TpccMigrationManager.class.getName());
+	
 	private static final int COUNTS_FOR_SLEEP = 10000;
-	private int parameterCounter = 0;
+	
+	private int dataSetCounter = 0;
 
-	public MicroMigrationManager(int nodeId) {
-		super(RECORD_PERIOD, nodeId);
+	public TpccMigrationManager(long printStatusPeriod, int nodeId) {
+		super(printStatusPeriod, nodeId);
+		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -30,19 +31,20 @@ public class MicroMigrationManager extends MigrationManager {
 		// No grouping
 		return key;
 	}
-	
+
 	@Override
 	public long getWaitingTime() {
-		return ElasqlMiroChangingbenchmarkParamGen.START_DELAY * 1000;
+		throw new RuntimeException("Method unimplemented");
 	}
-	
+
 	@Override
 	public long getMigrationPreiod() {
-		return ElasqlMiroChangingbenchmarkParamGen.CHANGE_PREIOD;
+		throw new RuntimeException("Method unimplemented");
 	}
-	
+
+	@Override
 	public long getMigrationStopTime() {
-		return 1000_000;
+		throw new RuntimeException("Method unimplemented");
 	}
 	
 	@Override
@@ -55,34 +57,41 @@ public class MicroMigrationManager extends MigrationManager {
 		throw new RuntimeException("Method unimplemented");
 	}
 
-	/**
-	 * This should only be executed on the sequencer node. Currently not use!!
-	 */
 	@Override
-	public void onReceiveAnalysisReq(Object[] metadata) {
+	public void sendLaunchClayReq(Object[] metadata) {
 		// Send a store procedure call
-		Object[] call = {
-				new StoredProcedureCall(-1, -1, MicroTransactionType.MIGRATION_ANALYSIS.ordinal(), (Object[]) null) };
+		Object[] call = { new StoredProcedureCall(-1, -1, TpccTransactionType.LAUNCH_CLAY.ordinal(), (Object[]) null) };
+		// Cannot be called from Appia thread
 		Elasql.connectionMgr().sendBroadcastRequest(call, false);
 	}
 
-	/**
-	 * This should only be executed on the sequencer node.
-	 */
+	@Override
+	public void broadcastMigrateKeys(Object[] params) {
+		Object[] call;
+		call = new Object[] {
+				new StoredProcedureCall(-1, -1, TpccTransactionType.BROADCAST_MIGRAKEYS.ordinal(), params) };
+		// Cannot be called from Appia thread
+		Elasql.connectionMgr().sendBroadcastRequest(call, false);
+	}
+
 	@Override
 	public void onReceiveStartMigrationReq(Object[] metadata) {
 		// Send a store procedure call
 		Object[] call = {
-				new StoredProcedureCall(-1, -1, MicroTransactionType.START_MIGRATION.ordinal(), (Object[]) null) };
+				new StoredProcedureCall(-1, -1, TpccTransactionType.START_MIGRATION.ordinal(), (Object[]) null) };
 		Elasql.connectionMgr().sendBroadcastRequest(call, true);
 	}
 
-	/**
-	 * This should only be executed on the data source node.
-	 */
+	@Override
+	public void onReceiveAnalysisReq(Object[] metadata) {
+		// Send a store procedure call
+		Object[] call = {
+				new StoredProcedureCall(-1, -1, TpccTransactionType.MIGRATION_ANALYSIS.ordinal(), (Object[]) null) };
+		Elasql.connectionMgr().sendBroadcastRequest(call, false);
+	}
+
 	@Override
 	public void onReceiveAsyncMigrateReq(Object[] metadata) {
-
 		System.out.println("Revoive Async at source");
 		Object[] params = getAsyncPushingParameters();
 
@@ -100,37 +109,7 @@ public class MicroMigrationManager extends MigrationManager {
 		Elasql.connectionMgr().sendBroadcastRequest(call, true);
 	}
 
-	/**
-	 * This should only be executed on the Sequence node.
-	 */
-
 	@Override
-	public void sendLaunchClayReq(Object[] metadata) {
-		// Send a store procedure call
-		Object[] call = {
-				new StoredProcedureCall(-1, -1, MicroTransactionType.LAUNCH_CLAY.ordinal(), (Object[]) null) };
-		// Call not from appia thread
-		Elasql.connectionMgr().sendBroadcastRequest(call, false);
-
-	}
-
-	/**
-	 * This should only be executed on the Sequence node.
-	 */
-	@Override
-	public void broadcastMigrateKeys(Object[] migratekeys) {
-
-		Object[] call;
-		call = new Object[] {
-				new StoredProcedureCall(-1, -1, MicroTransactionType.BROADCAST_MIGRAKEYS.ordinal(), migratekeys) };
-		System.out.println("I am going to send the keys");
-		// Call not from appia thread
-		Elasql.connectionMgr().sendBroadcastRequest(call, false);
-
-	}
-
-	@Override
-	// XXX: Not used for now
 	public void onReceiveStopMigrateReq(Object[] metadata) {
 		// Send a store procedure call
 		Object[] call = {
@@ -141,6 +120,32 @@ public class MicroMigrationManager extends MigrationManager {
 	@Override
 	public void prepareAnalysis() {
 		// Do nothing
+	}
+
+	@Override
+	public int recordSize(String tableName) {
+		switch(tableName){
+		case "warehouse":
+			return 344;
+		case "district":
+			return 352;
+		case "customer":
+			return 2552;
+		case "history":
+			return 132;
+		case "new_order":
+			return 12;
+		case "orders":
+			return 36;
+		case "order_line":
+			return 140;
+		case "item":
+			return 320;
+		case "stock":
+			return 1184;
+		default:
+			throw new IllegalArgumentException("No such table for TPCC");
+		}
 	}
 
 	@Override
@@ -160,9 +165,9 @@ public class MicroMigrationManager extends MigrationManager {
 	}
 
 	private void addOrSleep(Map<RecordKey, Boolean> map, RecordKey key) {
-		parameterCounter++;
+		dataSetCounter++;
 
-		if (parameterCounter % COUNTS_FOR_SLEEP == 0) {
+		if (dataSetCounter % COUNTS_FOR_SLEEP == 0) {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
@@ -171,16 +176,6 @@ public class MicroMigrationManager extends MigrationManager {
 		}
 
 		map.put(key, Boolean.FALSE);
-	}
-
-	@Override
-	public int recordSize(String tableName) {
-		switch (tableName) {
-		case "item":
-			return 320;
-		default:
-			throw new IllegalArgumentException("No such table for TPCC");
-		}
 	}
 
 }
