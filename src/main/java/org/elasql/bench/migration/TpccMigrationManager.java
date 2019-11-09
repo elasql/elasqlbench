@@ -11,19 +11,19 @@ import org.elasql.server.Elasql;
 import org.elasql.server.migration.MigrationManager;
 import org.elasql.server.migration.MigrationPlan;
 import org.elasql.sql.RecordKey;
-import org.vanilladb.bench.micro.MicroTransactionType;
+import org.vanilladb.bench.BenchmarkerParameters;
 import org.vanilladb.bench.tpcc.TpccTransactionType;
 
 public class TpccMigrationManager extends MigrationManager {
 	private static Logger logger = Logger.getLogger(TpccMigrationManager.class.getName());
-	
+
+	public static final long RECORD_PERIOD = 5000;
 	private static final int COUNTS_FOR_SLEEP = 10000;
 	
 	private int dataSetCounter = 0;
 
-	public TpccMigrationManager(long printStatusPeriod, int nodeId) {
-		super(printStatusPeriod, nodeId);
-		// TODO Auto-generated constructor stub
+	public TpccMigrationManager(int nodeId) {
+		super(RECORD_PERIOD, nodeId);
 	}
 
 	@Override
@@ -34,17 +34,18 @@ public class TpccMigrationManager extends MigrationManager {
 
 	@Override
 	public long getWaitingTime() {
-		throw new RuntimeException("Method unimplemented");
+		return BenchmarkerParameters.WARM_UP_INTERVAL;
+//		return 10;
 	}
 
 	@Override
 	public long getMigrationPreiod() {
-		throw new RuntimeException("Method unimplemented");
+		return 60 * 1000;
 	}
 
 	@Override
 	public long getMigrationStopTime() {
-		throw new RuntimeException("Method unimplemented");
+		return BenchmarkerParameters.WARM_UP_INTERVAL + BenchmarkerParameters.BENCHMARK_INTERVAL;
 	}
 	
 	@Override
@@ -102,10 +103,10 @@ public class TpccMigrationManager extends MigrationManager {
 		Object[] call;
 		if (params.length > 0) {
 			call = new Object[] {
-					new StoredProcedureCall(-1, -1, MicroTransactionType.ASYNC_MIGRATE.ordinal(), params) };
+					new StoredProcedureCall(-1, -1, TpccTransactionType.ASYNC_MIGRATE.ordinal(), params) };
 		} else
 			call = new Object[] {
-					new StoredProcedureCall(-1, -1, MicroTransactionType.STOP_MIGRATION.ordinal(), (Object[]) null) };
+					new StoredProcedureCall(-1, -1, TpccTransactionType.STOP_MIGRATION.ordinal(), (Object[]) null) };
 		Elasql.connectionMgr().sendBroadcastRequest(call, true);
 	}
 
@@ -113,7 +114,7 @@ public class TpccMigrationManager extends MigrationManager {
 	public void onReceiveStopMigrateReq(Object[] metadata) {
 		// Send a store procedure call
 		Object[] call = {
-				new StoredProcedureCall(-1, -1, MicroTransactionType.STOP_MIGRATION.ordinal(), (Object[]) null) };
+				new StoredProcedureCall(-1, -1, TpccTransactionType.STOP_MIGRATION.ordinal(), (Object[]) null) };
 		Elasql.connectionMgr().sendBroadcastRequest(call, true);
 	}
 

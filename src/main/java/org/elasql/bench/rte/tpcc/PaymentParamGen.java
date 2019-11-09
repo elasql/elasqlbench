@@ -1,5 +1,6 @@
 package org.elasql.bench.rte.tpcc;
 
+import org.elasql.bench.tpcc.ElasqlTpccConstants;
 import org.vanilladb.bench.TransactionType;
 import org.vanilladb.bench.tpcc.TpccConstants;
 import org.vanilladb.bench.tpcc.TpccTransactionType;
@@ -35,8 +36,8 @@ public class PaymentParamGen implements TpccTxParamGenerator {
 		 * Customer resident warehouse is the home warehouse 85% of the time and
 		 * is a randomly selected remote warehouse 15% of the time.
 		 */
-		if (valueGen.rng().nextDouble() >= 0.85 && TpccConstants.NUM_WAREHOUSES > 1) {
-			pars[2] = valueGen.numberExcluding(1, TpccConstants.NUM_WAREHOUSES, homeWid);
+		if (valueGen.rng().nextDouble() >= 0.85 && ElasqlTpccConstants.ELASQL_NUM_WAREHOUSES > 1) {
+			pars[2] = valueGen.numberExcluding(1, ElasqlTpccConstants.ELASQL_NUM_WAREHOUSES, homeWid);
 			pars[3] = valueGen.number(1, 10);
 		} else {
 			pars[2] = homeWid;

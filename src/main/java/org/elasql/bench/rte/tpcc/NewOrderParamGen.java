@@ -1,5 +1,6 @@
 package org.elasql.bench.rte.tpcc;
 
+import org.elasql.bench.tpcc.ElasqlTpccConstants;
 import org.vanilladb.bench.TransactionType;
 import org.vanilladb.bench.tpcc.TpccConstants;
 import org.vanilladb.bench.tpcc.TpccTransactionType;
@@ -56,8 +57,8 @@ public class NewOrderParamGen implements TpccTxParamGenerator {
 
 			// TODO: Verify this
 			// ol_supply_w_id. 1% of items are supplied by remote warehouse
-			if (valueGen.rng().nextDouble() < 0.05 && TpccConstants.NUM_WAREHOUSES > 1) {
-				pars[++j] = valueGen.numberExcluding(1, TpccConstants.NUM_WAREHOUSES, homeWid);
+			if (valueGen.rng().nextDouble() < 0.05 && ElasqlTpccConstants.ELASQL_NUM_WAREHOUSES > 1) {
+				pars[++j] = valueGen.numberExcluding(1, ElasqlTpccConstants.ELASQL_NUM_WAREHOUSES, homeWid);
 				allLocal = false;
 			} else
 				pars[++j] = homeWid;

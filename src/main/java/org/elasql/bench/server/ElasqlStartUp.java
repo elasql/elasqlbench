@@ -4,6 +4,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.elasql.bench.migration.MicroMigrationManager;
+import org.elasql.bench.migration.TpccMigrationManager;
 import org.elasql.bench.migration.YcsbMigrationManager;
 import org.elasql.bench.server.metadata.MicroBenchPartitionMetaMgr;
 import org.elasql.bench.server.metadata.TpccPartitionMetaMgr;
@@ -172,7 +173,8 @@ public class ElasqlStartUp implements SutStartUp {
 			migraMgr = new MicroMigrationManager(nodeId);
 			break;
 		case TPCC:
-			throw new UnsupportedOperationException("No TPC-C for now");
+			migraMgr = new TpccMigrationManager(nodeId);
+			break;
 		case YCSB:
 			migraMgr = new YcsbMigrationManager(nodeId);
 			break;
