@@ -7,18 +7,18 @@ import org.elasql.bench.server.metadata.MicroBenchMetisPartitionPlan;
 import org.elasql.bench.server.metadata.MicroBenchPartitionPlan;
 import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.bench.server.metadata.TpcePartitionPlan;
-import org.elasql.bench.server.metadata.YcsbMetisPartitionPlan;
+import org.elasql.bench.server.metadata.ycsb.YcsbMetisPartitionPlan;
+import org.elasql.bench.server.metadata.ycsb.YcsbRangePartitionPlan;
+import org.elasql.bench.server.metadata.ycsb.YcsbSingleTenantScaleOutPartPlan;
 import org.elasql.bench.server.migraion.TpccMigrationMgr;
 import org.elasql.bench.server.migraion.YcsbMigrationMgr;
 import org.elasql.bench.server.procedure.calvin.tpce.TpceStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.ycsb.YcsbStoredProcFactory;
-import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.migration.MigrationMgr;
 import org.elasql.procedure.DdStoredProcedureFactory;
 import org.elasql.server.Elasql;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.storage.metadata.PartitionPlan;
-import org.elasql.storage.metadata.RangePartitionPlan;
 import org.vanilladb.bench.BenchmarkerParameters;
 import org.vanilladb.bench.server.SutStartUp;
 
@@ -181,13 +181,13 @@ public class ElasqlStartUp implements SutStartUp {
 		case YCSB:
 			if (MigrationMgr.ENABLE_NODE_SCALING) {
 				// For elastic experiments
-				int numOfPartitions = MigrationMgr.IS_SCALING_OUT?
-						PartitionMetaMgr.NUM_PARTITIONS - 1: PartitionMetaMgr.NUM_PARTITIONS;
-				partPlan = new RangePartitionPlan("ycsb_id", ElasqlYcsbConstants.RECORD_PER_PART *
-						numOfPartitions, numOfPartitions);
+				if (MigrationMgr.IS_SCALING_OUT) {
+					partPlan = new YcsbRangePartitionPlan(PartitionMetaMgr.NUM_PARTITIONS - 1);
+				} else {
+					partPlan = new YcsbSingleTenantScaleOutPartPlan(PartitionMetaMgr.NUM_PARTITIONS, 4);
+				}
 			} else {
-				partPlan =  new RangePartitionPlan("ycsb_id", ElasqlYcsbConstants.RECORD_PER_PART *
-						PartitionMetaMgr.NUM_PARTITIONS, PartitionMetaMgr.NUM_PARTITIONS);
+				partPlan = new YcsbRangePartitionPlan(PartitionMetaMgr.NUM_PARTITIONS);
 //				partPlan =  new HashPartitionPlan("ycsb_id");
 			}
 			

@@ -8,6 +8,8 @@ import org.vanilladb.core.sql.Constant;
 
 public class MicroBenchPartitionPlan extends PartitionPlan {
 	
+	private static final long serialVersionUID = 1L;
+
 	public boolean isFullyReplicated(RecordKey key) {
 		if (key.getKeyVal("i_id") != null) {
 			return false;
@@ -26,5 +28,21 @@ public class MicroBenchPartitionPlan extends PartitionPlan {
 			// Fully replicated
 			return Elasql.serverId();
 		}
+	}
+
+	@Override
+	public PartitionPlan getBasePartitionPlan() {
+		return this;
+	}
+
+	@Override
+	public boolean isBasePartitionPlan() {
+		return true;
+	}
+
+	@Override
+	public void changeBasePartitionPlan(PartitionPlan plan) {
+		throw new RuntimeException("There is no base partition plan in "
+				+ "MicroBenchPartitionPlan that can be changed");
 	}
 }

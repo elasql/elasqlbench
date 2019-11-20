@@ -10,11 +10,6 @@ import org.vanilladb.core.sql.Constant;
 public class YcsbMigrationMgr extends MigrationMgr {
 
 	@Override
-	public String getMigrationTableName() {
-		return "ycsb";
-	}
-
-	@Override
 	public Iterator<RecordKey> toKeyIterator(MigrationRange range) {
 		return new YcsbKeyIterator(range);
 	}

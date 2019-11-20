@@ -7,6 +7,8 @@ import org.vanilladb.core.sql.Constant;
 
 public class TpcePartitionPlan extends PartitionPlan {
 
+	private static final long serialVersionUID = 1L;
+
 	@Override
 	public boolean isFullyReplicated(RecordKey key) {
 		return false;
@@ -17,6 +19,22 @@ public class TpcePartitionPlan extends PartitionPlan {
 		String fld = key.getFields()[0];
 		Constant val = key.getKeyVal(fld);
 		return Math.abs(val.hashCode() % PartitionMetaMgr.NUM_PARTITIONS);
+	}
+
+	@Override
+	public PartitionPlan getBasePartitionPlan() {
+		return this;
+	}
+
+	@Override
+	public boolean isBasePartitionPlan() {
+		return true;
+	}
+
+	@Override
+	public void changeBasePartitionPlan(PartitionPlan plan) {
+		throw new RuntimeException("There is no base partition plan in "
+				+ "TpcePartitionPlan that can be changed");
 	}
 
 }

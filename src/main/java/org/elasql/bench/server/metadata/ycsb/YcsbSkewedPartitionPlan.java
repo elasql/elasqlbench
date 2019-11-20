@@ -1,4 +1,4 @@
-package org.elasql.bench.server.metadata;
+package org.elasql.bench.server.metadata.ycsb;
 
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.server.Elasql;
@@ -10,6 +10,8 @@ import org.vanilladb.core.sql.Constant;
 // Assume there are 4 nodes and 16 tanents.
 // We put 7 tanents on the first node and the rest 9 on the other 3 nodes.
 public class YcsbSkewedPartitionPlan extends PartitionPlan {
+	
+	private static final long serialVersionUID = 1L;
 	
 	private static final int NUM_RECORDS = ElasqlYcsbConstants.RECORD_PER_PART * 4;
 	private static final int RECORDS_ON_FIRST = NUM_RECORDS / 16 * 7;
@@ -39,5 +41,21 @@ public class YcsbSkewedPartitionPlan extends PartitionPlan {
 			// Fully replicated
 			return Elasql.serverId();
 		}
+	}
+
+	@Override
+	public PartitionPlan getBasePartitionPlan() {
+		return this;
+	}
+
+	@Override
+	public boolean isBasePartitionPlan() {
+		return true;
+	}
+
+	@Override
+	public void changeBasePartitionPlan(PartitionPlan plan) {
+		throw new RuntimeException("There is no base partition plan in "
+				+ "YcsbMetisPartitionPlan that can be changed");
 	}
 }

@@ -20,9 +20,9 @@ import org.vanilladb.bench.util.YcsbLatestGenerator;
 import org.vanilladb.bench.ycsb.YcsbConstants;
 import org.vanilladb.bench.ycsb.YcsbTransactionType;
 
-public class MultiTanentsParamGen implements TxParamGenerator {
+public class MultiTenantsParamGen implements TxParamGenerator {
 	
-	private static final boolean HAS_HOTSPOT = true;
+	private static final boolean HAS_HOTSPOT;
 	
 	private static final double RW_TX_RATE;
 	private static final double SKEW_PARAMETER;
@@ -46,6 +46,8 @@ public class MultiTanentsParamGen implements TxParamGenerator {
 	private static final AtomicReference<YcsbLatestGenerator> STATIC_GEN_FOR_TANENT;
 
 	static {
+		HAS_HOTSPOT = ElasqlBenchProperties.getLoader()
+				.getPropertyAsBoolean(MultiTenantsParamGen.class.getName() + ".HAS_HOTSPOT", true);
 		RW_TX_RATE = ElasqlBenchProperties.getLoader()
 				.getPropertyAsDouble(ElasqlYcsbParamGen.class.getName() + ".RW_TX_RATE", 0.0);
 		SKEW_PARAMETER = ElasqlBenchProperties.getLoader()
@@ -96,7 +98,7 @@ public class MultiTanentsParamGen implements TxParamGenerator {
 	private YcsbLatestGenerator[] distributionInTanent = new YcsbLatestGenerator[NUM_TANENTS];
 	private long startTime = -1;
 
-	public MultiTanentsParamGen(int nodeId) {
+	public MultiTenantsParamGen(int nodeId) {
 		for (int i = 0; i < NUM_TANENTS; i++) {
 			distributionInTanent[i] = new YcsbLatestGenerator(STATIC_GEN_FOR_TANENT.get());
 		}

@@ -5,10 +5,11 @@ import org.elasql.bench.util.ElasqlBenchProperties;
 public class ElasqlYcsbConstants {
 	
 	public static final int RECORD_PER_PART = 10_000_000;
+//	public static final int RECORD_PER_PART = 100_000;
 	public static final int MAX_RECORD_PER_PART = 100_000_000; // for insertion
 	
 	public static enum WorkloadType {
-		GOOGLE, MULTI_TENANTS
+		GOOGLE, MULTI_TENANTS, SINGLE_HOT_TENANT
 	}
 	public static final WorkloadType WORKLOAD_TYPE;
 	
@@ -21,6 +22,9 @@ public class ElasqlYcsbConstants {
 			break;
 		case 2:
 			WORKLOAD_TYPE = WorkloadType.MULTI_TENANTS;
+			break;
+		case 3:
+			WORKLOAD_TYPE = WorkloadType.SINGLE_HOT_TENANT;
 			break;
 		default:
 			throw new IllegalArgumentException("No YCSB workload for " + workloadType);	

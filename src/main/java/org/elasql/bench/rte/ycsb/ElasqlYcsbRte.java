@@ -24,7 +24,10 @@ public class ElasqlYcsbRte extends RemoteTerminalEmulator {
 			executor = new YcsbTxExecutor(new GoogleComplexWorkloadsParamGen(nodeId));
 		else if (ElasqlYcsbConstants.WORKLOAD_TYPE == WorkloadType.MULTI_TENANTS)
 			// Hermes Experiments - Hotspot Workloads
-			executor = new YcsbTxExecutor(new MultiTanentsParamGen(nodeId));
+			executor = new YcsbTxExecutor(new MultiTenantsParamGen(nodeId));
+		else if (ElasqlYcsbConstants.WORKLOAD_TYPE == WorkloadType.SINGLE_HOT_TENANT)
+			// Hermes Experiments - Single Hot Tenant Workloads
+			executor = new YcsbTxExecutor(new SingleHotTenantParamGen(nodeId));
 		
 //		executor = new YcsbTxExecutor(new GoogleWorkloadsParamGen(nodeId));
 //		executor = new YcsbTxExecutor(new SingleSkewWorkloadsParamGen(nodeId));

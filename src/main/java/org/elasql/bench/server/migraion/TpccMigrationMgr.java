@@ -9,11 +9,6 @@ import org.elasql.sql.RecordKey;
 public class TpccMigrationMgr extends MigrationMgr {
 
 	@Override
-	public String getMigrationTableName() {
-		throw new RuntimeException("Not implemented");
-	}
-
-	@Override
 	public Iterator<RecordKey> toKeyIterator(MigrationRange range) {
 		throw new RuntimeException("Not implemented");
 	}

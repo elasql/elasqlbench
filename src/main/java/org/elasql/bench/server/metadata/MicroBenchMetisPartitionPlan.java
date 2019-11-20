@@ -14,6 +14,9 @@ import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class MicroBenchMetisPartitionPlan extends PartitionPlan {
+	
+	private static final long serialVersionUID = 1L;
+
 	private static Logger logger = Logger.getLogger(MicroBenchMetisPartitionPlan.class.getName());
 
 	private static final int METIS_DATA_RANGE = 1;
@@ -73,5 +76,21 @@ public class MicroBenchMetisPartitionPlan extends PartitionPlan {
 			
 		// If not found, check the underlayer plan
 		return underlayerPlan.getPartition(key);
+	}
+
+	@Override
+	public PartitionPlan getBasePartitionPlan() {
+		return this;
+	}
+
+	@Override
+	public boolean isBasePartitionPlan() {
+		return true;
+	}
+
+	@Override
+	public void changeBasePartitionPlan(PartitionPlan plan) {
+		throw new RuntimeException("There is no base partition plan in "
+				+ "MicroBenchMetisPartitionPlan that can be changed");
 	}
 }

@@ -1,4 +1,4 @@
-package org.elasql.bench.server.metadata;
+package org.elasql.bench.server.metadata.ycsb;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,8 +14,11 @@ import org.elasql.sql.RecordKey;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.Constant;
 
+// XXX: Need to be checked before using
 public class YcsbMetisPartitionPlan extends PartitionPlan {
 	private static Logger logger = Logger.getLogger(YcsbMetisPartitionPlan.class.getName());
+	
+	private static final long serialVersionUID = 1L;
 	
 	private static final int METIS_DATA_RANGE = 1;
 	private static final int VERTEX_PER_PART = ElasqlYcsbConstants.RECORD_PER_PART / METIS_DATA_RANGE;
@@ -96,5 +99,21 @@ public class YcsbMetisPartitionPlan extends PartitionPlan {
 			
 		// If not found, check the underlayer plan
 		return underlayerPlan.getPartition(key);
+	}
+
+	@Override
+	public PartitionPlan getBasePartitionPlan() {
+		return this;
+	}
+
+	@Override
+	public boolean isBasePartitionPlan() {
+		return true;
+	}
+
+	@Override
+	public void changeBasePartitionPlan(PartitionPlan plan) {
+		throw new RuntimeException("There is no base partition plan in "
+				+ "YcsbMetisPartitionPlan that can be changed");
 	}
 }
