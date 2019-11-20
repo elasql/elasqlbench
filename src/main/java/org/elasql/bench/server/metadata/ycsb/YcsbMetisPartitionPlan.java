@@ -11,11 +11,12 @@ import java.util.logging.Logger;
 
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.sql.RecordKey;
+import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.Constant;
 
 // XXX: Need to be checked before using
-public class YcsbMetisPartitionPlan extends PartitionPlan {
+public class YcsbMetisPartitionPlan implements PartitionPlan {
 	private static Logger logger = Logger.getLogger(YcsbMetisPartitionPlan.class.getName());
 	
 	private static final long serialVersionUID = 1L;
@@ -115,5 +116,10 @@ public class YcsbMetisPartitionPlan extends PartitionPlan {
 	public void changeBasePartitionPlan(PartitionPlan plan) {
 		throw new RuntimeException("There is no base partition plan in "
 				+ "YcsbMetisPartitionPlan that can be changed");
+	}
+
+	@Override
+	public int numberOfPartitions() {
+		return PartitionMetaMgr.NUM_PARTITIONS;
 	}
 }

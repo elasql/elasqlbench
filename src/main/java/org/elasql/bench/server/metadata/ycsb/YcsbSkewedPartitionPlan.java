@@ -9,7 +9,7 @@ import org.vanilladb.core.sql.Constant;
 
 // Assume there are 4 nodes and 16 tanents.
 // We put 7 tanents on the first node and the rest 9 on the other 3 nodes.
-public class YcsbSkewedPartitionPlan extends PartitionPlan {
+public class YcsbSkewedPartitionPlan implements PartitionPlan {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -57,5 +57,10 @@ public class YcsbSkewedPartitionPlan extends PartitionPlan {
 	public void changeBasePartitionPlan(PartitionPlan plan) {
 		throw new RuntimeException("There is no base partition plan in "
 				+ "YcsbMetisPartitionPlan that can be changed");
+	}
+
+	@Override
+	public int numberOfPartitions() {
+		return PartitionMetaMgr.NUM_PARTITIONS;
 	}
 }

@@ -9,7 +9,7 @@ import org.elasql.storage.metadata.ScalablePartitionPlan;
 import org.vanilladb.core.sql.Constant;
 
 // Only works for org.elasql.bench.rte.ycsb.SingleHotTenantParamGen
-public class YcsbSingleTenantScaleOutPartPlan extends PartitionPlan implements ScalablePartitionPlan {
+public class YcsbSingleTenantScaleOutPartPlan implements ScalablePartitionPlan {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -42,10 +42,15 @@ public class YcsbSingleTenantScaleOutPartPlan extends PartitionPlan implements S
 				return numOfParts - 1;
 			else
 				// Range-based
-				return ycsbId / ElasqlYcsbConstants.RECORD_PER_PART;
+				return (ycsbId - 1) / ElasqlYcsbConstants.RECORD_PER_PART;
 		} else {
 			throw new RuntimeException("Cannot find partition for " + key);
 		}
+	}
+	
+	@Override
+	public int numberOfPartitions() {
+		return numOfParts;
 	}
 
 	@Override

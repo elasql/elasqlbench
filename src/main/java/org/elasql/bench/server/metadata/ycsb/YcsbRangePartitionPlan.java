@@ -9,7 +9,7 @@ import org.elasql.storage.metadata.PartitionPlan;
 import org.elasql.storage.metadata.ScalablePartitionPlan;
 import org.vanilladb.core.sql.Constant;
 
-public class YcsbRangePartitionPlan extends PartitionPlan implements ScalablePartitionPlan {
+public class YcsbRangePartitionPlan implements ScalablePartitionPlan {
 	
 	private static final long serialVersionUID = 1L;
 	
@@ -35,6 +35,11 @@ public class YcsbRangePartitionPlan extends PartitionPlan implements ScalablePar
 			// Fully replicated
 			return Elasql.serverId();
 		}
+	}
+	
+	@Override
+	public int numberOfPartitions() {
+		return numOfParts;
 	}
 	
 	@Override

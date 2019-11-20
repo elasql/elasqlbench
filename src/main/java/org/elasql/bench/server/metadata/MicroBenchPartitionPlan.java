@@ -3,10 +3,11 @@ package org.elasql.bench.server.metadata;
 import org.elasql.bench.micro.ElasqlMicrobenchConstants;
 import org.elasql.server.Elasql;
 import org.elasql.sql.RecordKey;
+import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.Constant;
 
-public class MicroBenchPartitionPlan extends PartitionPlan {
+public class MicroBenchPartitionPlan implements PartitionPlan {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -44,5 +45,10 @@ public class MicroBenchPartitionPlan extends PartitionPlan {
 	public void changeBasePartitionPlan(PartitionPlan plan) {
 		throw new RuntimeException("There is no base partition plan in "
 				+ "MicroBenchPartitionPlan that can be changed");
+	}
+
+	@Override
+	public int numberOfPartitions() {
+		return PartitionMetaMgr.NUM_PARTITIONS;
 	}
 }

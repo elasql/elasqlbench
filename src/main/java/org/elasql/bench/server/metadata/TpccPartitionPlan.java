@@ -3,10 +3,11 @@ package org.elasql.bench.server.metadata;
 import org.elasql.bench.tpcc.ElasqlTpccConstants;
 import org.elasql.server.Elasql;
 import org.elasql.sql.RecordKey;
+import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.Constant;
 
-public class TpccPartitionPlan extends PartitionPlan {
+public class TpccPartitionPlan implements PartitionPlan {
 
 	private static final long serialVersionUID = 1L;
 
@@ -75,5 +76,10 @@ public class TpccPartitionPlan extends PartitionPlan {
 	public void changeBasePartitionPlan(PartitionPlan plan) {
 		throw new RuntimeException("There is no base partition plan in "
 				+ "TpccPartitionPlan that can be changed");
+	}
+
+	@Override
+	public int numberOfPartitions() {
+		return PartitionMetaMgr.NUM_PARTITIONS;
 	}
 }

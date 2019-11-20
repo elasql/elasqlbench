@@ -111,7 +111,7 @@ public class SingleHotTenantParamGen implements TxParamGenerator {
 		if (currentTime > startTime + WARMUP_TIME) {
 			// Choose a tenant
 			if (rvg.nextDouble() > SKEW_RATIO) {
-				tenantId = rvg.number(0, NUM_PARTITIONS - 2);
+				tenantId = rvg.number(0, NUM_TENANTS - 2);
 				tenantId += 1;
 			} else {
 				tenantId = 0;

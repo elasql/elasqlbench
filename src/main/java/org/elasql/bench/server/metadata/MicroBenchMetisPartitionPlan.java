@@ -10,10 +10,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.elasql.sql.RecordKey;
+import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.IntegerConstant;
 
-public class MicroBenchMetisPartitionPlan extends PartitionPlan {
+public class MicroBenchMetisPartitionPlan implements PartitionPlan {
 	
 	private static final long serialVersionUID = 1L;
 
@@ -92,5 +93,10 @@ public class MicroBenchMetisPartitionPlan extends PartitionPlan {
 	public void changeBasePartitionPlan(PartitionPlan plan) {
 		throw new RuntimeException("There is no base partition plan in "
 				+ "MicroBenchMetisPartitionPlan that can be changed");
+	}
+
+	@Override
+	public int numberOfPartitions() {
+		return PartitionMetaMgr.NUM_PARTITIONS;
 	}
 }

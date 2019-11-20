@@ -5,7 +5,7 @@ import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.Constant;
 
-public class TpcePartitionPlan extends PartitionPlan {
+public class TpcePartitionPlan implements PartitionPlan {
 
 	private static final long serialVersionUID = 1L;
 
@@ -35,6 +35,11 @@ public class TpcePartitionPlan extends PartitionPlan {
 	public void changeBasePartitionPlan(PartitionPlan plan) {
 		throw new RuntimeException("There is no base partition plan in "
 				+ "TpcePartitionPlan that can be changed");
+	}
+
+	@Override
+	public int numberOfPartitions() {
+		return PartitionMetaMgr.NUM_PARTITIONS;
 	}
 
 }
