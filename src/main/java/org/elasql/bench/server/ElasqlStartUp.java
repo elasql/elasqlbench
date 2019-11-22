@@ -7,6 +7,7 @@ import org.elasql.bench.server.metadata.MicroBenchMetisPartitionPlan;
 import org.elasql.bench.server.metadata.MicroBenchPartitionPlan;
 import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.bench.server.metadata.TpcePartitionPlan;
+import org.elasql.bench.server.metadata.ycsb.YcsbHashPartitionPlan;
 import org.elasql.bench.server.metadata.ycsb.YcsbMetisPartitionPlan;
 import org.elasql.bench.server.metadata.ycsb.YcsbRangePartitionPlan;
 import org.elasql.bench.server.metadata.ycsb.YcsbSingleTenantScaleOutPartPlan;
@@ -187,8 +188,8 @@ public class ElasqlStartUp implements SutStartUp {
 					partPlan = new YcsbSingleTenantScaleOutPartPlan(PartitionMetaMgr.NUM_PARTITIONS, 4);
 				}
 			} else {
-				partPlan = new YcsbRangePartitionPlan(PartitionMetaMgr.NUM_PARTITIONS);
-//				partPlan =  new HashPartitionPlan("ycsb_id");
+//				partPlan = new YcsbRangePartitionPlan(PartitionMetaMgr.NUM_PARTITIONS);
+				partPlan = new YcsbHashPartitionPlan(PartitionMetaMgr.NUM_PARTITIONS);
 			}
 			
 			if (LOAD_METIS_PARTITIONS)
