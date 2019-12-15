@@ -75,7 +75,7 @@ public class ElasqlTpccTxExecutor extends TransactionExecutor<TpccTransactionTyp
 			txnRT = System.nanoTime() - txnRT;
 			
 			int sender = result.getSender();
-			if (sender >= 0) {
+			if (sender >= 0 && result.isCommitted()) {
 				recorder.addTxResult(sender, txnRT / 1000);
 			}
 
