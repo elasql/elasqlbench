@@ -37,7 +37,7 @@ public class PaymentProcParamHelper extends StoredProcedureParamHelper {
 
 	protected long hDateLong;
 	protected double hAmount;
-	protected boolean isCommitted = true, isBadCredit = false;
+	protected boolean isBadCredit = false;
 
 	@Override
 	public void prepareParameters(Object... pars) {
@@ -60,7 +60,6 @@ public class PaymentProcParamHelper extends StoredProcedureParamHelper {
 		 * definition. See the session 2.5.3.4 in TPC-C 5.11 document.
 		 */
 		Schema sch = new Schema();
-		
 		Type statusType = Type.VARCHAR(10);
 		sch.addField("status", statusType);
 		sch.addField("cid", Type.INTEGER);
