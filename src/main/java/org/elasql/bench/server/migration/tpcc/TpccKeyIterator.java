@@ -7,7 +7,7 @@ import java.util.Map;
 
 import org.elasql.bench.server.migration.TableKeyIterator;
 import org.elasql.sql.RecordKey;
-import org.vanilladb.core.sql.Constant;
+import org.elasql.sql.RecordKeyBuilder;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class TpccKeyIterator implements TableKeyIterator, Serializable {
@@ -24,34 +24,33 @@ public class TpccKeyIterator implements TableKeyIterator, Serializable {
 		
 		System.setProperty("org.elasql.storage.metadata.PartitionMetaMgr.NUM_PARTITIONS", "3");
 		
-		TpccKeyIterator keyIter = new TpccKeyIterator(21, 1);
+		TpccKeyIterator keyIter = new TpccKeyIterator(11, 2);
 		
 		for (int i = 0; i < 200; i++) {
 			System.out.println(keyIter.next());
 		}
-		
-		Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("w_id", new IntegerConstant(21));
-		RecordKey key = new RecordKey("warehouse", keyEntryMap);
+
+		RecordKeyBuilder builder = new RecordKeyBuilder("warehouse");
+		builder.addFldVal("w_id", new IntegerConstant(11));
+		RecordKey key = builder.build();
 		System.out.println(keyIter.isInSubsequentKeys(key));
-		
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("w_id", new IntegerConstant(10));
-		key = new RecordKey("warehouse", keyEntryMap);
+
+		builder.setVal("w_id", new IntegerConstant(12));
+		key = builder.build();
 		System.out.println(keyIter.isInSubsequentKeys(key));
-		
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("c_w_id", new IntegerConstant(10));
-		keyEntryMap.put("c_d_id", new IntegerConstant(5));
-		keyEntryMap.put("c_id", new IntegerConstant(10));
-		key = new RecordKey("customer", keyEntryMap);
+
+		builder = new RecordKeyBuilder("customer");
+		builder.addFldVal("c_w_id", new IntegerConstant(11));
+		builder.addFldVal("c_d_id", new IntegerConstant(5));
+		builder.addFldVal("c_id", new IntegerConstant(10));
+		key = builder.build();
 		System.out.println(keyIter.isInSubsequentKeys(key));
-		
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("c_w_id", new IntegerConstant(21));
-		keyEntryMap.put("c_d_id", new IntegerConstant(5));
-		keyEntryMap.put("c_id", new IntegerConstant(10));
-		key = new RecordKey("customer", keyEntryMap);
+
+		builder = new RecordKeyBuilder("customer");
+		builder.addFldVal("c_w_id", new IntegerConstant(12));
+		builder.addFldVal("c_d_id", new IntegerConstant(5));
+		builder.addFldVal("c_id", new IntegerConstant(10));
+		key = builder.build();
 		System.out.println(keyIter.isInSubsequentKeys(key));
 		
 		new TpccKeyIterator(keyIter);

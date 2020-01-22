@@ -26,7 +26,7 @@ import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
 public class StopProfilingProc extends AllExecuteProcedure<StoredProcedureParamHelper> {
 
 	public StopProfilingProc(long txNum) {
-		super(txNum, StoredProcedureParamHelper.DefaultParamHelper());
+		super(txNum, StoredProcedureParamHelper.newDefaultParamHelper());
 	}
 
 	@Override

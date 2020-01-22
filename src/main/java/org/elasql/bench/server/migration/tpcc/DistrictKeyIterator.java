@@ -1,12 +1,10 @@
 package org.elasql.bench.server.migration.tpcc;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.elasql.bench.server.migration.TableKeyIterator;
 import org.elasql.sql.RecordKey;
-import org.vanilladb.core.sql.Constant;
+import org.elasql.sql.RecordKeyBuilder;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class DistrictKeyIterator implements TableKeyIterator, Serializable {
@@ -18,11 +16,14 @@ public class DistrictKeyIterator implements TableKeyIterator, Serializable {
 	private int wid, did;
 	
 	private boolean hasNext = true;
+	private RecordKeyBuilder keyBuilder = new RecordKeyBuilder("district");
 	
 	public DistrictKeyIterator(int startWid, int wcount) {
 		this.wid = startWid;
 		this.endWid = startWid + wcount - 1;
 		this.did = 1;
+		
+		initKeyBuilder();
 	}
 	
 	public DistrictKeyIterator(DistrictKeyIterator iter) {
@@ -30,6 +31,8 @@ public class DistrictKeyIterator implements TableKeyIterator, Serializable {
 		this.did = iter.did;
 		this.endWid = iter.endWid;
 		this.hasNext = iter.hasNext;
+		
+		initKeyBuilder();
 	}
 
 	@Override
@@ -39,9 +42,8 @@ public class DistrictKeyIterator implements TableKeyIterator, Serializable {
 
 	@Override
 	public RecordKey next() {
-		Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("d_w_id", new IntegerConstant(wid));
-		keyEntryMap.put("d_id", new IntegerConstant(did));
+		keyBuilder.setVal("d_w_id", new IntegerConstant(wid));
+		keyBuilder.setVal("d_id", new IntegerConstant(did));
 		
 		// move to the next
 		did++;
@@ -54,7 +56,7 @@ public class DistrictKeyIterator implements TableKeyIterator, Serializable {
 			}
 		}
 		
-		return new RecordKey("district", keyEntryMap);
+		return keyBuilder.build();
 	}
 
 	@Override
@@ -67,15 +69,20 @@ public class DistrictKeyIterator implements TableKeyIterator, Serializable {
 		if (!key.getTableName().equals("district"))
 			return false;
 		
-		Integer keyWid = (Integer) key.getKeyVal("d_w_id").asJavaVal();
+		Integer keyWid = (Integer) key.getVal("d_w_id").asJavaVal();
 		if (keyWid > wid && keyWid <= endWid)
 			return true;
 		else if (keyWid < wid)
 			return false;
 		else {
-			Integer keyDid = (Integer) key.getKeyVal("d_id").asJavaVal();
+			Integer keyDid = (Integer) key.getVal("d_id").asJavaVal();
 			return keyDid >= did;
 		}
+	}
+	
+	private void initKeyBuilder() {
+		keyBuilder.addFldVal("d_w_id", new IntegerConstant(wid));
+		keyBuilder.addFldVal("d_id", new IntegerConstant(did));
 	}
 
 }

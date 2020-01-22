@@ -18,7 +18,7 @@ package org.elasql.bench;
 import org.elasql.bench.benchmarks.micro.ElasqlMicroBenchmarker;
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmarker;
 import org.elasql.bench.benchmarks.tpce.ElasqlTpceBenchmarker;
-import org.elasql.bench.remote.sp.ElasqlSpDriver;
+import org.elasql.bench.remote.sp.ElasqlBenchSpDriver;
 import org.vanilladb.bench.Benchmarker;
 import org.vanilladb.bench.BenchmarkerParameters;
 import org.vanilladb.bench.remote.SutDriver;
@@ -44,7 +44,7 @@ public class App {
 		case JDBC:
 			throw new UnsupportedOperationException("ElaSQL does not support JDBC");
 		case SP:
-			driver = new ElasqlSpDriver(nodeId);
+			driver = new ElasqlBenchSpDriver(nodeId);
 			break;
 		}
 		
@@ -59,6 +59,8 @@ public class App {
 		case TPCE:
 			benchmarker = new ElasqlTpceBenchmarker(driver, nodeId);
 			break;
+		case YCSB:
+			throw new UnsupportedOperationException("Not implemented for YCSB");
 		}
 		
 		switch (action) {

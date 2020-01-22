@@ -19,12 +19,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmarker;
-import org.elasql.bench.server.param.tpcc.PaymentProcParamHelper;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
 import org.elasql.sql.RecordKey;
+import org.elasql.sql.RecordKeyBuilder;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
+import org.vanilladb.bench.server.param.tpcc.PaymentProcParamHelper;
 import org.vanilladb.core.sql.BigIntConstant;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.DoubleConstant;
@@ -70,7 +71,8 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 
 	@Override
 	protected void prepareKeys(ReadWriteSetAnalyzer analyzer) {
-		Map<String, Constant> keyEntryMap = null;
+		RecordKeyBuilder builder;
+		
 		widCon = new IntegerConstant(paramHelper.getWid());
 		didCon = new IntegerConstant(paramHelper.getDid());
 		cwidCon = new IntegerConstant(paramHelper.getCwid());
@@ -86,18 +88,18 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 		hidCon = new IntegerConstant(fakeHid);
 
 		// SELECT ... FROM warehouse WHERE w_id = wid
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("w_id", widCon);
-		warehouseKey = new RecordKey("warehouse", keyEntryMap);
+		builder = new RecordKeyBuilder("warehouse");
+		builder.addFldVal("w_id", widCon);
+		warehouseKey = builder.build();
 		analyzer.addReadKey(warehouseKey);
 		// UPDATE ... FROM warehouse WHERE w_id = wid
 		analyzer.addUpdateKey(warehouseKey);
 
 		// SELECT ... FROM district WHERE d_w_id = wid AND d_id = did
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("d_w_id", widCon);
-		keyEntryMap.put("d_id", didCon);
-		districtKey = new RecordKey("district", keyEntryMap);
+		builder = new RecordKeyBuilder("district");
+		builder.addFldVal("d_w_id", widCon);
+		builder.addFldVal("d_id", didCon);
+		districtKey = builder.build();
 		analyzer.addReadKey(districtKey);
 
 		// UPDATE ... WHERE d_w_id = wid AND d_id = did
@@ -107,11 +109,11 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 
 		// SELECT ... FROM customer WHERE c_w_id = cwid AND c_d_id = cdid
 		// AND c_id = cidInt
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("c_w_id", cwidCon);
-		keyEntryMap.put("c_d_id", cdidCon);
-		keyEntryMap.put("c_id", cidIntCon);
-		customerKey = new RecordKey("customer", keyEntryMap);
+		builder = new RecordKeyBuilder("customer");
+		builder.addFldVal("c_w_id", cwidCon);
+		builder.addFldVal("c_d_id", cdidCon);
+		builder.addFldVal("c_id", cidIntCon);
+		customerKey = builder.build();
 		analyzer.addReadKey(customerKey);
 
 		// UPDATE ... FROM customer WHERE c_w_id = cwid AND c_d_id = cdid
@@ -121,12 +123,12 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 		// INSERT INTO history INSERT INTO history h_id, h_c_id, h_c_d_id,
 		// h_c_w_id,
 		// h_d_id, h_w_id";
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("h_id", hidCon);
-		keyEntryMap.put("h_c_id", cidIntCon);
-		keyEntryMap.put("h_c_d_id", cdidCon);
-		keyEntryMap.put("h_c_w_id", cwidCon);
-		historyKey = new RecordKey("history", keyEntryMap);
+		builder = new RecordKeyBuilder("history");
+		builder.addFldVal("h_id", hidCon);
+		builder.addFldVal("h_c_id", cidIntCon);
+		builder.addFldVal("h_c_d_id", cdidCon);
+		builder.addFldVal("h_c_w_id", cwidCon);
+		historyKey = builder.build();
 		analyzer.addInsertKey(historyKey);
 
 	}

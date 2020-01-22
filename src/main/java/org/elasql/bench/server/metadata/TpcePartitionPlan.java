@@ -14,8 +14,9 @@ public class TpcePartitionPlan extends PartitionPlan {
 
 	@Override
 	public int getPartition(RecordKey key) {
-		String fld = key.getKeyFldSet().iterator().next();
-		Constant val = key.getKeyVal(fld);
+		// XXX: Currently, we partition on the first field, but there
+		// must be a better choice.
+		Constant val = key.getVal(0);
 		return Math.abs(val.hashCode() % PartitionMetaMgr.NUM_PARTITIONS);
 	}
 

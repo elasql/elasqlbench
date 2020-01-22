@@ -41,7 +41,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 	private TpccValueGenerator rg = new TpccValueGenerator();
 
 	public TpccTestbedLoaderProc(long txNum) {
-		super(txNum, StoredProcedureParamHelper.DefaultParamHelper());
+		super(txNum, StoredProcedureParamHelper.newDefaultParamHelper());
 	}
 
 	@Override

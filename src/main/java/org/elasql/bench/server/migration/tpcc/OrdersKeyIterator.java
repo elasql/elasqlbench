@@ -1,13 +1,11 @@
 package org.elasql.bench.server.migration.tpcc;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.elasql.bench.server.migration.TableKeyIterator;
 import org.elasql.bench.server.procedure.calvin.tpcc.NewOrderProc;
 import org.elasql.sql.RecordKey;
-import org.vanilladb.core.sql.Constant;
+import org.elasql.sql.RecordKeyBuilder;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class OrdersKeyIterator implements TableKeyIterator, Serializable {
@@ -20,6 +18,7 @@ public class OrdersKeyIterator implements TableKeyIterator, Serializable {
 	private int[][] maxOrderIds;
 	
 	private boolean hasNext = true;
+	private RecordKeyBuilder keyBuilder = new RecordKeyBuilder("orders");
 	
 	public OrdersKeyIterator(int startWid, int wcount) {
 		this.wid = startWid;
@@ -31,6 +30,8 @@ public class OrdersKeyIterator implements TableKeyIterator, Serializable {
 		for (int wi = 0; wi < wcount; wi++)
 			for (int di = 0; di < 10; di++)
 				maxOrderIds[wi][di] = NewOrderProc.getNextOrderId(wi + startWid, di + 1) - 1;
+		
+		initKeyBuilder();
 	}
 	
 	public OrdersKeyIterator(OrdersKeyIterator iter) {
@@ -46,6 +47,8 @@ public class OrdersKeyIterator implements TableKeyIterator, Serializable {
 		for (int wi = 0; wi < wcount; wi++)
 			for (int di = 0; di < 10; di++)
 				maxOrderIds[wi][di] = iter.maxOrderIds[wi][di];
+		
+		initKeyBuilder();
 	}
 
 	@Override
@@ -55,10 +58,9 @@ public class OrdersKeyIterator implements TableKeyIterator, Serializable {
 
 	@Override
 	public RecordKey next() {
-		Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("o_w_id", new IntegerConstant(wid));
-		keyEntryMap.put("o_d_id", new IntegerConstant(did));
-		keyEntryMap.put("o_id", new IntegerConstant(oid));
+		keyBuilder.setVal("o_w_id", new IntegerConstant(wid));
+		keyBuilder.setVal("o_d_id", new IntegerConstant(did));
+		keyBuilder.setVal("o_id", new IntegerConstant(oid));
 		
 		// move to the next
 		oid++;
@@ -76,7 +78,7 @@ public class OrdersKeyIterator implements TableKeyIterator, Serializable {
 			}
 		}
 		
-		return new RecordKey("orders", keyEntryMap);
+		return keyBuilder.build();
 	}
 
 	@Override
@@ -89,22 +91,28 @@ public class OrdersKeyIterator implements TableKeyIterator, Serializable {
 		if (!key.getTableName().equals("orders"))
 			return false;
 		
-		Integer keyWid = (Integer) key.getKeyVal("o_w_id").asJavaVal();
+		Integer keyWid = (Integer) key.getVal("o_w_id").asJavaVal();
 		if (keyWid > wid && keyWid <= endWid)
 			return true;
 		else if (keyWid < wid)
 			return false;
 		else {
-			Integer keyDid = (Integer) key.getKeyVal("o_d_id").asJavaVal();
+			Integer keyDid = (Integer) key.getVal("o_d_id").asJavaVal();
 			if (keyDid > did)
 				return true;
 			else if (keyDid < did)
 				return false;
 			else {
-				Integer keyOid = (Integer) key.getKeyVal("o_id").asJavaVal();
+				Integer keyOid = (Integer) key.getVal("o_id").asJavaVal();
 				return keyOid >= oid;
 			}
 		}
+	}
+	
+	private void initKeyBuilder() {
+		keyBuilder.addFldVal("o_w_id", new IntegerConstant(wid));
+		keyBuilder.addFldVal("o_d_id", new IntegerConstant(did));
+		keyBuilder.addFldVal("o_id", new IntegerConstant(oid));
 	}
 
 }

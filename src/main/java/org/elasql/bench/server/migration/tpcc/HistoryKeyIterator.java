@@ -1,13 +1,11 @@
 package org.elasql.bench.server.migration.tpcc;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.elasql.bench.server.migration.TableKeyIterator;
 import org.elasql.bench.server.procedure.calvin.tpcc.PaymentProc;
 import org.elasql.sql.RecordKey;
-import org.vanilladb.core.sql.Constant;
+import org.elasql.sql.RecordKeyBuilder;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class HistoryKeyIterator implements TableKeyIterator, Serializable {
@@ -20,6 +18,7 @@ public class HistoryKeyIterator implements TableKeyIterator, Serializable {
 	private int[][][] maxHistoryIds;
 	
 	private boolean hasNext = true;
+	private RecordKeyBuilder keyBuilder = new RecordKeyBuilder("history");
 	
 	public HistoryKeyIterator(int startWid, int wcount) {
 		this.wid = startWid;
@@ -33,6 +32,8 @@ public class HistoryKeyIterator implements TableKeyIterator, Serializable {
 			for (int di = 0; di < 10; di++)
 				for (int ci = 0; ci < 3000; ci++)
 					maxHistoryIds[wi][di][ci] = PaymentProc.getNextHistoryId(wi + startWid, di + 1, ci + 1) - 1;
+		
+		initKeyBuilder();
 	}
 	
 	public HistoryKeyIterator(HistoryKeyIterator iter) {
@@ -50,6 +51,8 @@ public class HistoryKeyIterator implements TableKeyIterator, Serializable {
 			for (int di = 0; di < 10; di++)
 				for (int ci = 0; ci < 3000; ci++)
 					maxHistoryIds[wi][di][ci] = iter.maxHistoryIds[wi][di][ci];
+		
+		initKeyBuilder();
 	}
 
 	@Override
@@ -59,11 +62,10 @@ public class HistoryKeyIterator implements TableKeyIterator, Serializable {
 
 	@Override
 	public RecordKey next() {
-		Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("h_id", new IntegerConstant(hid));
-		keyEntryMap.put("h_c_w_id", new IntegerConstant(wid));
-		keyEntryMap.put("h_c_d_id", new IntegerConstant(did));
-		keyEntryMap.put("h_c_id", new IntegerConstant(cid));
+		keyBuilder.setVal("h_id", new IntegerConstant(hid));
+		keyBuilder.setVal("h_c_w_id", new IntegerConstant(wid));
+		keyBuilder.setVal("h_c_d_id", new IntegerConstant(did));
+		keyBuilder.setVal("h_c_id", new IntegerConstant(cid));
 		
 		// move to the next
 		hid++;
@@ -86,7 +88,7 @@ public class HistoryKeyIterator implements TableKeyIterator, Serializable {
 			}
 		}
 		
-		return new RecordKey("history", keyEntryMap);
+		return keyBuilder.build();
 	}
 
 	@Override
@@ -99,29 +101,36 @@ public class HistoryKeyIterator implements TableKeyIterator, Serializable {
 		if (!key.getTableName().equals("history"))
 			return false;
 		
-		Integer keyWid = (Integer) key.getKeyVal("h_c_w_id").asJavaVal();
+		Integer keyWid = (Integer) key.getVal("h_c_w_id").asJavaVal();
 		if (keyWid > wid && keyWid <= endWid)
 			return true;
 		else if (keyWid < wid)
 			return false;
 		else {
-			Integer keyDid = (Integer) key.getKeyVal("h_c_d_id").asJavaVal();
+			Integer keyDid = (Integer) key.getVal("h_c_d_id").asJavaVal();
 			if (keyDid > did)
 				return true;
 			else if (keyDid < did)
 				return false;
 			else {
-				Integer keyCid = (Integer) key.getKeyVal("h_c_id").asJavaVal();
+				Integer keyCid = (Integer) key.getVal("h_c_id").asJavaVal();
 				if (keyCid > cid)
 					return true;
 				else if (keyCid < cid)
 					return false;
 				else {
-					Integer keyHid = (Integer) key.getKeyVal("h_id").asJavaVal();
+					Integer keyHid = (Integer) key.getVal("h_id").asJavaVal();
 					return keyHid >= hid;
 				}
 			}
 		}
+	}
+	
+	private void initKeyBuilder() {
+		keyBuilder.addFldVal("h_id", new IntegerConstant(hid));
+		keyBuilder.addFldVal("h_c_w_id", new IntegerConstant(wid));
+		keyBuilder.addFldVal("h_c_d_id", new IntegerConstant(did));
+		keyBuilder.addFldVal("h_c_id", new IntegerConstant(cid));
 	}
 
 }

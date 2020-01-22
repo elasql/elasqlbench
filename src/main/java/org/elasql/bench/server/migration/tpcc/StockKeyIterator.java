@@ -1,12 +1,10 @@
 package org.elasql.bench.server.migration.tpcc;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.elasql.bench.server.migration.TableKeyIterator;
 import org.elasql.sql.RecordKey;
-import org.vanilladb.core.sql.Constant;
+import org.elasql.sql.RecordKeyBuilder;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class StockKeyIterator implements TableKeyIterator, Serializable {
@@ -18,11 +16,14 @@ public class StockKeyIterator implements TableKeyIterator, Serializable {
 	private int wid, iid;
 	
 	private boolean hasNext = true;
+	private RecordKeyBuilder keyBuilder = new RecordKeyBuilder("stock");
 	
 	public StockKeyIterator(int startWid, int wcount) {
 		this.wid = startWid;
 		this.endWid = startWid + wcount - 1;
 		this.iid = 1;
+		
+		initKeyBuilder();
 	}
 	
 	public StockKeyIterator(StockKeyIterator iter) {
@@ -30,6 +31,8 @@ public class StockKeyIterator implements TableKeyIterator, Serializable {
 		this.iid = iter.iid;
 		this.endWid = iter.endWid;
 		this.hasNext = iter.hasNext;
+		
+		initKeyBuilder();
 	}
 
 	@Override
@@ -39,9 +42,8 @@ public class StockKeyIterator implements TableKeyIterator, Serializable {
 
 	@Override
 	public RecordKey next() {
-		Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("s_i_id", new IntegerConstant(iid));
-		keyEntryMap.put("s_w_id", new IntegerConstant(wid));
+		keyBuilder.setVal("s_i_id", new IntegerConstant(iid));
+		keyBuilder.setVal("s_w_id", new IntegerConstant(wid));
 		
 		// move to the next
 		iid++;
@@ -54,7 +56,7 @@ public class StockKeyIterator implements TableKeyIterator, Serializable {
 			}
 		}
 		
-		return new RecordKey("stock", keyEntryMap);
+		return keyBuilder.build();
 	}
 
 	@Override
@@ -67,15 +69,20 @@ public class StockKeyIterator implements TableKeyIterator, Serializable {
 		if (!key.getTableName().equals("stock"))
 			return false;
 		
-		Integer keyWid = (Integer) key.getKeyVal("s_w_id").asJavaVal();
+		Integer keyWid = (Integer) key.getVal("s_w_id").asJavaVal();
 		if (keyWid > wid && keyWid <= endWid)
 			return true;
 		else if (keyWid < wid)
 			return false;
 		else {
-			Integer keyIid = (Integer) key.getKeyVal("s_i_id").asJavaVal();
+			Integer keyIid = (Integer) key.getVal("s_i_id").asJavaVal();
 			return keyIid >= iid;
 		}
+	}
+	
+	private void initKeyBuilder() {
+		keyBuilder.addFldVal("s_i_id", new IntegerConstant(iid));
+		keyBuilder.addFldVal("s_w_id", new IntegerConstant(wid));
 	}
 
 }

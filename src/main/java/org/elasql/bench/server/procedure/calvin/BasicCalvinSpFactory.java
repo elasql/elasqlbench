@@ -13,27 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package org.elasql.bench.server.procedure.calvin.micro;
+package org.elasql.bench.server.procedure.calvin;
 
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.procedure.calvin.CalvinStoredProcedureFactory;
-import org.vanilladb.bench.benchmarks.micro.MicrobenchTransactionType;
+import org.vanilladb.bench.ControlTransactionType;
 
-public class MicrobenchStoredProcFactory implements CalvinStoredProcedureFactory {
+public class BasicCalvinSpFactory implements CalvinStoredProcedureFactory {
+	
+	private CalvinStoredProcedureFactory underlayerFactory;
+	
+	public BasicCalvinSpFactory(CalvinStoredProcedureFactory underlayerFactory) {
+		this.underlayerFactory = underlayerFactory;
+	}
 
 	@Override
 	public CalvinStoredProcedure<?> getStoredProcedure(int pid, long txNum) {
-		CalvinStoredProcedure<?> sp;
-		switch (MicrobenchTransactionType.fromProcedureId(pid)) {
-		case TESTBED_LOADER:
-			sp = new MicroTestbedLoaderProc(txNum);
-			break;
-		case MICRO_TXN:
-			sp = new MicroTxnProc(txNum);
-			break;
-		default:
-			throw new UnsupportedOperationException("The benchmarker does not recognize procedure " + pid + "");
+		ControlTransactionType txnType = ControlTransactionType.fromProcedureId(pid);
+		if (txnType != null) {
+			switch (txnType) {
+			case START_PROFILING:
+				return new StartProfilingProc(txNum);
+			case STOP_PROFILING:
+				return new StopProfilingProc(txNum);
+			}
 		}
-		return sp;
+		return underlayerFactory.getStoredProcedure(pid, txNum);
 	}
 }

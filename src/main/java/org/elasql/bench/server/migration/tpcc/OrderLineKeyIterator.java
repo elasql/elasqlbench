@@ -1,13 +1,11 @@
 package org.elasql.bench.server.migration.tpcc;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.elasql.bench.server.migration.TableKeyIterator;
 import org.elasql.bench.server.procedure.calvin.tpcc.NewOrderProc;
 import org.elasql.sql.RecordKey;
-import org.vanilladb.core.sql.Constant;
+import org.elasql.sql.RecordKeyBuilder;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class OrderLineKeyIterator implements TableKeyIterator, Serializable {
@@ -20,6 +18,7 @@ public class OrderLineKeyIterator implements TableKeyIterator, Serializable {
 	private int[][] maxOrderIds;
 	
 	private boolean hasNext = true;
+	private RecordKeyBuilder keyBuilder = new RecordKeyBuilder("order_line");
 	
 	public OrderLineKeyIterator(int startWid, int wcount) {
 		this.wid = startWid;
@@ -31,6 +30,8 @@ public class OrderLineKeyIterator implements TableKeyIterator, Serializable {
 		for (int wi = 0; wi < wcount; wi++)
 			for (int di = 0; di < 10; di++)
 				maxOrderIds[wi][di] = NewOrderProc.getNextOrderId(wi + startWid, di + 1) - 1;
+		
+		initKeyBuilder();
 	}
 	
 	public OrderLineKeyIterator(OrderLineKeyIterator iter) {
@@ -47,6 +48,8 @@ public class OrderLineKeyIterator implements TableKeyIterator, Serializable {
 		for (int wi = 0; wi < wcount; wi++)
 			for (int di = 0; di < 10; di++)
 				maxOrderIds[wi][di] = iter.maxOrderIds[wi][di];
+		
+		initKeyBuilder();
 	}
 
 	@Override
@@ -56,11 +59,10 @@ public class OrderLineKeyIterator implements TableKeyIterator, Serializable {
 
 	@Override
 	public RecordKey next() {
-		Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("ol_w_id", new IntegerConstant(wid));
-		keyEntryMap.put("ol_d_id", new IntegerConstant(did));
-		keyEntryMap.put("ol_o_id", new IntegerConstant(oid));
-		keyEntryMap.put("ol_number", new IntegerConstant(olnum));
+		keyBuilder.setVal("ol_w_id", new IntegerConstant(wid));
+		keyBuilder.setVal("ol_d_id", new IntegerConstant(did));
+		keyBuilder.setVal("ol_o_id", new IntegerConstant(oid));
+		keyBuilder.setVal("ol_number", new IntegerConstant(olnum));
 		
 		// move to the next
 		olnum++;
@@ -84,7 +86,7 @@ public class OrderLineKeyIterator implements TableKeyIterator, Serializable {
 			}
 		}
 		
-		return new RecordKey("order_line", keyEntryMap);
+		return keyBuilder.build();
 	}
 
 	@Override
@@ -97,29 +99,36 @@ public class OrderLineKeyIterator implements TableKeyIterator, Serializable {
 		if (!key.getTableName().equals("order_line"))
 			return false;
 		
-		Integer keyWid = (Integer) key.getKeyVal("ol_w_id").asJavaVal();
+		Integer keyWid = (Integer) key.getVal("ol_w_id").asJavaVal();
 		if (keyWid > wid && keyWid <= endWid)
 			return true;
 		else if (keyWid < wid)
 			return false;
 		else {
-			Integer keyDid = (Integer) key.getKeyVal("ol_d_id").asJavaVal();
+			Integer keyDid = (Integer) key.getVal("ol_d_id").asJavaVal();
 			if (keyDid > did)
 				return true;
 			else if (keyDid < did)
 				return false;
 			else {
-				Integer keyOid = (Integer) key.getKeyVal("ol_o_id").asJavaVal();
+				Integer keyOid = (Integer) key.getVal("ol_o_id").asJavaVal();
 				if (keyOid > oid)
 					return true;
 				else if (keyOid < oid)
 					return false;
 				else {
-					Integer keyOlnum = (Integer) key.getKeyVal("ol_number").asJavaVal();
+					Integer keyOlnum = (Integer) key.getVal("ol_number").asJavaVal();
 					return keyOlnum >= olnum;
 				}
 			}
 		}
+	}
+	
+	private void initKeyBuilder() {
+		keyBuilder.addFldVal("ol_w_id", new IntegerConstant(wid));
+		keyBuilder.addFldVal("ol_d_id", new IntegerConstant(did));
+		keyBuilder.addFldVal("ol_o_id", new IntegerConstant(oid));
+		keyBuilder.addFldVal("ol_number", new IntegerConstant(olnum));
 	}
 
 }

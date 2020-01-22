@@ -22,11 +22,15 @@ import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmarker;
 import org.elasql.bench.server.metadata.MicroBenchPartitionPlan;
 import org.elasql.bench.server.metadata.TpcePartitionPlan;
 import org.elasql.bench.server.migration.tpcc.TpccMigrationComponentFactory;
+import org.elasql.bench.server.procedure.calvin.BasicCalvinSpFactory;
 import org.elasql.bench.server.procedure.calvin.micro.MicrobenchStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.tpcc.TpccStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.tpce.TpceStoredProcFactory;
 import org.elasql.migration.MigrationComponentFactory;
 import org.elasql.procedure.DdStoredProcedureFactory;
+import org.elasql.procedure.calvin.CalvinStoredProcedureFactory;
+import org.elasql.procedure.naive.NaiveStoredProcedureFactory;
+import org.elasql.procedure.tpart.TPartStoredProcedureFactory;
 import org.elasql.server.Elasql;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.bench.BenchmarkerParameters;
@@ -86,8 +90,8 @@ public class ElasqlStartUp implements SutStartUp {
 		}
 	}
 	
-	private DdStoredProcedureFactory getStoredProcedureFactory() {
-		DdStoredProcedureFactory factory = null;
+	private DdStoredProcedureFactory<?> getStoredProcedureFactory() {
+		DdStoredProcedureFactory<?> factory = null;
 		switch (Elasql.SERVICE_TYPE) {
 		case NAIVE:
 			factory = getNaiveSpFactory();
@@ -102,8 +106,8 @@ public class ElasqlStartUp implements SutStartUp {
 		return factory;
 	}
 	
-	private DdStoredProcedureFactory getNaiveSpFactory() {
-		DdStoredProcedureFactory factory = null;
+	private NaiveStoredProcedureFactory getNaiveSpFactory() {
+		NaiveStoredProcedureFactory factory = null;
 		switch (BenchmarkerParameters.BENCH_TYPE) {
 		case MICRO:
 			throw new UnsupportedOperationException("No Micro for now");
@@ -111,12 +115,14 @@ public class ElasqlStartUp implements SutStartUp {
 			throw new UnsupportedOperationException("No TPC-C for now");
 		case TPCE:
 			throw new UnsupportedOperationException("No TPC-E for now");
+		case YCSB:
+			throw new UnsupportedOperationException("Not implemented for YCSB");
 		}
 		return factory;
 	}
 	
-	private DdStoredProcedureFactory getCalvinSpFactory() {
-		DdStoredProcedureFactory factory = null;
+	private CalvinStoredProcedureFactory getCalvinSpFactory() {
+		CalvinStoredProcedureFactory factory = null;
 		switch (BenchmarkerParameters.BENCH_TYPE) {
 		case MICRO:
 			if (logger.isLoggable(Level.INFO))
@@ -133,12 +139,15 @@ public class ElasqlStartUp implements SutStartUp {
 				logger.info("using TPC-E stored procedures for Calvin");
 			factory = new TpceStoredProcFactory();
 			break;
+		case YCSB:
+			throw new UnsupportedOperationException("Not implemented for YCSB");
 		}
+		factory = new BasicCalvinSpFactory(factory);
 		return factory;
 	}
 	
-	private DdStoredProcedureFactory getTPartSpFactory() {
-		DdStoredProcedureFactory factory = null;
+	private TPartStoredProcedureFactory getTPartSpFactory() {
+		TPartStoredProcedureFactory factory = null;
 		switch (BenchmarkerParameters.BENCH_TYPE) {
 		case MICRO:
 			throw new UnsupportedOperationException("No Micro for now");
@@ -146,6 +155,8 @@ public class ElasqlStartUp implements SutStartUp {
 			throw new UnsupportedOperationException("No TPC-C for now");
 		case TPCE:
 			throw new UnsupportedOperationException("No TPC-E for now");
+		case YCSB:
+			throw new UnsupportedOperationException("Not implemented for YCSB");
 		}
 		return factory;
 	}
@@ -162,6 +173,8 @@ public class ElasqlStartUp implements SutStartUp {
 		case TPCE:
 			partPlan = new TpcePartitionPlan();
 			break;
+		case YCSB:
+			throw new UnsupportedOperationException("Not implemented for YCSB");
 		}
 		return partPlan;
 	}
@@ -176,6 +189,8 @@ public class ElasqlStartUp implements SutStartUp {
 			break;
 		case TPCE:
 			throw new UnsupportedOperationException("No TPC-E for now");
+		case YCSB:
+			throw new UnsupportedOperationException("Not implemented for YCSB");
 		}
 		return comFactory;
 	}

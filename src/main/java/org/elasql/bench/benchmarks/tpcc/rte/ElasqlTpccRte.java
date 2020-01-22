@@ -22,7 +22,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.vanilladb.bench.StatisticMgr;
-import org.vanilladb.bench.TransactionType;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
 import org.vanilladb.bench.remote.SutConnection;
@@ -34,7 +33,7 @@ public class ElasqlTpccRte extends RemoteTerminalEmulator<TpccTransactionType> {
 	
 	private int homeWid;
 	private static Random txnTypeRandom;
-	private Map<TransactionType, ElasqlTpccTxExecutor> executors;
+	private Map<TpccTransactionType, ElasqlTpccTxExecutor> executors;
 
 	public ElasqlTpccRte(SutConnection conn, StatisticMgr statMgr, int homeWarehouseId, int homeDistrictId) {
 		super(conn, statMgr);
@@ -45,7 +44,7 @@ public class ElasqlTpccRte extends RemoteTerminalEmulator<TpccTransactionType> {
 		
 		homeWid = homeWarehouseId;
 		txnTypeRandom = new Random();
-		executors = new HashMap<TransactionType, ElasqlTpccTxExecutor>();
+		executors = new HashMap<TpccTransactionType, ElasqlTpccTxExecutor>();
 		executors.put(TpccTransactionType.NEW_ORDER, new ElasqlTpccTxExecutor(new NewOrderParamGen(homeWid, homeDistrictId)));
 		executors.put(TpccTransactionType.PAYMENT, new ElasqlTpccTxExecutor(new PaymentParamGen(homeWid)));
 		// TODO: Not implemented

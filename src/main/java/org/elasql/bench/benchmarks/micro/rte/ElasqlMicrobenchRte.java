@@ -16,13 +16,13 @@
 package org.elasql.bench.benchmarks.micro.rte;
 
 import org.vanilladb.bench.StatisticMgr;
-import org.vanilladb.bench.benchmarks.micro.MicrobenchmarkTxnType;
+import org.vanilladb.bench.benchmarks.micro.MicrobenchTransactionType;
 import org.vanilladb.bench.benchmarks.micro.rte.MicrobenchmarkTxExecutor;
 import org.vanilladb.bench.remote.SutConnection;
 import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 import org.vanilladb.bench.rte.TransactionExecutor;
 
-public class ElasqlMicrobenchRte extends RemoteTerminalEmulator<MicrobenchmarkTxnType> {
+public class ElasqlMicrobenchRte extends RemoteTerminalEmulator<MicrobenchTransactionType> {
 	
 	private MicrobenchmarkTxExecutor executor;
 
@@ -31,12 +31,12 @@ public class ElasqlMicrobenchRte extends RemoteTerminalEmulator<MicrobenchmarkTx
 		executor = new MicrobenchmarkTxExecutor(new ElasqlMicrobenchParamGen());
 	}
 	
-	protected MicrobenchmarkTxnType getNextTxType() {
-		return MicrobenchmarkTxnType.MICRO_TXN;
+	protected MicrobenchTransactionType getNextTxType() {
+		return MicrobenchTransactionType.MICRO_TXN;
 	}
 
 	@Override
-	protected TransactionExecutor<MicrobenchmarkTxnType> getTxExeutor(MicrobenchmarkTxnType type) {
+	protected TransactionExecutor<MicrobenchTransactionType> getTxExeutor(MicrobenchTransactionType type) {
 		return executor;
 	}
 }

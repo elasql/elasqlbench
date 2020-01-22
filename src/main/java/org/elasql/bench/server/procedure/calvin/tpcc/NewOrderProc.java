@@ -19,12 +19,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmarker;
-import org.elasql.bench.server.param.tpcc.NewOrderProcParamHelper;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
 import org.elasql.sql.RecordKey;
+import org.elasql.sql.RecordKeyBuilder;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
+import org.vanilladb.bench.server.param.tpcc.NewOrderProcParamHelper;
 import org.vanilladb.core.sql.BigIntConstant;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.DoubleConstant;
@@ -81,7 +82,7 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 
 	@Override
 	protected void prepareKeys(ReadWriteSetAnalyzer analyzer) {
-		Map<String, Constant> keyEntryMap = null;
+		RecordKeyBuilder builder;
 
 		// Construct constant from parameters
 		widCon = new IntegerConstant(paramHelper.getWid());
@@ -98,45 +99,45 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 		// =================== Keys for steps 1 ===================
 
 		// SELECT ... FROM warehouse WHERE w_id = wid
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("w_id", widCon);
-		warehouseKey = new RecordKey("warehouse", keyEntryMap);
+		builder = new RecordKeyBuilder("warehouse");
+		builder.addFldVal("w_id", widCon);
+		warehouseKey = builder.build();
 		analyzer.addReadKey(warehouseKey);
 
 		// SELECT ... FROM district WHERE d_w_id = wid AND d_id = did
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("d_w_id", widCon);
-		keyEntryMap.put("d_id", didCon);
-		districtKey = new RecordKey("district", keyEntryMap);
+		builder = new RecordKeyBuilder("district");
+		builder.addFldVal("d_w_id", widCon);
+		builder.addFldVal("d_id", didCon);
+		districtKey = builder.build();
 		analyzer.addReadKey(districtKey);
 
 		// UPDATE ... WHERE d_w_id = wid AND d_id = did
 		analyzer.addUpdateKey(districtKey);
 
 		// SELECT ... WHERE c_w_id = wid AND c_d_id = did AND c_id = cid
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("c_w_id", widCon);
-		keyEntryMap.put("c_d_id", didCon);
-		keyEntryMap.put("c_id", cidCon);
-		customerKey = new RecordKey("customer", keyEntryMap);
+		builder = new RecordKeyBuilder("customer");
+		builder.addFldVal("c_w_id", widCon);
+		builder.addFldVal("c_d_id", didCon);
+		builder.addFldVal("c_id", cidCon);
+		customerKey = builder.build();
 		analyzer.addReadKey(customerKey);
 
 		// INSERT INTO orders (o_id, o_w_id, o_d_id, ...) VALUES (nextOId, wid,
 		// did, ...)
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("o_w_id", widCon);
-		keyEntryMap.put("o_d_id", didCon);
-		keyEntryMap.put("o_id", oidCon);
-		orderKey = new RecordKey("orders", keyEntryMap);
+		builder = new RecordKeyBuilder("orders");
+		builder.addFldVal("o_w_id", widCon);
+		builder.addFldVal("o_d_id", didCon);
+		builder.addFldVal("o_id", oidCon);
+		orderKey = builder.build();
 		analyzer.addInsertKey(orderKey);
 
 		// INSERT INTO new_order (no_o_id, no_w_id, no_d_id) VALUES
 		// (nextOId, wid, did)
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("no_w_id", widCon);
-		keyEntryMap.put("no_d_id", didCon);
-		keyEntryMap.put("no_o_id", oidCon);
-		newOrderKey = new RecordKey("new_order", keyEntryMap);
+		builder = new RecordKeyBuilder("new_order");
+		builder.addFldVal("no_w_id", widCon);
+		builder.addFldVal("no_d_id", didCon);
+		builder.addFldVal("no_o_id", oidCon);
+		newOrderKey = builder.build();
 		analyzer.addInsertKey(newOrderKey);
 
 		// =================== Keys for steps 2 ===================
@@ -153,17 +154,17 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 			Constant olNumCon = new IntegerConstant(i + 1);
 
 			// SELECT ... FROM item WHERE i_id = olIId
-			keyEntryMap = new HashMap<String, Constant>();
-			keyEntryMap.put("i_id", olIIdCon);
-			orderLineKeys[i][0] = new RecordKey("item", keyEntryMap);
+			builder = new RecordKeyBuilder("item");
+			builder.addFldVal("i_id", olIIdCon);
+			orderLineKeys[i][0] = builder.build();
 			analyzer.addReadKey(orderLineKeys[i][0]);
 
 			// SELECT ... FROM stock WHERE s_i_id = olIId AND s_w_id =
 			// olSupplyWId
-			keyEntryMap = new HashMap<String, Constant>();
-			keyEntryMap.put("s_i_id", olIIdCon);
-			keyEntryMap.put("s_w_id", supWidCon);
-			orderLineKeys[i][1] = new RecordKey("stock", keyEntryMap);
+			builder = new RecordKeyBuilder("stock");
+			builder.addFldVal("s_i_id", olIIdCon);
+			builder.addFldVal("s_w_id", supWidCon);
+			orderLineKeys[i][1] = builder.build();
 			analyzer.addReadKey(orderLineKeys[i][1]);
 
 			// UPDATE ... WHERE s_i_id = olIId AND s_w_id = olSupplyWId
@@ -172,12 +173,12 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 			// INSERT INTO order_line (ol_o_id, ol_w_id, ol_d_id, ol_number,
 			// ...)
 			// VALUES (nextOId, wid, did, i, ...)
-			keyEntryMap = new HashMap<String, Constant>();
-			keyEntryMap.put("ol_o_id", oidCon);
-			keyEntryMap.put("ol_d_id", didCon);
-			keyEntryMap.put("ol_w_id", widCon);
-			keyEntryMap.put("ol_number", olNumCon);
-			orderLineKeys[i][2] = new RecordKey("order_line", keyEntryMap);
+			builder = new RecordKeyBuilder("order_line");
+			builder.addFldVal("ol_o_id", oidCon);
+			builder.addFldVal("ol_d_id", didCon);
+			builder.addFldVal("ol_w_id", widCon);
+			builder.addFldVal("ol_number", olNumCon);
+			orderLineKeys[i][2] = builder.build();
 			analyzer.addInsertKey(orderLineKeys[i][2]);
 		}
 	}

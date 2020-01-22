@@ -22,6 +22,7 @@ import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
 import org.elasql.sql.RecordKey;
+import org.elasql.sql.RecordKeyBuilder;
 import org.vanilladb.bench.server.param.tpce.TradeOrderParamHelper;
 import org.vanilladb.core.sql.BigIntConstant;
 import org.vanilladb.core.sql.Constant;
@@ -46,59 +47,59 @@ public class TradeOrderProc extends CalvinStoredProcedure<TradeOrderParamHelper>
 
 	@Override
 	protected void prepareKeys(ReadWriteSetAnalyzer analyzer) {
+		RecordKeyBuilder builder;
+		
 		/***************** Construct Read Keys *******************/
 		// Customer Account
-		Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("ca_id", new BigIntConstant(paramHelper.getAcctId()));
-		cusAcctKey = new RecordKey("customer_account", keyEntryMap);
+		builder = new RecordKeyBuilder("customer_account");
+		builder.addFldVal("ca_id", new BigIntConstant(paramHelper.getAcctId()));
+		cusAcctKey = builder.build();
 		analyzer.addReadKey(cusAcctKey);
 
 		// Customer
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap
-				.put("c_id", new BigIntConstant(paramHelper.getCustomerId()));
-		customerKey = new RecordKey("customer", keyEntryMap);
+		builder = new RecordKeyBuilder("customer");
+		builder.addFldVal("c_id", new BigIntConstant(paramHelper.getCustomerId()));
+		customerKey = builder.build();
 		analyzer.addReadKey(customerKey);
 
 		// Broker
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("b_id", new BigIntConstant(paramHelper.getBrokerId()));
-		brokerKey = new RecordKey("broker", keyEntryMap);
+		builder = new RecordKeyBuilder("broker");
+		builder.addFldVal("b_id", new BigIntConstant(paramHelper.getBrokerId()));
+		brokerKey = builder.build();
 		analyzer.addReadKey(brokerKey);
 
 		// Security
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("s_symb", new VarcharConstant(paramHelper.getSymbol()));
-		securityKey = new RecordKey("security", keyEntryMap);
+		builder = new RecordKeyBuilder("security");
+		builder.addFldVal("s_symb", new VarcharConstant(paramHelper.getSymbol()));
+		securityKey = builder.build();
 		analyzer.addReadKey(securityKey);
 
 		// Last Trade
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("lt_s_symb",
+		builder = new RecordKeyBuilder("last_trade");
+		builder.addFldVal("lt_s_symb",
 				new VarcharConstant(paramHelper.getSymbol()));
-		lastTradeKey = new RecordKey("last_trade", keyEntryMap);
+		lastTradeKey = builder.build();
 		analyzer.addReadKey(lastTradeKey);
 
 		// Trade Type
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("tt_id",
+		builder = new RecordKeyBuilder("trade_type");
+		builder.addFldVal("tt_id",
 				new VarcharConstant(paramHelper.getTradeTypeId()));
-		tradeTypeKey = new RecordKey("trade_type", keyEntryMap);
+		tradeTypeKey = builder.build();
 		analyzer.addReadKey(tradeTypeKey);
 
 		
 		/***************** Construct Write Keys *******************/
 		// Insert new trade
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("t_id", new BigIntConstant(paramHelper.getTradeId()));
-		tradeKey = new RecordKey("trade", keyEntryMap);
+		builder = new RecordKeyBuilder("trade");
+		builder.addFldVal("t_id", new BigIntConstant(paramHelper.getTradeId()));
+		tradeKey = builder.build();
 		analyzer.addInsertKey(tradeKey);
 
 		// Insert new history
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap
-				.put("th_t_id", new BigIntConstant(paramHelper.getTradeId()));
-		tradeHistoryKey = new RecordKey("trade_history", keyEntryMap);
+		builder = new RecordKeyBuilder("trade_history");
+		builder.addFldVal("th_t_id", new BigIntConstant(paramHelper.getTradeId()));
+		tradeHistoryKey = builder.build();
 		analyzer.addInsertKey(tradeHistoryKey);
 	}
 

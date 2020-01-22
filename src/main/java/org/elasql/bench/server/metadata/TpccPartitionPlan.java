@@ -23,28 +23,28 @@ public class TpccPartitionPlan extends PartitionPlan {
 		Constant widCon;
 		switch (key.getTableName()) {
 		case "warehouse":
-			widCon = key.getKeyVal("w_id");
+			widCon = key.getVal("w_id");
 			break;
 		case "district":
-			widCon = key.getKeyVal("d_w_id");
+			widCon = key.getVal("d_w_id");
 			break;
 		case "stock":
-			widCon = key.getKeyVal("s_w_id");
+			widCon = key.getVal("s_w_id");
 			break;
 		case "customer":
-			widCon = key.getKeyVal("c_w_id");
+			widCon = key.getVal("c_w_id");
 			break;
 		case "history":
-			widCon = key.getKeyVal("h_c_w_id");
+			widCon = key.getVal("h_c_w_id");
 			break;
 		case "orders":
-			widCon = key.getKeyVal("o_w_id");
+			widCon = key.getVal("o_w_id");
 			break;
 		case "new_order":
-			widCon = key.getKeyVal("no_w_id");
+			widCon = key.getVal("no_w_id");
 			break;
 		case "order_line":
-			widCon = key.getKeyVal("ol_w_id");
+			widCon = key.getVal("ol_w_id");
 			break;
 		default:
 			return null;

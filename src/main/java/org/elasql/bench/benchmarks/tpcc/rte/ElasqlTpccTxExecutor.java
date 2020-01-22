@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.elasql.bench.benchmarks.tpcc.rte;
 
-import org.elasql.bench.remote.sp.ElasqlSpResultSet;
+import org.elasql.bench.remote.sp.ElasqlBenchSpResultSet;
 import org.elasql.bench.util.NodeStatisticsRecorder;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.TxnResultSet;
@@ -51,17 +51,12 @@ public class ElasqlTpccTxExecutor extends TransactionExecutor<TpccTransactionTyp
 	@Override
 	public TxnResultSet execute(SutConnection conn) {
 		try {
-			TxnResultSet rs = new TxnResultSet();
-			rs.setTxnType(pg.getTxnType());
-
 			// keying
 			if (ENABLE_THINK_AND_KEYING_TIME) {
 				// wait for a keying time and generate parameters
 				long t = tpccPg.getKeyingTime();
-				rs.setKeyingTime(t);
 				Thread.sleep(t);
-			} else
-				rs.setKeyingTime(0);
+			}
 
 			// generate parameters
 			Object[] params = pg.generateParameter();
@@ -69,10 +64,11 @@ public class ElasqlTpccTxExecutor extends TransactionExecutor<TpccTransactionTyp
 			// send txn request and start measure txn response time
 			long txnRT = System.nanoTime();
 			
-			ElasqlSpResultSet result = (ElasqlSpResultSet) executeTxn(conn, params);
+			ElasqlBenchSpResultSet result = (ElasqlBenchSpResultSet) executeTxn(conn, params);
 
 			// measure txn Sresponse time
-			txnRT = System.nanoTime() - txnRT;
+			long txnEndTime = System.nanoTime();
+			txnRT = txnEndTime - txnRT;
 			
 			int sender = result.getSender();
 			if (sender >= 0 && result.isCommitted()) {
@@ -83,21 +79,15 @@ public class ElasqlTpccTxExecutor extends TransactionExecutor<TpccTransactionTyp
 			if (TransactionExecutor.DISPLAY_RESULT)
 				System.out.println(pg.getTxnType() + " " + result.outputMsg());
 
-			rs.setTxnIsCommited(result.isCommitted());
-			rs.setOutMsg(result.outputMsg());
-			rs.setTxnResponseTimeNs(txnRT);
-			rs.setTxnEndTime();
-
 			// thinking
 			if (ENABLE_THINK_AND_KEYING_TIME) {
 				// wait for a think time
 				long t = tpccPg.getThinkTime();
 				Thread.sleep(t);
-				rs.setThinkTime(t);
-			} else
-				rs.setThinkTime(0);
+			}
 
-			return rs;
+			return new TxnResultSet(pg.getTxnType(), txnRT, txnEndTime,
+					result.isCommitted(), result.outputMsg());
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());

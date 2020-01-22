@@ -9,7 +9,7 @@ import org.vanilladb.core.sql.Constant;
 public class MicroBenchPartitionPlan extends PartitionPlan {
 	
 	public Integer getItemId(RecordKey key) {
-		Constant iidCon = key.getKeyVal("i_id");
+		Constant iidCon = key.getVal("i_id");
 		if (iidCon != null) {
 			return (Integer) iidCon.asJavaVal();
 		} else {
@@ -18,7 +18,7 @@ public class MicroBenchPartitionPlan extends PartitionPlan {
 	}
 	
 	public boolean isFullyReplicated(RecordKey key) {
-		if (key.getKeyVal("i_id") != null) {
+		if (key.getVal("i_id") != null) {
 			return false;
 		} else {
 			return true;

@@ -1,12 +1,10 @@
 package org.elasql.bench.server.migration.tpcc;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.elasql.bench.server.migration.TableKeyIterator;
 import org.elasql.sql.RecordKey;
-import org.vanilladb.core.sql.Constant;
+import org.elasql.sql.RecordKeyBuilder;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class WarehouseKeyIterator implements TableKeyIterator, Serializable {
@@ -18,16 +16,21 @@ public class WarehouseKeyIterator implements TableKeyIterator, Serializable {
 	private int wid;
 	
 	private boolean hasNext = true;
+	private RecordKeyBuilder keyBuilder = new RecordKeyBuilder("warehouse");
 	
 	public WarehouseKeyIterator(int startWid, int wcount) {
 		this.wid = startWid;
 		this.endWid = startWid + wcount - 1;
+		
+		initKeyBuilder();
 	}
 	
 	public WarehouseKeyIterator(WarehouseKeyIterator iter) {
 		this.wid = iter.wid;
 		this.endWid = iter.endWid;
 		this.hasNext = iter.hasNext;
+		
+		initKeyBuilder();
 	}
 
 	@Override
@@ -37,8 +40,7 @@ public class WarehouseKeyIterator implements TableKeyIterator, Serializable {
 
 	@Override
 	public RecordKey next() {
-		Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("w_id", new IntegerConstant(wid));
+		keyBuilder.setVal("w_id", new IntegerConstant(wid));
 		
 		// move to the next
 		wid++;
@@ -46,7 +48,7 @@ public class WarehouseKeyIterator implements TableKeyIterator, Serializable {
 			hasNext = false;
 		}
 		
-		return new RecordKey("warehouse", keyEntryMap);
+		return keyBuilder.build();
 	}
 
 	@Override
@@ -59,8 +61,11 @@ public class WarehouseKeyIterator implements TableKeyIterator, Serializable {
 		if (!key.getTableName().equals("warehouse"))
 			return false;
 		
-		Integer keyWid = (Integer) key.getKeyVal("w_id").asJavaVal();
+		Integer keyWid = (Integer) key.getVal("w_id").asJavaVal();
 		return keyWid >= wid && keyWid <= endWid;
 	}
-
+	
+	private void initKeyBuilder() {
+		keyBuilder.addFldVal("w_id", new IntegerConstant(wid));
+	}
 }

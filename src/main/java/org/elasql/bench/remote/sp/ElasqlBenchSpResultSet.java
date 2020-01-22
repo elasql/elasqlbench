@@ -15,35 +15,39 @@
  *******************************************************************************/
 package org.elasql.bench.remote.sp;
 
+import org.elasql.remote.groupcomm.ElasqlSpResultSet;
 import org.vanilladb.bench.remote.SutResultSet;
-import org.vanilladb.core.remote.storedprocedure.SpResultSet;
 import org.vanilladb.core.sql.Record;
-import org.vanilladb.core.sql.Schema;
 
-public class ElasqlSpResultSet implements SutResultSet {
-	private Record[] recs;
-	private Schema sch;
+public class ElasqlBenchSpResultSet implements SutResultSet {
+	
+	private ElasqlSpResultSet result;
+	private String message;
 
-	public ElasqlSpResultSet(SpResultSet result) {
-		recs = result.getRecords();
-		sch = result.getSchema();
+	public ElasqlBenchSpResultSet(ElasqlSpResultSet result) {
+		this.result = result;
 	}
 	
 	public int getSender() {
-		if (!sch.hasField("sender"))
-			return -1;
-		int nodeId = (int) recs[0].getVal("sender").asJavaVal();
-		return nodeId;
+		return result.getCreatorNodeId();
 	}
 
+	@Override
 	public boolean isCommitted() {
-		if (!sch.hasField("status"))
-			throw new RuntimeException("result set not completed");
-		String status = (String) recs[0].getVal("status").asJavaVal();
-		return status.equals("committed");
+		return result.getResultSet().isCommitted();
 	}
-
+	
+	@Override
 	public String outputMsg() {
-		return recs[0].toString();
+		// Lazy evaluation
+		if (message == null) {
+			Record[] records = result.getResultSet().getRecords();
+			if (records.length > 0)
+				message = records[0].toString();
+			else
+				message = "";
+		}
+		
+		return message;
 	}
 }

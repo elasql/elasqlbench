@@ -42,9 +42,7 @@ public class MicroTxnProc extends CalvinStoredProcedure<MicroTxnProcParamHelper>
 			int iid = paramHelper.getReadItemId(idx);
 			
 			// create record key for reading
-			Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
-			keyEntryMap.put("i_id", new IntegerConstant(iid));
-			RecordKey key = new RecordKey("item", keyEntryMap);
+			RecordKey key = new RecordKey("item", "i_id", new IntegerConstant(iid));
 			analyzer.addReadKey(key);
 		}
 
@@ -54,9 +52,7 @@ public class MicroTxnProc extends CalvinStoredProcedure<MicroTxnProcParamHelper>
 			double newPrice = paramHelper.getNewItemPrice(idx);
 			
 			// create record key for writing
-			Map<String, Constant> keyEntryMap = new HashMap<String, Constant>();
-			keyEntryMap.put("i_id", new IntegerConstant(iid));
-			RecordKey key = new RecordKey("item", keyEntryMap);
+			RecordKey key = new RecordKey("item", "i_id", new IntegerConstant(iid));
 			analyzer.addUpdateKey(key);
 
 			// Create key-value pairs for writing

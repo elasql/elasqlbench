@@ -15,8 +15,6 @@
  *******************************************************************************/
 package org.elasql.bench.server.procedure.calvin.tpce;
 
-import org.elasql.bench.server.procedure.calvin.StartProfilingProc;
-import org.elasql.bench.server.procedure.calvin.StopProfilingProc;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.procedure.calvin.CalvinStoredProcedureFactory;
 import org.vanilladb.bench.benchmarks.tpce.TpceTransactionType;
@@ -32,12 +30,6 @@ public class TpceStoredProcFactory implements CalvinStoredProcedureFactory {
 			break;
 		case TESTBED_LOADER:
 			sp = new TpceTestbedLoaderProc(txNum);
-			break;
-		case START_PROFILING:
-			sp = new StartProfilingProc(txNum);
-			break;
-		case STOP_PROFILING:
-			sp = new StopProfilingProc(txNum);
 			break;
 		case TRADE_ORDER:
 			sp = new TradeOrderProc(txNum);

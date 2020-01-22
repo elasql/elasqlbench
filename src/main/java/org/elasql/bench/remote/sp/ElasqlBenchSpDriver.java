@@ -23,13 +23,13 @@ import org.elasql.remote.groupcomm.client.GroupCommDriver;
 import org.vanilladb.bench.remote.SutConnection;
 import org.vanilladb.bench.remote.SutDriver;
 
-public class ElasqlSpDriver implements SutDriver {
+public class ElasqlBenchSpDriver implements SutDriver {
 	
 	private static final AtomicInteger NEXT_CONNECTION_ID = new AtomicInteger(0);
 	
 	private static GroupCommConnection conn = null;
 	
-	public ElasqlSpDriver(int nodeId) {
+	public ElasqlBenchSpDriver(int nodeId) {
 		if (conn == null) {
 			GroupCommDriver driver = new GroupCommDriver(nodeId);
 			conn = driver.init();
@@ -39,7 +39,7 @@ public class ElasqlSpDriver implements SutDriver {
 	public SutConnection connectToSut() throws SQLException {
 		try {
 			// Each connection need a unique id
-			return new ElasqlSpConnection(conn, NEXT_CONNECTION_ID.getAndIncrement());
+			return new ElasqlBenchSpConnection(conn, NEXT_CONNECTION_ID.getAndIncrement());
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new SQLException(e);
