@@ -26,6 +26,7 @@ public class OrderLineKeyIterator implements TableKeyIterator, Serializable {
 		this.endWid = startWid + wcount - 1;
 		this.did = 1;
 		this.oid = 1;
+		this.olnum = 1;
 		maxOrderIds = new int[wcount][10];
 		for (int wi = 0; wi < wcount; wi++)
 			for (int di = 0; di < 10; di++)
@@ -59,9 +60,9 @@ public class OrderLineKeyIterator implements TableKeyIterator, Serializable {
 
 	@Override
 	public RecordKey next() {
-		keyBuilder.setVal("ol_w_id", new IntegerConstant(wid));
-		keyBuilder.setVal("ol_d_id", new IntegerConstant(did));
 		keyBuilder.setVal("ol_o_id", new IntegerConstant(oid));
+		keyBuilder.setVal("ol_d_id", new IntegerConstant(did));
+		keyBuilder.setVal("ol_w_id", new IntegerConstant(wid));
 		keyBuilder.setVal("ol_number", new IntegerConstant(olnum));
 		
 		// move to the next
@@ -125,9 +126,9 @@ public class OrderLineKeyIterator implements TableKeyIterator, Serializable {
 	}
 	
 	private void initKeyBuilder() {
-		keyBuilder.addFldVal("ol_w_id", new IntegerConstant(wid));
-		keyBuilder.addFldVal("ol_d_id", new IntegerConstant(did));
 		keyBuilder.addFldVal("ol_o_id", new IntegerConstant(oid));
+		keyBuilder.addFldVal("ol_d_id", new IntegerConstant(did));
+		keyBuilder.addFldVal("ol_w_id", new IntegerConstant(wid));
 		keyBuilder.addFldVal("ol_number", new IntegerConstant(olnum));
 	}
 

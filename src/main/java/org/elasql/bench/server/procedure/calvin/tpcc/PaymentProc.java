@@ -66,26 +66,27 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 	private RecordKey warehouseKey, districtKey, customerKey;
 	private RecordKey historyKey;
 	// SQL Constants
-	Constant widCon, didCon, cwidCon, cdidCon, cidIntCon, hidCon;
+	Constant widCon, didCon, cwidCon, cdidCon, cidCon, hidCon;
 	private double Hamount;
 
 	@Override
 	protected void prepareKeys(ReadWriteSetAnalyzer analyzer) {
 		RecordKeyBuilder builder;
 		
-		widCon = new IntegerConstant(paramHelper.getWid());
-		didCon = new IntegerConstant(paramHelper.getDid());
-		cwidCon = new IntegerConstant(paramHelper.getCwid());
-		cdidCon = new IntegerConstant(paramHelper.getCdid());
-		Hamount = paramHelper.getHamount();
-
 		// XXX: hard code the history id
-		int cwid = paramHelper.getWid();
+		int cwid = paramHelper.getCwid();
 		int cdid = paramHelper.getCdid();
 		int cid = paramHelper.getcid();
-		int fakeHid = historyIds[cwid - 1][cdid - 1][cid - 1];
-		historyIds[cwid - 1][cdid - 1][cid - 1] = fakeHid + 1;
-		hidCon = new IntegerConstant(fakeHid);
+		int hid = historyIds[cwid - 1][cdid - 1][cid - 1];
+		historyIds[cwid - 1][cdid - 1][cid - 1] = hid + 1;
+		
+		widCon = new IntegerConstant(paramHelper.getWid());
+		didCon = new IntegerConstant(paramHelper.getDid());
+		cwidCon = new IntegerConstant(cwid);
+		cdidCon = new IntegerConstant(cdid);
+		cidCon = new IntegerConstant(cid);
+		hidCon = new IntegerConstant(hid);
+		Hamount = paramHelper.getHamount();
 
 		// SELECT ... FROM warehouse WHERE w_id = wid
 		builder = new RecordKeyBuilder("warehouse");
@@ -105,14 +106,12 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 		// UPDATE ... WHERE d_w_id = wid AND d_id = did
 		analyzer.addUpdateKey(districtKey);
 
-		cidIntCon = new IntegerConstant(paramHelper.getcid());
-
 		// SELECT ... FROM customer WHERE c_w_id = cwid AND c_d_id = cdid
 		// AND c_id = cidInt
 		builder = new RecordKeyBuilder("customer");
 		builder.addFldVal("c_w_id", cwidCon);
 		builder.addFldVal("c_d_id", cdidCon);
-		builder.addFldVal("c_id", cidIntCon);
+		builder.addFldVal("c_id", cidCon);
 		customerKey = builder.build();
 		analyzer.addReadKey(customerKey);
 
@@ -121,16 +120,14 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 		analyzer.addUpdateKey(customerKey);
 
 		// INSERT INTO history INSERT INTO history h_id, h_c_id, h_c_d_id,
-		// h_c_w_id,
-		// h_d_id, h_w_id";
+		// h_c_w_id, h_d_id, h_w_id
 		builder = new RecordKeyBuilder("history");
 		builder.addFldVal("h_id", hidCon);
-		builder.addFldVal("h_c_id", cidIntCon);
+		builder.addFldVal("h_c_id", cidCon);
 		builder.addFldVal("h_c_d_id", cdidCon);
 		builder.addFldVal("h_c_w_id", cwidCon);
 		historyKey = builder.build();
 		analyzer.addInsertKey(historyKey);
-
 	}
 
 	@Override
@@ -247,7 +244,7 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 		Map<String, Constant> fldVals = null;
 		fldVals = new HashMap<String, Constant>();
 		fldVals.put("h_id", hidCon);
-		fldVals.put("h_c_id", cidIntCon);
+		fldVals.put("h_c_id", cidCon);
 		fldVals.put("h_c_d_id", cdidCon);
 		fldVals.put("h_c_w_id", cwidCon);
 		fldVals.put("h_d_id", didCon);

@@ -63,23 +63,23 @@ public class HistoryKeyIterator implements TableKeyIterator, Serializable {
 	@Override
 	public RecordKey next() {
 		keyBuilder.setVal("h_id", new IntegerConstant(hid));
-		keyBuilder.setVal("h_c_w_id", new IntegerConstant(wid));
-		keyBuilder.setVal("h_c_d_id", new IntegerConstant(did));
 		keyBuilder.setVal("h_c_id", new IntegerConstant(cid));
+		keyBuilder.setVal("h_c_d_id", new IntegerConstant(did));
+		keyBuilder.setVal("h_c_w_id", new IntegerConstant(wid));
 		
 		// move to the next
 		hid++;
 		if (hid > maxHistoryIds[wid - startWid][did - 1][cid - 1]) {
-			cid++;
 			hid = 1;
+			cid++;
 			
 			if (cid > 3000) {
-				did++;
 				cid = 1;
+				did++;
 				
 				if (did > 10) {
-					wid++;
 					did = 1;
+					wid++;
 					
 					if (wid > endWid) {
 						hasNext = false;
@@ -128,9 +128,9 @@ public class HistoryKeyIterator implements TableKeyIterator, Serializable {
 	
 	private void initKeyBuilder() {
 		keyBuilder.addFldVal("h_id", new IntegerConstant(hid));
-		keyBuilder.addFldVal("h_c_w_id", new IntegerConstant(wid));
-		keyBuilder.addFldVal("h_c_d_id", new IntegerConstant(did));
 		keyBuilder.addFldVal("h_c_id", new IntegerConstant(cid));
+		keyBuilder.addFldVal("h_c_d_id", new IntegerConstant(did));
+		keyBuilder.addFldVal("h_c_w_id", new IntegerConstant(wid));
 	}
 
 }
