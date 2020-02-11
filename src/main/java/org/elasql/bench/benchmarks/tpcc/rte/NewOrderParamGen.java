@@ -57,6 +57,9 @@ public class NewOrderParamGen implements TpccTxParamGenerator {
 		pars[0] = homeWid;
 		pars[1] = homeDid;
 		pars[2] = valueGen.NURand(TpccValueGenerator.NU_CID, 1, TpccConstants.CUSTOMERS_PER_DISTRICT);
+		// Note: We change olCount to 10, instead of a random number in 5~15
+		// so that when we generate migration keys we will not have to scan the db
+		// to ensure how many order line there are for each order.
 //		int olCount = valueGen.number(5, 15);
 		int olCount = 10;
 		pars[3] = olCount;

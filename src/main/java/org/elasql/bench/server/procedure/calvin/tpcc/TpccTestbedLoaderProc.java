@@ -329,7 +329,11 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 				ocarid = rg.number(TpccConstants.MIN_CARRIER_ID, TpccConstants.MAX_CARRIER_ID);
 			else
 				ocarid = TpccConstants.NULL_CARRIER_ID;
-			ol_cnt = rg.number(TpccConstants.MIN_OL_CNT, TpccConstants.MAX_OL_CNT);
+			// Note: We change ol_cnt to 10, instead of a random number in 5~15
+			// so that when we generate migration keys we will not have to scan the db
+			// to ensure how many order line there are for each order.
+//			ol_cnt = rg.number(TpccConstants.MIN_OL_CNT, TpccConstants.MAX_OL_CNT);
+			ol_cnt = 10;
 
 			String sql = "INSERT INTO ORDERS(o_id, o_c_id, o_d_id, "
 					+ "o_w_id, o_entry_d, o_carrier_id, o_ol_cnt, o_all_local) VALUES (" + oid + ", " + ocid + ", "
