@@ -3,7 +3,7 @@ package org.elasql.bench.server.migration.tpcc;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmarker;
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
 import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.bench.server.metadata.migration.TpccAfterPartPlan;
 import org.elasql.bench.server.metadata.migration.scaleout.TpccScaleoutAfterPartPlan;
@@ -29,7 +29,7 @@ public class TpccMigrationComponentFactory extends MigrationComponentFactory {
 	}
 	
 	public PartitionPlan newPartitionPlan() {
-		if (ElasqlTpccBenchmarker.ENABLE_SCALE_OUT_TEST)
+		if (ElasqlTpccBenchmark.ENABLE_SCALE_OUT_TEST)
 			return new TpccScaleoutAfterPartPlan();
 		else
 			return new TpccAfterPartPlan();	

@@ -13,28 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package org.elasql.bench.benchmarks.tpce;
+package org.elasql.bench.benchmarks.micro;
 
+import org.elasql.bench.benchmarks.micro.rte.ElasqlMicrobenchRte;
 import org.vanilladb.bench.StatisticMgr;
-import org.vanilladb.bench.benchmarks.tpce.TpceBenchmarker;
-import org.vanilladb.bench.benchmarks.tpce.TpceTransactionType;
-import org.vanilladb.bench.benchmarks.tpce.data.TpceDataManager;
-import org.vanilladb.bench.benchmarks.tpce.rte.TpceRte;
+import org.vanilladb.bench.benchmarks.micro.MicroBenchmark;
+import org.vanilladb.bench.benchmarks.micro.MicrobenchTransactionType;
 import org.vanilladb.bench.remote.SutConnection;
-import org.vanilladb.bench.remote.SutDriver;
 import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 
-public class ElasqlTpceBenchmarker extends TpceBenchmarker {
-	
-	private TpceDataManager dataMgr;
-
-	public ElasqlTpceBenchmarker(SutDriver sutDriver, int nodeId) {
-		super(sutDriver, Integer.toString(nodeId));
-		dataMgr = new ElasqlTpceDataManager(nodeId);
-	}
+public class ElasqlMicroBenchmark extends MicroBenchmark {
 	
 	@Override
-	protected RemoteTerminalEmulator<TpceTransactionType> createRte(SutConnection conn, StatisticMgr statMgr) {
-		return new TpceRte(conn, statMgr, dataMgr);
+	public RemoteTerminalEmulator<MicrobenchTransactionType> createRte(SutConnection conn, StatisticMgr statMgr) {
+		// NOTE: We use a customized version of MicroRte here
+		return new ElasqlMicrobenchRte(conn, statMgr);
 	}
 }

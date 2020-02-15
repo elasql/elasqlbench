@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmarker;
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
 import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.AllExecuteProcedure;
@@ -54,7 +54,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 
 	@Override
 	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
-		TpccPartitionPlan partPlan = ElasqlTpccBenchmarker.getPartitionPlan();
+		TpccPartitionPlan partPlan = ElasqlTpccBenchmark.getPartitionPlan();
 		if (logger.isLoggable(Level.INFO))
 			logger.info("Start loading testbed. Using partition plan: " + partPlan);
 

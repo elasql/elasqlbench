@@ -18,7 +18,7 @@ package org.elasql.bench.server;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmarker;
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
 import org.elasql.bench.server.metadata.MicroBenchPartitionPlan;
 import org.elasql.bench.server.metadata.TpcePartitionPlan;
 import org.elasql.bench.server.migration.tpcc.TpccMigrationComponentFactory;
@@ -26,6 +26,7 @@ import org.elasql.bench.server.procedure.calvin.BasicCalvinSpFactory;
 import org.elasql.bench.server.procedure.calvin.micro.MicrobenchStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.tpcc.TpccStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.tpce.TpceStoredProcFactory;
+import org.elasql.migration.DummyMigrationComponentFactory;
 import org.elasql.migration.MigrationComponentFactory;
 import org.elasql.procedure.DdStoredProcedureFactory;
 import org.elasql.procedure.calvin.CalvinStoredProcedureFactory;
@@ -168,7 +169,7 @@ public class ElasqlStartUp implements SutStartUp {
 			partPlan = new MicroBenchPartitionPlan();
 			break;
 		case TPCC:
-			partPlan = ElasqlTpccBenchmarker.getPartitionPlan();
+			partPlan = ElasqlTpccBenchmark.getPartitionPlan();
 			break;
 		case TPCE:
 			partPlan = new TpcePartitionPlan();
@@ -183,12 +184,12 @@ public class ElasqlStartUp implements SutStartUp {
 		MigrationComponentFactory comFactory = null;
 		switch (BenchmarkerParameters.BENCH_TYPE) {
 		case MICRO:
-			throw new UnsupportedOperationException("No Micro for now");
+			comFactory = new DummyMigrationComponentFactory("No implementation for migration on the micro benchmarks");
 		case TPCC:
 			comFactory = new TpccMigrationComponentFactory();
 			break;
 		case TPCE:
-			throw new UnsupportedOperationException("No TPC-E for now");
+			comFactory = new DummyMigrationComponentFactory("No implementation for migration on the TPC-E benchmarks");
 		case YCSB:
 			throw new UnsupportedOperationException("Not implemented for YCSB");
 		}

@@ -15,7 +15,7 @@
  *******************************************************************************/
 package org.elasql.bench.benchmarks.tpcc.rte;
 
-import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmarker;
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
 import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
@@ -25,7 +25,7 @@ public class PaymentParamGen implements TpccTxParamGenerator {
 
 	private int homeWid;
 	private TpccValueGenerator valueGen = new TpccValueGenerator();
-	private int numOfWarehouses = ElasqlTpccBenchmarker.getNumOfWarehouses();
+	private int numOfWarehouses = ElasqlTpccBenchmark.getNumOfWarehouses();
 
 	public PaymentParamGen(int homeWarehouseId) {
 		this.homeWid = homeWarehouseId;

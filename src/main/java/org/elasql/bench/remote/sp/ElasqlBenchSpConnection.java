@@ -43,5 +43,17 @@ public class ElasqlBenchSpConnection implements SutConnection {
 	public Connection toJdbcConnection() {
 		throw new RuntimeException("ElaSQL does not support JDBC.");
 	}
+	
+	public void sendDirectMessage(int clientId, Object message) {
+		conn.sendP2pMessageToClientNode(clientId, message);
+	}
+	
+	public int getServerCount() {
+		return conn.getServerCount();
+	}
+	
+	public int getClientCount() {
+		return conn.getClientCount();
+	}
 }
 

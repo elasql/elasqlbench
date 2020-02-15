@@ -19,13 +19,12 @@ import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.bench.server.metadata.migration.TpccBeforePartPlan;
 import org.elasql.bench.server.metadata.migration.scaleout.TpccScaleoutBeforePartPlan;
 import org.vanilladb.bench.StatisticMgr;
-import org.vanilladb.bench.benchmarks.tpcc.TpccBenchmarker;
+import org.vanilladb.bench.benchmarks.tpcc.TpccBenchmark;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
 import org.vanilladb.bench.remote.SutConnection;
-import org.vanilladb.bench.remote.SutDriver;
 import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 
-public class ElasqlTpccBenchmarker extends TpccBenchmarker {
+public class ElasqlTpccBenchmark extends TpccBenchmark {
 	
 	public static final boolean ENABLE_MIGRATION_TEST = true;
 	public static final boolean ENABLE_SCALE_OUT_TEST = true;
@@ -52,9 +51,7 @@ public class ElasqlTpccBenchmarker extends TpccBenchmarker {
 	
 	private TpccRteGenerator rteGenerator;
 	
-	public ElasqlTpccBenchmarker(SutDriver sutDriver, int nodeId) {
-		super(sutDriver, Integer.toString(nodeId));
-
+	public ElasqlTpccBenchmark(int nodeId) {
 		if (ENABLE_MIGRATION_TEST) {
 			if (ENABLE_SCALE_OUT_TEST)
 				rteGenerator = new TpccScaleoutTestRteGenerator(nodeId);
@@ -70,7 +67,7 @@ public class ElasqlTpccBenchmarker extends TpccBenchmarker {
 	}
 	
 	@Override
-	protected RemoteTerminalEmulator<TpccTransactionType> createRte(SutConnection conn, StatisticMgr statMgr) {
+	public RemoteTerminalEmulator<TpccTransactionType> createRte(SutConnection conn, StatisticMgr statMgr) {
 		return rteGenerator.createRte(conn, statMgr);
 	}
 }

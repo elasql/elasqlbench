@@ -18,6 +18,7 @@ package org.elasql.bench.remote.sp;
 import java.sql.SQLException;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.elasql.remote.groupcomm.client.DirectMessageListener;
 import org.elasql.remote.groupcomm.client.GroupCommConnection;
 import org.elasql.remote.groupcomm.client.GroupCommDriver;
 import org.vanilladb.bench.remote.SutConnection;
@@ -29,10 +30,10 @@ public class ElasqlBenchSpDriver implements SutDriver {
 	
 	private static GroupCommConnection conn = null;
 	
-	public ElasqlBenchSpDriver(int nodeId) {
+	public ElasqlBenchSpDriver(int nodeId, DirectMessageListener messageListener) {
 		if (conn == null) {
 			GroupCommDriver driver = new GroupCommDriver(nodeId);
-			conn = driver.init();
+			conn = driver.init(messageListener);
 		}
 	}
 

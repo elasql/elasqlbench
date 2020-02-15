@@ -18,7 +18,7 @@ package org.elasql.bench.server.procedure.calvin.tpcc;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmarker;
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
@@ -56,7 +56,7 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 	// for this to be used in prepareKeys()
 	private static int[] distrOIds;
 	static {
-		int warehouseCount = ElasqlTpccBenchmarker.getNumOfWarehouses();
+		int warehouseCount = ElasqlTpccBenchmark.getNumOfWarehouses();
 		distrOIds = new int[warehouseCount * TpccConstants.DISTRICTS_PER_WAREHOUSE + 100];
 		for (int i = 0; i < distrOIds.length; i++)
 			distrOIds[i] = 3001;

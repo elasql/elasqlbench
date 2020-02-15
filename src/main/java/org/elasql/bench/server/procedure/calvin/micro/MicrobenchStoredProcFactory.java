@@ -28,6 +28,9 @@ public class MicrobenchStoredProcFactory implements CalvinStoredProcedureFactory
 		case TESTBED_LOADER:
 			sp = new MicroTestbedLoaderProc(txNum);
 			break;
+		case CHECK_DATABASE:
+			sp = new MicroCheckDatabaseProc(txNum);
+			break;
 		case MICRO_TXN:
 			sp = new MicroTxnProc(txNum);
 			break;
