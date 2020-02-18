@@ -31,6 +31,9 @@ public class TpccStoredProcFactory implements CalvinStoredProcedureFactory {
 		case TESTBED_LOADER:
 			sp = new TpccTestbedLoaderProc(txNum);
 			break;
+		case CHECK_DATABASE:
+			sp = new TpccCheckDatabaseProc(txNum);
+			break;
 		case NEW_ORDER:
 			sp = new NewOrderProc(txNum);
 			break;

@@ -6,14 +6,14 @@ import java.util.logging.Logger;
 
 import org.elasql.bench.benchmarks.micro.ElasqlMicrobenchConstants;
 import org.elasql.cache.CachedRecord;
-import org.elasql.procedure.calvin.AllExecuteProcedure;
+import org.elasql.procedure.calvin.AllExecute2pcProcedure;
 import org.elasql.server.Elasql;
 import org.elasql.sql.RecordKey;
 import org.vanilladb.bench.server.procedure.StoredProcedureHelper;
 import org.vanilladb.core.query.algebra.Scan;
 import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
 
-public class MicroCheckDatabaseProc extends AllExecuteProcedure<StoredProcedureParamHelper> {
+public class MicroCheckDatabaseProc extends AllExecute2pcProcedure<StoredProcedureParamHelper> {
 	private static Logger logger = Logger.getLogger(MicroCheckDatabaseProc.class.getName());
 	
 	public MicroCheckDatabaseProc(long txNum) {

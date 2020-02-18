@@ -26,19 +26,20 @@ import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 
 public class ElasqlTpccBenchmark extends TpccBenchmark {
 	
-	public static final boolean ENABLE_MIGRATION_TEST = true;
-	public static final boolean ENABLE_SCALE_OUT_TEST = true;
-	
 	private static final TpccPartitionPlan partPlan;
 			
 	static {
-		if (ENABLE_MIGRATION_TEST) {
-			if (ENABLE_SCALE_OUT_TEST)
-				partPlan = new TpccScaleoutBeforePartPlan();
-			else
-				partPlan = new TpccBeforePartPlan();
-		} else
+		switch (ElasqlTpccConstants.PARTITION_STRATEGY) {
+		case MGCRAB_SCALING_OUT:
+			partPlan = new TpccScaleoutBeforePartPlan();
+			break;
+		case MGCRAB_CONSOLIDATION:
+			partPlan = new TpccBeforePartPlan();
+			break;
+		default:
 			partPlan = new TpccPartitionPlan();
+			break;
+		}
 	}
 	
 	public static TpccPartitionPlan getPartitionPlan() {
@@ -52,13 +53,17 @@ public class ElasqlTpccBenchmark extends TpccBenchmark {
 	private TpccRteGenerator rteGenerator;
 	
 	public ElasqlTpccBenchmark(int nodeId) {
-		if (ENABLE_MIGRATION_TEST) {
-			if (ENABLE_SCALE_OUT_TEST)
-				rteGenerator = new TpccScaleoutTestRteGenerator(nodeId);
-			else
-				rteGenerator = new TpccMigrationTestRteGenerator(nodeId);
-		} else
-			rteGenerator = new TpccStandardRteGenerator();
+		switch (ElasqlTpccConstants.PARTITION_STRATEGY) {
+		case MGCRAB_SCALING_OUT:
+			rteGenerator = new TpccScaleoutTestRteGenerator(nodeId);
+			break;
+		case MGCRAB_CONSOLIDATION:
+			rteGenerator = new TpccMigrationTestRteGenerator(nodeId);
+			break;
+		default:
+			rteGenerator = new TpccStandardRteGenerator(nodeId);
+			break;
+		}
 	}
 
 	@Override

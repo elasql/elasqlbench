@@ -1,18 +1,16 @@
 package org.elasql.bench.server.metadata;
 
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants;
 import org.elasql.server.Elasql;
 import org.elasql.sql.RecordKey;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.storage.metadata.PartitionPlan;
-import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.core.sql.Constant;
 
 /**
  * Partitions each table on warehouse id.
  */
 public class TpccPartitionPlan extends PartitionPlan {
-	
-	private int wPerPart = TpccConstants.NUM_WAREHOUSES / PartitionMetaMgr.NUM_PARTITIONS;
 
 	public boolean isFullyReplicated(RecordKey key) {
 		return key.getTableName().equals("item");
@@ -54,11 +52,11 @@ public class TpccPartitionPlan extends PartitionPlan {
 	}
 	
 	public int numOfWarehouses() {
-		return TpccConstants.NUM_WAREHOUSES;
+		return ElasqlTpccConstants.WAREHOUSE_PER_PART * PartitionMetaMgr.NUM_PARTITIONS;
 	}
 	
 	public int getPartition(int wid) {
-		return (wid - 1) / wPerPart;
+		return (wid - 1) / ElasqlTpccConstants.WAREHOUSE_PER_PART;
 	}
 	
 	@Override

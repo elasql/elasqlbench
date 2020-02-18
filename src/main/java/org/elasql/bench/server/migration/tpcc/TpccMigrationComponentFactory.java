@@ -3,7 +3,8 @@ package org.elasql.bench.server.migration.tpcc;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants;
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants.TpccPartitionStategy;
 import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.bench.server.metadata.migration.TpccAfterPartPlan;
 import org.elasql.bench.server.metadata.migration.scaleout.TpccScaleoutAfterPartPlan;
@@ -12,7 +13,8 @@ import org.elasql.migration.MigrationRange;
 import org.elasql.storage.metadata.PartitionPlan;
 
 public class TpccMigrationComponentFactory extends MigrationComponentFactory {
-	
+
+	@Override
 	public List<MigrationRange> generateMigrationRanges(PartitionPlan oldPlan, PartitionPlan newPlan) {
 		TpccPartitionPlan tpccOldPlan = (TpccPartitionPlan) oldPlan;
 		TpccPartitionPlan tpccNewPlan = (TpccPartitionPlan) newPlan;
@@ -28,8 +30,9 @@ public class TpccMigrationComponentFactory extends MigrationComponentFactory {
 		return list;
 	}
 	
+	@Override
 	public PartitionPlan newPartitionPlan() {
-		if (ElasqlTpccBenchmark.ENABLE_SCALE_OUT_TEST)
+		if (ElasqlTpccConstants.PARTITION_STRATEGY == TpccPartitionStategy.MGCRAB_SCALING_OUT)
 			return new TpccScaleoutAfterPartPlan();
 		else
 			return new TpccAfterPartPlan();	
