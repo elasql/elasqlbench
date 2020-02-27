@@ -19,13 +19,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
+import org.elasql.bench.benchmarks.ycsb.ElasqlYcsbConstants;
 import org.elasql.bench.server.metadata.MicroBenchPartitionPlan;
 import org.elasql.bench.server.metadata.TpcePartitionPlan;
+import org.elasql.bench.server.metadata.YcsbMultiTenantsPartitionPlan;
 import org.elasql.bench.server.migration.tpcc.TpccMigrationComponentFactory;
 import org.elasql.bench.server.procedure.calvin.BasicCalvinSpFactory;
 import org.elasql.bench.server.procedure.calvin.micro.MicrobenchStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.tpcc.TpccStoredProcFactory;
 import org.elasql.bench.server.procedure.calvin.tpce.TpceStoredProcFactory;
+import org.elasql.bench.server.procedure.calvin.ycsb.YcsbStoredProcFactory;
 import org.elasql.migration.DummyMigrationComponentFactory;
 import org.elasql.migration.MigrationComponentFactory;
 import org.elasql.procedure.DdStoredProcedureFactory;
@@ -141,7 +144,10 @@ public class ElasqlStartUp implements SutStartUp {
 			factory = new TpceStoredProcFactory();
 			break;
 		case YCSB:
-			throw new UnsupportedOperationException("Not implemented for YCSB");
+			if (logger.isLoggable(Level.INFO))
+				logger.info("using YCSB stored procedures for Calvin");
+			factory = new YcsbStoredProcFactory();
+			break;
 		}
 		factory = new BasicCalvinSpFactory(factory);
 		return factory;
@@ -175,7 +181,15 @@ public class ElasqlStartUp implements SutStartUp {
 			partPlan = new TpcePartitionPlan();
 			break;
 		case YCSB:
-			throw new UnsupportedOperationException("Not implemented for YCSB");
+			switch (ElasqlYcsbConstants.DATABASE_MODE) {
+			case SINGLE_TABLE:
+				throw new UnsupportedOperationException("Not implemented for YCSB single-table");
+			case MULTI_TENANTS:
+				partPlan = new YcsbMultiTenantsPartitionPlan();
+				break;
+			default:
+				throw new RuntimeException("You should not be here");
+			}
 		}
 		return partPlan;
 	}
@@ -191,7 +205,7 @@ public class ElasqlStartUp implements SutStartUp {
 		case TPCE:
 			comFactory = new DummyMigrationComponentFactory("No implementation for migration on the TPC-E benchmarks");
 		case YCSB:
-			throw new UnsupportedOperationException("Not implemented for YCSB");
+			comFactory = new DummyMigrationComponentFactory("No implementation for migration on the YCSB benchmarks");
 		}
 		return comFactory;
 	}

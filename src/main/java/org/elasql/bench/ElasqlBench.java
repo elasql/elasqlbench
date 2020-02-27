@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import org.elasql.bench.benchmarks.micro.ElasqlMicroBenchmark;
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
 import org.elasql.bench.benchmarks.tpce.ElasqlTpceBenchmark;
+import org.elasql.bench.benchmarks.ycsb.ElasqlYcsbBenchmark;
 import org.elasql.bench.remote.sp.ElasqlBenchSpConnection;
 import org.elasql.bench.remote.sp.ElasqlBenchSpDriver;
 import org.elasql.remote.groupcomm.client.DirectMessageListener;
@@ -181,7 +182,7 @@ public class ElasqlBench implements DirectMessageListener {
 		case TPCE:
 			return new ElasqlTpceBenchmark(nodeId);
 		case YCSB:
-			throw new UnsupportedOperationException("Not implemented for YCSB");
+			return new ElasqlYcsbBenchmark(nodeId);
 		}
 		return null;
 	}
