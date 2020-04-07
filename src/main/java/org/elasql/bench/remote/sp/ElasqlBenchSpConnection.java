@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.elasql.bench.remote.sp;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -44,7 +45,7 @@ public class ElasqlBenchSpConnection implements SutConnection {
 		throw new RuntimeException("ElaSQL does not support JDBC.");
 	}
 	
-	public void sendDirectMessage(int clientId, Object message) {
+	public void sendDirectMessage(int clientId, Serializable message) {
 		conn.sendP2pMessageToClientNode(clientId, message);
 	}
 	
