@@ -23,12 +23,9 @@ import org.elasql.bench.benchmarks.ycsb.ElasqlYcsbConstants;
 import org.elasql.bench.server.metadata.MicroBenchPartitionPlan;
 import org.elasql.bench.server.metadata.TpcePartitionPlan;
 import org.elasql.bench.server.metadata.YcsbMultiTenantsPartitionPlan;
+import org.elasql.bench.server.metadata.YcsbSingleTablePartitionPlan;
 import org.elasql.bench.server.migration.tpcc.TpccMigrationComponentFactory;
 import org.elasql.bench.server.procedure.calvin.BasicCalvinSpFactory;
-import org.elasql.bench.server.procedure.calvin.micro.MicrobenchStoredProcFactory;
-import org.elasql.bench.server.procedure.calvin.tpcc.TpccStoredProcFactory;
-import org.elasql.bench.server.procedure.calvin.tpce.TpceStoredProcFactory;
-import org.elasql.bench.server.procedure.calvin.ycsb.YcsbStoredProcFactory;
 import org.elasql.migration.DummyMigrationComponentFactory;
 import org.elasql.migration.MigrationComponentFactory;
 import org.elasql.procedure.DdStoredProcedureFactory;
@@ -104,6 +101,9 @@ public class ElasqlStartUp implements SutStartUp {
 			factory = getCalvinSpFactory();
 			break;
 		case TPART:
+		case HERMES:
+		case G_STORE:
+		case LEAP:
 			factory = getTPartSpFactory();
 			break;
 		}
@@ -131,22 +131,22 @@ public class ElasqlStartUp implements SutStartUp {
 		case MICRO:
 			if (logger.isLoggable(Level.INFO))
 				logger.info("using Micro-benchmark stored procedures for Calvin");
-			factory = new MicrobenchStoredProcFactory();
+			factory = new org.elasql.bench.server.procedure.calvin.micro.MicrobenchStoredProcFactory();
 			break;
 		case TPCC:
 			if (logger.isLoggable(Level.INFO))
 				logger.info("using TPC-C stored procedures for Calvin");
-			factory = new TpccStoredProcFactory();
+			factory = new org.elasql.bench.server.procedure.calvin.tpcc.TpccStoredProcFactory();
 			break;
 		case TPCE:
 			if (logger.isLoggable(Level.INFO))
 				logger.info("using TPC-E stored procedures for Calvin");
-			factory = new TpceStoredProcFactory();
+			factory = new org.elasql.bench.server.procedure.calvin.tpce.TpceStoredProcFactory();
 			break;
 		case YCSB:
 			if (logger.isLoggable(Level.INFO))
 				logger.info("using YCSB stored procedures for Calvin");
-			factory = new YcsbStoredProcFactory();
+			factory = new org.elasql.bench.server.procedure.calvin.ycsb.YcsbStoredProcFactory();
 			break;
 		}
 		factory = new BasicCalvinSpFactory(factory);
@@ -157,9 +157,15 @@ public class ElasqlStartUp implements SutStartUp {
 		TPartStoredProcedureFactory factory = null;
 		switch (BenchmarkerParameters.BENCH_TYPE) {
 		case MICRO:
-			throw new UnsupportedOperationException("No Micro for now");
+			if (logger.isLoggable(Level.INFO))
+				logger.info("using Micro-benchmark stored procedures for T-Part");
+			factory = new org.elasql.bench.server.procedure.tpart.micro.MicrobenchStoredProcFactory();
+			break;
 		case TPCC:
-			throw new UnsupportedOperationException("No TPC-C for now");
+			if (logger.isLoggable(Level.INFO))
+				logger.info("using TPC-C stored procedures for T-Part");
+			factory = new org.elasql.bench.server.procedure.tpart.tpcc.TpccStoredProcFactory();
+			break;
 		case TPCE:
 			throw new UnsupportedOperationException("No TPC-E for now");
 		case YCSB:
@@ -183,7 +189,8 @@ public class ElasqlStartUp implements SutStartUp {
 		case YCSB:
 			switch (ElasqlYcsbConstants.DATABASE_MODE) {
 			case SINGLE_TABLE:
-				throw new UnsupportedOperationException("Not implemented for YCSB single-table");
+				partPlan = new YcsbSingleTablePartitionPlan();
+				break;
 			case MULTI_TENANTS:
 				partPlan = new YcsbMultiTenantsPartitionPlan();
 				break;

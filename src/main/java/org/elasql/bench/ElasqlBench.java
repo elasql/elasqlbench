@@ -14,6 +14,8 @@ import org.elasql.bench.benchmarks.ycsb.ElasqlYcsbBenchmark;
 import org.elasql.bench.remote.sp.ElasqlBenchSpConnection;
 import org.elasql.bench.remote.sp.ElasqlBenchSpDriver;
 import org.elasql.remote.groupcomm.client.DirectMessageListener;
+import org.elasql.server.Elasql;
+import org.elasql.server.Elasql.ServiceType;
 import org.vanilladb.bench.BenchTransactionType;
 import org.vanilladb.bench.Benchmark;
 import org.vanilladb.bench.BenchmarkerParameters;
@@ -199,6 +201,13 @@ public class ElasqlBench implements DirectMessageListener {
 	}
 	
 	private boolean checkDatabase(SutConnection conn) throws SQLException {
+		// XXX: We haven't implement check procedure for other service types
+		if (Elasql.SERVICE_TYPE != ServiceType.CALVIN) {
+			if (logger.isLoggable(Level.WARNING))
+				logger.warning("skips checking procedures for " + Elasql.SERVICE_TYPE);
+			return true;
+		}
+		
 		if (nodeId == 0) {
 			boolean result = benchmarker.executeDatabaseCheckProcedure(conn);
 			
