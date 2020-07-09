@@ -101,8 +101,6 @@ public class ElasqlYcsbProcParamHelper extends StoredProcedureParamHelper {
 		// => id = [tenant id, record id]
 		
 		int indexCnt = 0;
-		
-		System.out.println(Arrays.toString(pars));
 
 		dbType = (Integer) pars[indexCnt++];
 		
