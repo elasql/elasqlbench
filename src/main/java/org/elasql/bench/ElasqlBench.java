@@ -64,13 +64,13 @@ public class ElasqlBench implements DirectMessageListener {
 				logger.info("checking the database on the server...");
 
 			SutConnection conn = getConnection();
-			boolean result = checkDatabase(conn);
-
-			if (!result) {
-				if (logger.isLoggable(Level.SEVERE))
-					logger.severe("the database is not ready, please load the database again.");
-				return;
-			}
+//			boolean result = checkDatabase(conn);
+//
+//			if (!result) {
+//				if (logger.isLoggable(Level.SEVERE))
+//					logger.severe("the database is not ready, please load the database again.");
+//				return;
+//			}
 
 			if (logger.isLoggable(Level.INFO))
 				logger.info("database check passed.");
