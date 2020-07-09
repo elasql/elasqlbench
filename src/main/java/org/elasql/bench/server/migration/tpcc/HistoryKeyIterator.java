@@ -126,6 +126,11 @@ public class HistoryKeyIterator implements TableKeyIterator, Serializable {
 		}
 	}
 	
+	@Override
+	public TableKeyIterator copy() {
+		return new HistoryKeyIterator(this);
+	}
+	
 	private void initKeyBuilder() {
 		keyBuilder.addFldVal("h_id", new IntegerConstant(hid));
 		keyBuilder.addFldVal("h_c_id", new IntegerConstant(cid));

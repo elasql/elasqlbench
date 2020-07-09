@@ -1,4 +1,4 @@
-package org.elasql.bench.server.migration.tpcc;
+package org.elasql.bench.server.migration;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -6,18 +6,18 @@ import java.util.Set;
 import org.elasql.migration.MigrationRangeUpdate;
 import org.elasql.sql.RecordKey;
 
-public class TpccMigrationRangeUpdate implements MigrationRangeUpdate {
+public class SingleTableMigrationRangeUpdate implements MigrationRangeUpdate {
 	
 	private static final long serialVersionUID = 20181101001L;
 	
-	int minWid;
-	TpccKeyIterator keyRangeToPush;
+	RecordKey partitioningKey;
+	TableKeyIterator keyRangeToPush;
 	int sourcePartId, destPartId;
 	Set<RecordKey> otherMigratingKeys = new HashSet<RecordKey>();
 	
-	TpccMigrationRangeUpdate(int sourcePartId, int destPartId,
-			int minWid, TpccKeyIterator keyRangeToPush, Set<RecordKey> otherMigratingKeys) {
-		this.minWid = minWid;
+	SingleTableMigrationRangeUpdate(int sourcePartId, int destPartId,
+			RecordKey partitioningKey, TableKeyIterator keyRangeToPush, Set<RecordKey> otherMigratingKeys) {
+		this.partitioningKey = partitioningKey;
 		this.keyRangeToPush = keyRangeToPush;
 		this.otherMigratingKeys = otherMigratingKeys;
 		this.sourcePartId = sourcePartId;

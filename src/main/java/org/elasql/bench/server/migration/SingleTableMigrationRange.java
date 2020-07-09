@@ -1,56 +1,52 @@
-package org.elasql.bench.server.migration.tpcc;
+package org.elasql.bench.server.migration;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.migration.MigrationRange;
 import org.elasql.migration.MigrationRangeUpdate;
+import org.elasql.server.Elasql;
 import org.elasql.sql.RecordKey;
 
-public class TpccMigrationRange implements MigrationRange {
+public class SingleTableMigrationRange implements MigrationRange {
 	
-	// Partitioning key - warehouse id (wid)
-	private int minWid, maxWid;
-	
+	// Partitioning key
+	private RecordKey partitioningKey;
 	private int sourcePartId, destPartId;
 	
-	private TpccKeyIterator keyRangeToPush;
-	private TpccKeyIterator chunkGenerator;
+	private TableKeyIterator keyRangeToPush;
+	private TableKeyIterator chunkGenerator;
 	
 	// For new inserted keys
 	private Set<RecordKey> unmigratedNewKeys = new HashSet<RecordKey>();
 	private ConcurrentLinkedQueue<RecordKey> nextMigratingNewKeys =
 			new ConcurrentLinkedQueue<RecordKey>();
 	private Set<RecordKey> newKeysInRecentChunk = new HashSet<RecordKey>();
+	private boolean ignoreInsertion;
 	
 	// We does not remove the contents until the entire migration finishes
 	private Set<RecordKey> migratedKeys = new HashSet<RecordKey>();
 	
 	// Note: this can only be called from the scheduler
-	public TpccMigrationRange(int minWid, int maxWid, int sourcePartId, int destPartId) {
-		this.minWid = minWid;
-		this.maxWid = maxWid;
+	public SingleTableMigrationRange(int sourcePartId, int destPartId, RecordKey partitioningKey,
+			TableKeyIterator keyIterator, boolean ignoreInsertion) {
+		this.partitioningKey = partitioningKey;
 		this.sourcePartId = sourcePartId;
 		this.destPartId = destPartId;
-		this.keyRangeToPush = new TpccKeyIterator(minWid, maxWid - minWid + 1);
-		this.chunkGenerator = new TpccKeyIterator(minWid, maxWid - minWid + 1);
-		
-//		new PeriodicalJob(5_000, 400_000, new Runnable() {
-//
-//			@Override
-//			public void run() {
-//				System.out.println(String.format("Pending Keys: %d", nextMigratingNewKeys.size()));
-//			}
-//			
-//		}).start();
+		this.keyRangeToPush = keyIterator.copy();
+		this.chunkGenerator = keyIterator.copy();
+		this.ignoreInsertion = ignoreInsertion;
 	}
 	
 	@Override
 	public boolean addKey(RecordKey key) {
 		if (!contains(key))
 			return false;
+		
+		if (ignoreInsertion)
+			return true;
+		
 		unmigratedNewKeys.add(key);
 		nextMigratingNewKeys.add(key);
 		return true;
@@ -58,8 +54,8 @@ public class TpccMigrationRange implements MigrationRange {
 
 	@Override
 	public boolean contains(RecordKey key) {
-		int wid = TpccPartitionPlan.getWarehouseId(key);
-		return minWid <= wid && wid <= maxWid;
+		RecordKey partKey = Elasql.partitionMetaMgr().getPartitioningKey(key);
+		return partitioningKey.equals(partKey);
 	}
 	
 	public boolean isMigrated(RecordKey key) {
@@ -129,16 +125,16 @@ public class TpccMigrationRange implements MigrationRange {
 	 */
 	@Override
 	public MigrationRangeUpdate generateStatusUpdate() {
-		return new TpccMigrationRangeUpdate(sourcePartId, destPartId,
-				minWid, new TpccKeyIterator(chunkGenerator), newKeysInRecentChunk);
+		return new SingleTableMigrationRangeUpdate(sourcePartId, destPartId,
+				partitioningKey, chunkGenerator.copy(), newKeysInRecentChunk);
 	}
 
 	@Override
 	public boolean updateMigrationStatus(MigrationRangeUpdate update) {
-		TpccMigrationRangeUpdate tpccUpdate = (TpccMigrationRangeUpdate) update;
-		if (tpccUpdate.minWid == minWid) {
-			keyRangeToPush = tpccUpdate.keyRangeToPush;
-			for (RecordKey key : tpccUpdate.otherMigratingKeys)
+		SingleTableMigrationRangeUpdate su = (SingleTableMigrationRangeUpdate) update;
+		if (su.partitioningKey.equals(partitioningKey)) {
+			keyRangeToPush = su.keyRangeToPush;
+			for (RecordKey key : su.otherMigratingKeys)
 				setMigrated(key);
 			return true;
 		} else
@@ -182,7 +178,7 @@ public class TpccMigrationRange implements MigrationRange {
 	
 	@Override
 	public String toString() {
-		return String.format("[warehouse: %d ~ %d, from node %d to node %d]", 
-				minWid, maxWid, sourcePartId, destPartId);
+		return String.format("[partitioning key: %s, from node %d to node %d]", 
+				partitioningKey, sourcePartId, destPartId);
 	}
 }

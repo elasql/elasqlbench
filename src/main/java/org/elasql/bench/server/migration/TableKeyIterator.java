@@ -10,4 +10,6 @@ public interface TableKeyIterator extends Iterator<RecordKey> {
 	
 	boolean isInSubsequentKeys(RecordKey key);
 	
+	TableKeyIterator copy();
+	
 }

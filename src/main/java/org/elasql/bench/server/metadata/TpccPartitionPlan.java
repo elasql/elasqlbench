@@ -3,6 +3,7 @@ package org.elasql.bench.server.metadata;
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants;
 import org.elasql.server.Elasql;
 import org.elasql.sql.RecordKey;
+import org.elasql.sql.RecordKeyBuilder;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.Constant;
@@ -73,5 +74,64 @@ public class TpccPartitionPlan extends PartitionPlan {
 			// Fully replicated
 			return Elasql.serverId();
 		}
+	}
+
+	@Override
+	public PartitionPlan getBasePlan() {
+		return this;
+	}
+
+	@Override
+	public void setBasePlan(PartitionPlan plan) {
+		new UnsupportedOperationException();
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("TPC-C range partition (each range has %d warehouses)", ElasqlTpccConstants.WAREHOUSE_PER_PART);
+	}
+
+	@Override
+	public RecordKey getPartitioningKey(RecordKey key) {
+		RecordKeyBuilder builder;
+		
+		switch (key.getTableName()) {
+		case "warehouse":
+			builder = new RecordKeyBuilder("warehouse");
+			builder.addFldVal("w_id", key.getVal("w_id"));
+			break;
+		case "district":
+			builder = new RecordKeyBuilder("district");
+			builder.addFldVal("d_w_id", key.getVal("d_w_id"));
+			break;
+		case "stock":
+			builder = new RecordKeyBuilder("stock");
+			builder.addFldVal("s_w_id", key.getVal("s_w_id"));
+			break;
+		case "customer":
+			builder = new RecordKeyBuilder("customer");
+			builder.addFldVal("c_w_id", key.getVal("c_w_id"));
+			break;
+		case "history":
+			builder = new RecordKeyBuilder("history");
+			builder.addFldVal("h_c_w_id", key.getVal("h_c_w_id"));
+			break;
+		case "orders":
+			builder = new RecordKeyBuilder("orders");
+			builder.addFldVal("o_w_id", key.getVal("o_w_id"));
+			break;
+		case "new_order":
+			builder = new RecordKeyBuilder("new_order");
+			builder.addFldVal("no_w_id", key.getVal("no_w_id"));
+			break;
+		case "order_line":
+			builder = new RecordKeyBuilder("order_line");
+			builder.addFldVal("ol_w_id", key.getVal("ol_w_id"));
+			break;
+		default:
+			throw new RuntimeException("Unknown table " + key.getTableName());
+		}
+
+		return builder.build();
 	}
 }

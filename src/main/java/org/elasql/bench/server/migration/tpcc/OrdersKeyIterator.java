@@ -109,6 +109,11 @@ public class OrdersKeyIterator implements TableKeyIterator, Serializable {
 		}
 	}
 	
+	@Override
+	public TableKeyIterator copy() {
+		return new OrdersKeyIterator(this);
+	}
+	
 	private void initKeyBuilder() {
 		keyBuilder.addFldVal("o_w_id", new IntegerConstant(wid));
 		keyBuilder.addFldVal("o_d_id", new IntegerConstant(did));

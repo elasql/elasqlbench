@@ -80,6 +80,11 @@ public class StockKeyIterator implements TableKeyIterator, Serializable {
 		}
 	}
 	
+	@Override
+	public TableKeyIterator copy() {
+		return new StockKeyIterator(this);
+	}
+	
 	private void initKeyBuilder() {
 		keyBuilder.addFldVal("s_i_id", new IntegerConstant(iid));
 		keyBuilder.addFldVal("s_w_id", new IntegerConstant(wid));

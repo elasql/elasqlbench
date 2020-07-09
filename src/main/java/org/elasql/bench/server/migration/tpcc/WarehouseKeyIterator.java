@@ -65,6 +65,11 @@ public class WarehouseKeyIterator implements TableKeyIterator, Serializable {
 		return keyWid >= wid && keyWid <= endWid;
 	}
 	
+	@Override
+	public TableKeyIterator copy() {
+		return new WarehouseKeyIterator(this);
+	}
+	
 	private void initKeyBuilder() {
 		keyBuilder.addFldVal("w_id", new IntegerConstant(wid));
 	}

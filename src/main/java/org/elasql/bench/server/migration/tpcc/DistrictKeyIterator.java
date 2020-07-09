@@ -80,6 +80,11 @@ public class DistrictKeyIterator implements TableKeyIterator, Serializable {
 		}
 	}
 	
+	@Override
+	public TableKeyIterator copy() {
+		return new DistrictKeyIterator(this);
+	}
+	
 	private void initKeyBuilder() {
 		keyBuilder.addFldVal("d_w_id", new IntegerConstant(wid));
 		keyBuilder.addFldVal("d_id", new IntegerConstant(did));

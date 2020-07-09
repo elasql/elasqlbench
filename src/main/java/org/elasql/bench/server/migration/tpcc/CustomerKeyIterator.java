@@ -95,6 +95,11 @@ public class CustomerKeyIterator implements TableKeyIterator, Serializable {
 		}
 	}
 	
+	@Override
+	public TableKeyIterator copy() {
+		return new CustomerKeyIterator(this);
+	}
+	
 	private void initKeyBuilder() {
 		keyBuilder.addFldVal("c_w_id", new IntegerConstant(wid));
 		keyBuilder.addFldVal("c_d_id", new IntegerConstant(did));

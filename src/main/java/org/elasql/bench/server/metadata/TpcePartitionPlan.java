@@ -20,4 +20,18 @@ public class TpcePartitionPlan extends PartitionPlan {
 		return Math.abs(val.hashCode() % PartitionMetaMgr.NUM_PARTITIONS);
 	}
 
+	@Override
+	public PartitionPlan getBasePlan() {
+		return this;
+	}
+
+	@Override
+	public void setBasePlan(PartitionPlan plan) {
+		new UnsupportedOperationException();
+	}
+
+	@Override
+	public RecordKey getPartitioningKey(RecordKey key) {
+		return key;
+	}
 }

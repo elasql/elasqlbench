@@ -116,6 +116,11 @@ public class TpccKeyIterator implements TableKeyIterator, Serializable {
 		return iter.isInSubsequentKeys(key);
 	}
 	
+	@Override
+	public TableKeyIterator copy() {
+		return new TpccKeyIterator(this);
+	}
+	
 	private void addTableIterator(TableKeyIterator iterator) {
 		tableNames.add(iterator.getTableName());
 		tableIterators.put(iterator.getTableName(), iterator);
