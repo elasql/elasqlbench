@@ -24,4 +24,14 @@ public class YcsbMultiTenantsPartitionPlan extends PartitionPlan {
 		return tenantId / ElasqlYcsbConstants.TENANTS_PER_PART;
 	}
 
+	@Override
+	public PartitionPlan getBasePlan() {
+		return this;
+	}
+
+	@Override
+	public void setBasePlan(PartitionPlan plan) {
+		new UnsupportedOperationException();
+	}
+
 }
