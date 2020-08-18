@@ -3,6 +3,7 @@ package org.elasql.bench.server.metadata;
 import org.elasql.sql.PrimaryKey;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.storage.metadata.PartitionPlan;
+import org.elasql.storage.metadata.PartitioningKey;
 import org.vanilladb.core.sql.Constant;
 
 public class TpcePartitionPlan extends PartitionPlan {
@@ -31,7 +32,7 @@ public class TpcePartitionPlan extends PartitionPlan {
 	}
 
 	@Override
-	public PrimaryKey getPartitioningKey(PrimaryKey key) {
-		return key;
+	public PartitioningKey getPartitioningKey(PrimaryKey key) {
+		return new PartitioningKey(key);
 	}
 }

@@ -6,26 +6,18 @@ import org.elasql.bench.server.migration.TableKeyIterator;
 import org.elasql.migration.MigrationComponentFactory;
 import org.elasql.migration.MigrationPlan;
 import org.elasql.migration.MigrationRange;
-import org.elasql.migration.planner.clay.ScatterMigrationPlan;
-import org.elasql.sql.PrimaryKey;
-import org.elasql.sql.PrimaryKeyBuilder;
-import org.vanilladb.core.sql.IntegerConstant;
+import org.elasql.storage.metadata.PartitioningKey;
 
 public class TpccMigrationComponentFactory extends MigrationComponentFactory {
 
 	@Override
 	public MigrationPlan newPredefinedMigrationPlan() {
 //		return new TpccPredefinedMigrationPlan();
-		// Debug
-		ScatterMigrationPlan plan = new ScatterMigrationPlan();
-		
-		addWarehouse(plan, 0, 1, 2);
-		addWarehouse(plan, 0, 2, 3);
-		
-		return plan;
+		// TODO
+		throw new RuntimeException("Unimplemented");
 	}
 	
-	public MigrationRange toMigrationRange(int sourceId, int destId, PrimaryKey partitioningKey) {
+	public MigrationRange toMigrationRange(int sourceId, int destId, PartitioningKey partitioningKey) {
 		TableKeyIterator keyIterator = null;
 		int wid;
 		boolean ignoreInsertion = false;
@@ -80,50 +72,5 @@ public class TpccMigrationComponentFactory extends MigrationComponentFactory {
 		}
 		
 		return new SingleTableMigrationRange(sourceId, destId, partitioningKey, keyIterator, ignoreInsertion);
-	}
-	
-	private void addWarehouse(ScatterMigrationPlan plan, int source, int dest, int wid) {
-		
-		plan.addKey(source, dest, newWarehouseKey(wid));
-		
-		for (int did = 1; did <= 10; did++) {
-			plan.addKey(source, dest, newDistrictKey(wid, did));
-			
-			for (int cid = 1; cid <= 3000; cid++) {
-				plan.addKey(source, dest, newCustomerKey(wid, did, cid));
-			}
-		}
-		
-		for (int iid = 1; iid <= 100000; iid++) {
-			plan.addKey(source, dest, newStockKey(wid, iid));
-		}
-	}
-	
-	private PrimaryKey newWarehouseKey(int wid) {
-		PrimaryKeyBuilder builder = new PrimaryKeyBuilder("warehouse");
-		builder.addFldVal("w_id", new IntegerConstant(wid));
-		return builder.build();
-	}
-	
-	private PrimaryKey newDistrictKey(int d_w_id, int d_id) {
-		PrimaryKeyBuilder builder = new PrimaryKeyBuilder("district");
-		builder.addFldVal("d_w_id", new IntegerConstant(d_w_id));
-		builder.addFldVal("d_id", new IntegerConstant(d_id));
-		return builder.build();
-	}
-	
-	private PrimaryKey newCustomerKey(int c_w_id, int c_d_id, int c_id) {
-		PrimaryKeyBuilder builder = new PrimaryKeyBuilder("customer");
-		builder.addFldVal("c_w_id", new IntegerConstant(c_w_id));
-		builder.addFldVal("c_d_id", new IntegerConstant(c_d_id));
-		builder.addFldVal("c_id", new IntegerConstant(c_id));
-		return builder.build();
-	}
-	
-	private PrimaryKey newStockKey(int wid, int iid) {
-		PrimaryKeyBuilder builder = new PrimaryKeyBuilder("stock");
-		builder.addFldVal("s_i_id", new IntegerConstant(iid));
-		builder.addFldVal("s_w_id", new IntegerConstant(wid));
-		return builder.build();
 	}
 }

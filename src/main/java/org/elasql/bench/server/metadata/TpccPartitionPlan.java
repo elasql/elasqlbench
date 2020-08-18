@@ -3,9 +3,9 @@ package org.elasql.bench.server.metadata;
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants;
 import org.elasql.server.Elasql;
 import org.elasql.sql.PrimaryKey;
-import org.elasql.sql.PrimaryKeyBuilder;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.storage.metadata.PartitionPlan;
+import org.elasql.storage.metadata.PartitioningKey;
 import org.vanilladb.core.sql.Constant;
 
 /**
@@ -92,46 +92,38 @@ public class TpccPartitionPlan extends PartitionPlan {
 	}
 
 	@Override
-	public PrimaryKey getPartitioningKey(PrimaryKey key) {
-		PrimaryKeyBuilder builder;
+	public PartitioningKey getPartitioningKey(PrimaryKey key) {
+		PartitioningKey partKey;
 		
 		switch (key.getTableName()) {
 		case "warehouse":
-			builder = new PrimaryKeyBuilder("warehouse");
-			builder.addFldVal("w_id", key.getVal("w_id"));
+			partKey = new PartitioningKey(key, "w_id");
 			break;
 		case "district":
-			builder = new PrimaryKeyBuilder("district");
-			builder.addFldVal("d_w_id", key.getVal("d_w_id"));
+			partKey = new PartitioningKey(key, "d_w_id");
 			break;
 		case "stock":
-			builder = new PrimaryKeyBuilder("stock");
-			builder.addFldVal("s_w_id", key.getVal("s_w_id"));
+			partKey = new PartitioningKey(key, "s_w_id");
 			break;
 		case "customer":
-			builder = new PrimaryKeyBuilder("customer");
-			builder.addFldVal("c_w_id", key.getVal("c_w_id"));
+			partKey = new PartitioningKey(key, "c_w_id");
 			break;
 		case "history":
-			builder = new PrimaryKeyBuilder("history");
-			builder.addFldVal("h_c_w_id", key.getVal("h_c_w_id"));
+			partKey = new PartitioningKey(key, "h_c_w_id");
 			break;
 		case "orders":
-			builder = new PrimaryKeyBuilder("orders");
-			builder.addFldVal("o_w_id", key.getVal("o_w_id"));
+			partKey = new PartitioningKey(key, "o_w_id");
 			break;
 		case "new_order":
-			builder = new PrimaryKeyBuilder("new_order");
-			builder.addFldVal("no_w_id", key.getVal("no_w_id"));
+			partKey = new PartitioningKey(key, "no_w_id");
 			break;
 		case "order_line":
-			builder = new PrimaryKeyBuilder("order_line");
-			builder.addFldVal("ol_w_id", key.getVal("ol_w_id"));
+			partKey = new PartitioningKey(key, "ol_w_id");
 			break;
 		default:
 			throw new RuntimeException("Unknown table " + key.getTableName());
 		}
 
-		return builder.build();
+		return partKey;
 	}
 }

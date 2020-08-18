@@ -8,11 +8,12 @@ import org.elasql.migration.MigrationRange;
 import org.elasql.migration.MigrationRangeUpdate;
 import org.elasql.server.Elasql;
 import org.elasql.sql.PrimaryKey;
+import org.elasql.storage.metadata.PartitioningKey;
 
 public class SingleTableMigrationRange implements MigrationRange {
 	
 	// Partitioning key
-	private PrimaryKey partitioningKey;
+	private PartitioningKey partKey;
 	private int sourcePartId, destPartId;
 	
 	private TableKeyIterator keyRangeToPush;
@@ -29,9 +30,9 @@ public class SingleTableMigrationRange implements MigrationRange {
 	private Set<PrimaryKey> migratedKeys = new HashSet<PrimaryKey>();
 	
 	// Note: this can only be called from the scheduler
-	public SingleTableMigrationRange(int sourcePartId, int destPartId, PrimaryKey partitioningKey,
+	public SingleTableMigrationRange(int sourcePartId, int destPartId, PartitioningKey partitioningKey,
 			TableKeyIterator keyIterator, boolean ignoreInsertion) {
-		this.partitioningKey = partitioningKey;
+		this.partKey = partitioningKey;
 		this.sourcePartId = sourcePartId;
 		this.destPartId = destPartId;
 		this.keyRangeToPush = keyIterator.copy();
@@ -54,8 +55,8 @@ public class SingleTableMigrationRange implements MigrationRange {
 
 	@Override
 	public boolean contains(PrimaryKey key) {
-		PrimaryKey partKey = Elasql.partitionMetaMgr().getPartitioningKey(key);
-		return partitioningKey.equals(partKey);
+		PartitioningKey partKey = Elasql.partitionMetaMgr().getPartitioningKey(key);
+		return partKey.equals(partKey);
 	}
 	
 	public boolean isMigrated(PrimaryKey key) {
@@ -126,13 +127,13 @@ public class SingleTableMigrationRange implements MigrationRange {
 	@Override
 	public MigrationRangeUpdate generateStatusUpdate() {
 		return new SingleTableMigrationRangeUpdate(sourcePartId, destPartId,
-				partitioningKey, chunkGenerator.copy(), newKeysInRecentChunk);
+				partKey, chunkGenerator.copy(), newKeysInRecentChunk);
 	}
 
 	@Override
 	public boolean updateMigrationStatus(MigrationRangeUpdate update) {
 		SingleTableMigrationRangeUpdate su = (SingleTableMigrationRangeUpdate) update;
-		if (su.partitioningKey.equals(partitioningKey)) {
+		if (su.partitioningKey.equals(partKey)) {
 			keyRangeToPush = su.keyRangeToPush;
 			for (PrimaryKey key : su.otherMigratingKeys)
 				setMigrated(key);
@@ -179,6 +180,6 @@ public class SingleTableMigrationRange implements MigrationRange {
 	@Override
 	public String toString() {
 		return String.format("[partitioning key: %s, from node %d to node %d]", 
-				partitioningKey, sourcePartId, destPartId);
+				partKey, sourcePartId, destPartId);
 	}
 }
