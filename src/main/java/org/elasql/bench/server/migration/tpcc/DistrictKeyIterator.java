@@ -3,8 +3,8 @@ package org.elasql.bench.server.migration.tpcc;
 import java.io.Serializable;
 
 import org.elasql.bench.server.migration.TableKeyIterator;
-import org.elasql.sql.RecordKey;
-import org.elasql.sql.RecordKeyBuilder;
+import org.elasql.sql.PrimaryKey;
+import org.elasql.sql.PrimaryKeyBuilder;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class DistrictKeyIterator implements TableKeyIterator, Serializable {
@@ -16,7 +16,7 @@ public class DistrictKeyIterator implements TableKeyIterator, Serializable {
 	private int wid, did;
 	
 	private boolean hasNext = true;
-	private RecordKeyBuilder keyBuilder = new RecordKeyBuilder("district");
+	private PrimaryKeyBuilder keyBuilder = new PrimaryKeyBuilder("district");
 	
 	public DistrictKeyIterator(int startWid, int wcount) {
 		this.wid = startWid;
@@ -41,7 +41,7 @@ public class DistrictKeyIterator implements TableKeyIterator, Serializable {
 	}
 
 	@Override
-	public RecordKey next() {
+	public PrimaryKey next() {
 		keyBuilder.setVal("d_w_id", new IntegerConstant(wid));
 		keyBuilder.setVal("d_id", new IntegerConstant(did));
 		
@@ -65,7 +65,7 @@ public class DistrictKeyIterator implements TableKeyIterator, Serializable {
 	}
 
 	@Override
-	public boolean isInSubsequentKeys(RecordKey key) {
+	public boolean isInSubsequentKeys(PrimaryKey key) {
 		if (!key.getTableName().equals("district"))
 			return false;
 		

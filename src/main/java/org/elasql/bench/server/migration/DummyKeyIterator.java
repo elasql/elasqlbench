@@ -2,7 +2,7 @@ package org.elasql.bench.server.migration;
 
 import java.io.Serializable;
 
-import org.elasql.sql.RecordKey;
+import org.elasql.sql.PrimaryKey;
 
 public class DummyKeyIterator implements TableKeyIterator, Serializable {
 	
@@ -20,7 +20,7 @@ public class DummyKeyIterator implements TableKeyIterator, Serializable {
 	}
 
 	@Override
-	public RecordKey next() {
+	public PrimaryKey next() {
 		return null;
 	}
 
@@ -30,7 +30,7 @@ public class DummyKeyIterator implements TableKeyIterator, Serializable {
 	}
 
 	@Override
-	public boolean isInSubsequentKeys(RecordKey key) {
+	public boolean isInSubsequentKeys(PrimaryKey key) {
 		return false;
 	}
 	

@@ -9,7 +9,7 @@ import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.AllExecuteProcedure;
 import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
 import org.elasql.server.Elasql;
-import org.elasql.sql.RecordKey;
+import org.elasql.sql.PrimaryKey;
 import org.vanilladb.bench.benchmarks.ycsb.YcsbConstants;
 import org.vanilladb.core.server.VanillaDb;
 import org.vanilladb.core.sql.VarcharConstant;
@@ -35,7 +35,7 @@ public class YcsbTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 	}
 	
 	@Override
-	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
+	protected void executeSql(Map<PrimaryKey, CachedRecord> readings) {
 		if (logger.isLoggable(Level.INFO))
 			logger.info("Start loading testbed...");
 
@@ -116,14 +116,14 @@ public class YcsbTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 		// Generate records
 		String idFieldName = tableName + "_id";
 		String ycsbId, ycsbValue;
-		RecordKey key;
+		PrimaryKey key;
 		for (int id = startId; id <= endId; id++) {
 			
 			// The primary key of YCSB is the string format of id
 			ycsbId = String.format(YcsbConstants.ID_FORMAT, id);
 			
 			// Check if it is a local record
-			key = new RecordKey(tableName, idFieldName, new VarcharConstant(ycsbId));
+			key = new PrimaryKey(tableName, idFieldName, new VarcharConstant(ycsbId));
 			if (Elasql.partitionMetaMgr().getPartition(key) == Elasql.serverId()) {
 				
 				sb = new StringBuilder();

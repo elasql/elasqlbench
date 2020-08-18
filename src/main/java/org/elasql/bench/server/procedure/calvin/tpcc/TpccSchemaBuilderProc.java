@@ -21,7 +21,7 @@ import org.elasql.bench.server.param.tpcc.TpccSchemaBuilderProcParamHelper;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.AllExecuteProcedure;
 import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
-import org.elasql.sql.RecordKey;
+import org.elasql.sql.PrimaryKey;
 import org.vanilladb.core.server.VanillaDb;
 
 public class TpccSchemaBuilderProc extends AllExecuteProcedure<TpccSchemaBuilderProcParamHelper> {
@@ -38,7 +38,7 @@ public class TpccSchemaBuilderProc extends AllExecuteProcedure<TpccSchemaBuilder
 	}
 
 	@Override
-	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
+	protected void executeSql(Map<PrimaryKey, CachedRecord> readings) {
 		for (String cmd : paramHelper.getTableSchemas())
 			VanillaDb.newPlanner().executeUpdate(cmd, getTransaction());
 		for (String cmd : paramHelper.getIndexSchemas())

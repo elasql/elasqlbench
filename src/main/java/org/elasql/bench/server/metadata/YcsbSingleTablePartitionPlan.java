@@ -1,13 +1,13 @@
 package org.elasql.bench.server.metadata;
 
 import org.elasql.bench.benchmarks.ycsb.ElasqlYcsbConstants;
-import org.elasql.sql.RecordKey;
+import org.elasql.sql.PrimaryKey;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.Constant;
 
 public class YcsbSingleTablePartitionPlan extends PartitionPlan {
 	
-	public static int getYcsbId(RecordKey key) {
+	public static int getYcsbId(PrimaryKey key) {
 		Constant idCon = key.getVal("ycsb_id");
 		if (idCon == null)
 			throw new IllegalArgumentException("does not recongnize " + key);
@@ -15,12 +15,12 @@ public class YcsbSingleTablePartitionPlan extends PartitionPlan {
 	}
 	
 	@Override
-	public boolean isFullyReplicated(RecordKey key) {
+	public boolean isFullyReplicated(PrimaryKey key) {
 		return false;
 	}
 
 	@Override
-	public int getPartition(RecordKey key) {
+	public int getPartition(PrimaryKey key) {
 		int ycsbId = getYcsbId(key);
 		return (ycsbId - 1) / ElasqlYcsbConstants.INIT_RECORD_PER_PART;
 	}

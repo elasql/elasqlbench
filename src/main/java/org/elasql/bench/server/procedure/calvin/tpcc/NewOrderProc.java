@@ -22,8 +22,8 @@ import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
-import org.elasql.sql.RecordKey;
-import org.elasql.sql.RecordKeyBuilder;
+import org.elasql.sql.PrimaryKey;
+import org.elasql.sql.PrimaryKeyBuilder;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.server.param.tpcc.NewOrderProcParamHelper;
 import org.vanilladb.core.sql.BigIntConstant;
@@ -68,10 +68,10 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 	}
 
 	// Record keys for retrieving data
-	private RecordKey warehouseKey, districtKey, customerKey;
-	private RecordKey orderKey, newOrderKey;
+	private PrimaryKey warehouseKey, districtKey, customerKey;
+	private PrimaryKey orderKey, newOrderKey;
 	// a {itemKey, stockKey, orderLineKey} per order line
-	private RecordKey[][] orderLineKeys = new RecordKey[15][3];
+	private PrimaryKey[][] orderLineKeys = new PrimaryKey[15][3];
 
 	// SQL Constants
 	Constant widCon, didCon, cidCon, oidCon;
@@ -82,7 +82,7 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 
 	@Override
 	protected void prepareKeys(ReadWriteSetAnalyzer analyzer) {
-		RecordKeyBuilder builder;
+		PrimaryKeyBuilder builder;
 
 		// Construct constant from parameters
 		widCon = new IntegerConstant(paramHelper.getWid());
@@ -99,13 +99,13 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 		// =================== Keys for steps 1 ===================
 
 		// SELECT ... FROM warehouse WHERE w_id = wid
-		builder = new RecordKeyBuilder("warehouse");
+		builder = new PrimaryKeyBuilder("warehouse");
 		builder.addFldVal("w_id", widCon);
 		warehouseKey = builder.build();
 		analyzer.addReadKey(warehouseKey);
 
 		// SELECT ... FROM district WHERE d_w_id = wid AND d_id = did
-		builder = new RecordKeyBuilder("district");
+		builder = new PrimaryKeyBuilder("district");
 		builder.addFldVal("d_w_id", widCon);
 		builder.addFldVal("d_id", didCon);
 		districtKey = builder.build();
@@ -115,7 +115,7 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 		analyzer.addUpdateKey(districtKey);
 
 		// SELECT ... WHERE c_w_id = wid AND c_d_id = did AND c_id = cid
-		builder = new RecordKeyBuilder("customer");
+		builder = new PrimaryKeyBuilder("customer");
 		builder.addFldVal("c_w_id", widCon);
 		builder.addFldVal("c_d_id", didCon);
 		builder.addFldVal("c_id", cidCon);
@@ -124,7 +124,7 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 
 		// INSERT INTO orders (o_id, o_w_id, o_d_id, ...) VALUES (nextOId, wid,
 		// did, ...)
-		builder = new RecordKeyBuilder("orders");
+		builder = new PrimaryKeyBuilder("orders");
 		builder.addFldVal("o_w_id", widCon);
 		builder.addFldVal("o_d_id", didCon);
 		builder.addFldVal("o_id", oidCon);
@@ -133,7 +133,7 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 
 		// INSERT INTO new_order (no_o_id, no_w_id, no_d_id) VALUES
 		// (nextOId, wid, did)
-		builder = new RecordKeyBuilder("new_order");
+		builder = new PrimaryKeyBuilder("new_order");
 		builder.addFldVal("no_w_id", widCon);
 		builder.addFldVal("no_d_id", didCon);
 		builder.addFldVal("no_o_id", oidCon);
@@ -154,14 +154,14 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 			Constant olNumCon = new IntegerConstant(i + 1);
 
 			// SELECT ... FROM item WHERE i_id = olIId
-			builder = new RecordKeyBuilder("item");
+			builder = new PrimaryKeyBuilder("item");
 			builder.addFldVal("i_id", olIIdCon);
 			orderLineKeys[i][0] = builder.build();
 			analyzer.addReadKey(orderLineKeys[i][0]);
 
 			// SELECT ... FROM stock WHERE s_i_id = olIId AND s_w_id =
 			// olSupplyWId
-			builder = new RecordKeyBuilder("stock");
+			builder = new PrimaryKeyBuilder("stock");
 			builder.addFldVal("s_i_id", olIIdCon);
 			builder.addFldVal("s_w_id", supWidCon);
 			orderLineKeys[i][1] = builder.build();
@@ -173,7 +173,7 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 			// INSERT INTO order_line (ol_o_id, ol_w_id, ol_d_id, ol_number,
 			// ...)
 			// VALUES (nextOId, wid, did, i, ...)
-			builder = new RecordKeyBuilder("order_line");
+			builder = new PrimaryKeyBuilder("order_line");
 			builder.addFldVal("ol_o_id", oidCon);
 			builder.addFldVal("ol_d_id", didCon);
 			builder.addFldVal("ol_w_id", widCon);
@@ -184,7 +184,7 @@ public class NewOrderProc extends CalvinStoredProcedure<NewOrderProcParamHelper>
 	}
 
 	@Override
-	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
+	protected void executeSql(Map<PrimaryKey, CachedRecord> readings) {
 		CachedRecord rec = null;
 		Map<String, Constant> fldVals = null;
 

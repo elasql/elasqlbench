@@ -5,7 +5,7 @@ import java.util.Map;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.tpart.TPartStoredProcedure;
 import org.elasql.server.Elasql;
-import org.elasql.sql.RecordKey;
+import org.elasql.sql.PrimaryKey;
 import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
 
 public class StartProfilingProc extends TPartStoredProcedure<StoredProcedureParamHelper> {
@@ -21,7 +21,7 @@ public class StartProfilingProc extends TPartStoredProcedure<StoredProcedurePara
 	}
 
 	@Override
-	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
+	protected void executeSql(Map<PrimaryKey, CachedRecord> readings) {
 		Elasql.stopProfilerAndReport();
 	}
 	

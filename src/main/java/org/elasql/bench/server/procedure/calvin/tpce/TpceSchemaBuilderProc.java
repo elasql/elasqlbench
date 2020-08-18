@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.AllExecuteProcedure;
 import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
-import org.elasql.sql.RecordKey;
+import org.elasql.sql.PrimaryKey;
 import org.vanilladb.bench.server.param.tpce.TpceSchemaBuilderParamHelper;
 import org.vanilladb.core.server.VanillaDb;
 
@@ -41,7 +41,7 @@ public class TpceSchemaBuilderProc extends AllExecuteProcedure<TpceSchemaBuilder
 	}
 
 	@Override
-	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
+	protected void executeSql(Map<PrimaryKey, CachedRecord> readings) {
 		if (logger.isLoggable(Level.FINE))
 			logger.info("Create schema for tpce testbed...");
 		

@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.tpart.TPartStoredProcedure;
-import org.elasql.sql.RecordKey;
+import org.elasql.sql.PrimaryKey;
 import org.vanilladb.bench.server.param.micro.MicroTxnProcParamHelper;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.DoubleConstant;
@@ -13,8 +13,8 @@ import org.vanilladb.core.sql.IntegerConstant;
 
 public class MicroTxnProc extends TPartStoredProcedure<MicroTxnProcParamHelper> {
 
-	private RecordKey[] readKeys;
-	private Map<RecordKey, Constant> writeConstantMap = new HashMap<RecordKey, Constant>();
+	private PrimaryKey[] readKeys;
+	private Map<PrimaryKey, Constant> writeConstantMap = new HashMap<PrimaryKey, Constant>();
 
 	public MicroTxnProc(long txNum) {
 		super(txNum, new MicroTxnProcParamHelper());
@@ -24,11 +24,11 @@ public class MicroTxnProc extends TPartStoredProcedure<MicroTxnProcParamHelper> 
 	protected void prepareKeys() {
 		// set read keys
 		int iid;
-		readKeys = new RecordKey[paramHelper.getReadCount()];
+		readKeys = new PrimaryKey[paramHelper.getReadCount()];
 		for (int idx = 0; idx < paramHelper.getReadCount(); idx++) {
 			iid = paramHelper.getReadItemId(idx);
 			// create record key for reading
-			RecordKey key = new RecordKey("item", "i_id", new IntegerConstant(iid));
+			PrimaryKey key = new PrimaryKey("item", "i_id", new IntegerConstant(iid));
 			readKeys[idx] = key;
 			addReadKey(key);
 		}
@@ -40,7 +40,7 @@ public class MicroTxnProc extends TPartStoredProcedure<MicroTxnProcParamHelper> 
 			iid = paramHelper.getWriteItemId(idx);
 			newPrice = paramHelper.getNewItemPrice(idx);
 
-			RecordKey key = new RecordKey("item", "i_id", new IntegerConstant(iid));
+			PrimaryKey key = new PrimaryKey("item", "i_id", new IntegerConstant(iid));
 			addWriteKey(key);
 
 			// Create key-value pairs for writing
@@ -50,7 +50,7 @@ public class MicroTxnProc extends TPartStoredProcedure<MicroTxnProcParamHelper> 
 	}
 
 	@Override
-	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
+	protected void executeSql(Map<PrimaryKey, CachedRecord> readings) {
 		CachedRecord rec;
 		
 		// SELECT i_name, i_price FROM items WHERE i_id = ...
@@ -61,7 +61,7 @@ public class MicroTxnProc extends TPartStoredProcedure<MicroTxnProcParamHelper> 
 		}
 
 		// UPDATE items SET i_price = ... WHERE i_id = ...
-		for (Map.Entry<RecordKey, Constant> pair : writeConstantMap.entrySet()) {
+		for (Map.Entry<PrimaryKey, Constant> pair : writeConstantMap.entrySet()) {
 			rec = readings.get(pair.getKey());
 			rec.setVal("i_price", pair.getValue());
 			update(pair.getKey(), rec);

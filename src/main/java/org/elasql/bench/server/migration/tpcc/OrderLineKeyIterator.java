@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 import org.elasql.bench.server.migration.TableKeyIterator;
 import org.elasql.bench.server.procedure.calvin.tpcc.NewOrderProc;
-import org.elasql.sql.RecordKey;
-import org.elasql.sql.RecordKeyBuilder;
+import org.elasql.sql.PrimaryKey;
+import org.elasql.sql.PrimaryKeyBuilder;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class OrderLineKeyIterator implements TableKeyIterator, Serializable {
@@ -18,7 +18,7 @@ public class OrderLineKeyIterator implements TableKeyIterator, Serializable {
 	private int[][] maxOrderIds;
 	
 	private boolean hasNext = true;
-	private RecordKeyBuilder keyBuilder = new RecordKeyBuilder("order_line");
+	private PrimaryKeyBuilder keyBuilder = new PrimaryKeyBuilder("order_line");
 	
 	public OrderLineKeyIterator(int startWid, int wcount) {
 		this.wid = startWid;
@@ -59,7 +59,7 @@ public class OrderLineKeyIterator implements TableKeyIterator, Serializable {
 	}
 
 	@Override
-	public RecordKey next() {
+	public PrimaryKey next() {
 		keyBuilder.setVal("ol_o_id", new IntegerConstant(oid));
 		keyBuilder.setVal("ol_d_id", new IntegerConstant(did));
 		keyBuilder.setVal("ol_w_id", new IntegerConstant(wid));
@@ -96,7 +96,7 @@ public class OrderLineKeyIterator implements TableKeyIterator, Serializable {
 	}
 
 	@Override
-	public boolean isInSubsequentKeys(RecordKey key) {
+	public boolean isInSubsequentKeys(PrimaryKey key) {
 		if (!key.getTableName().equals("order_line"))
 			return false;
 		

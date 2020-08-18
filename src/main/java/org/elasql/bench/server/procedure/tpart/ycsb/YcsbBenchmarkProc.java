@@ -6,7 +6,7 @@ import java.util.logging.Logger;
 
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.tpart.TPartStoredProcedure;
-import org.elasql.sql.RecordKey;
+import org.elasql.sql.PrimaryKey;
 import org.vanilladb.bench.server.param.ycsb.YcsbBenchmarkProcParamHelper;
 import org.vanilladb.bench.ycsb.YcsbConstants;
 import org.vanilladb.core.sql.Constant;
@@ -17,14 +17,14 @@ public class YcsbBenchmarkProc extends TPartStoredProcedure<YcsbBenchmarkProcPar
 	
 	private static final VarcharConstant WIRTE_VALUE = new VarcharConstant(String.format("%033d", 0));
 	
-	private static RecordKey toRecordKey(int ycsbId) {
+	private static PrimaryKey toRecordKey(int ycsbId) {
 		String idString = String.format(YcsbConstants.ID_FORMAT, ycsbId);
-		return new RecordKey("ycsb", "ycsb_id", new VarcharConstant(idString));
+		return new PrimaryKey("ycsb", "ycsb_id", new VarcharConstant(idString));
 	}
 
-	private RecordKey[] readKeys;
-	private RecordKey[] insertKeys;
-	private Map<RecordKey, Constant> writeConstantMap = new HashMap<RecordKey, Constant>();
+	private PrimaryKey[] readKeys;
+	private PrimaryKey[] insertKeys;
+	private Map<PrimaryKey, Constant> writeConstantMap = new HashMap<PrimaryKey, Constant>();
 	
 	public YcsbBenchmarkProc(long txNum) {
 		super(txNum, new YcsbBenchmarkProcParamHelper());
@@ -33,10 +33,10 @@ public class YcsbBenchmarkProc extends TPartStoredProcedure<YcsbBenchmarkProcPar
 	@Override
 	protected void prepareKeys() {
 		// set read keys
-		readKeys = new RecordKey[paramHelper.getReadCount()];
+		readKeys = new PrimaryKey[paramHelper.getReadCount()];
 		for (int i = 0; i < paramHelper.getReadCount(); i++) {
 			// create RecordKey for reading
-			RecordKey key = toRecordKey(paramHelper.getReadId(i));
+			PrimaryKey key = toRecordKey(paramHelper.getReadId(i));
 			readKeys[i] = key;
 			addReadKey(key);
 		}
@@ -44,7 +44,7 @@ public class YcsbBenchmarkProc extends TPartStoredProcedure<YcsbBenchmarkProcPar
 		// set write keys
 		for (int i = 0; i < paramHelper.getWriteCount(); i++) {
 			// create record key for writing
-			RecordKey key = toRecordKey(paramHelper.getWriteId(i));
+			PrimaryKey key = toRecordKey(paramHelper.getWriteId(i));
 			addWriteKey(key);
 			
 			// Create key-value pairs for writing
@@ -54,17 +54,17 @@ public class YcsbBenchmarkProc extends TPartStoredProcedure<YcsbBenchmarkProcPar
 		}
 		
 		// set insert keys
-		insertKeys = new RecordKey[paramHelper.getInsertCount()];
+		insertKeys = new PrimaryKey[paramHelper.getInsertCount()];
 		for (int i = 0; i < paramHelper.getInsertCount(); i++) {
 			// create record key for inserting
-			RecordKey key = toRecordKey(paramHelper.getInsertId(i));
+			PrimaryKey key = toRecordKey(paramHelper.getInsertId(i));
 			insertKeys[i] = key;
 			addInsertKey(key);
 		}
 	}
 	
 	@Override
-	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
+	protected void executeSql(Map<PrimaryKey, CachedRecord> readings) {
 		CachedRecord rec;
 		// SELECT ycsb_id, ycsb_1 FROM ycsb WHERE ycsb_id = ...
 		for (int idx = 0; idx < paramHelper.getReadCount(); idx++) {
@@ -73,7 +73,7 @@ public class YcsbBenchmarkProc extends TPartStoredProcedure<YcsbBenchmarkProcPar
 		}
 
 		// UPDATE ycsb SET ycsb_1 = ... WHERE ycsb_id = ...
-		for (Map.Entry<RecordKey, Constant> pair : writeConstantMap.entrySet()) {
+		for (Map.Entry<PrimaryKey, Constant> pair : writeConstantMap.entrySet()) {
 			rec = readings.get(pair.getKey());
 			rec.setVal("ycsb_1", pair.getValue());
 			update(pair.getKey(), rec);

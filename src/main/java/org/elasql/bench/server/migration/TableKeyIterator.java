@@ -2,13 +2,13 @@ package org.elasql.bench.server.migration;
 
 import java.util.Iterator;
 
-import org.elasql.sql.RecordKey;
+import org.elasql.sql.PrimaryKey;
 
-public interface TableKeyIterator extends Iterator<RecordKey> {
+public interface TableKeyIterator extends Iterator<PrimaryKey> {
 	
 	String getTableName();
 	
-	boolean isInSubsequentKeys(RecordKey key);
+	boolean isInSubsequentKeys(PrimaryKey key);
 	
 	TableKeyIterator copy();
 	

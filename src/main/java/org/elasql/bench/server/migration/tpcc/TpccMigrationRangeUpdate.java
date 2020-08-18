@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.elasql.migration.MigrationRangeUpdate;
-import org.elasql.sql.RecordKey;
+import org.elasql.sql.PrimaryKey;
 
 public class TpccMigrationRangeUpdate implements MigrationRangeUpdate {
 	
@@ -13,10 +13,10 @@ public class TpccMigrationRangeUpdate implements MigrationRangeUpdate {
 	int minWid;
 	TpccKeyIterator keyRangeToPush;
 	int sourcePartId, destPartId;
-	Set<RecordKey> otherMigratingKeys = new HashSet<RecordKey>();
+	Set<PrimaryKey> otherMigratingKeys = new HashSet<PrimaryKey>();
 	
 	TpccMigrationRangeUpdate(int sourcePartId, int destPartId,
-			int minWid, TpccKeyIterator keyRangeToPush, Set<RecordKey> otherMigratingKeys) {
+			int minWid, TpccKeyIterator keyRangeToPush, Set<PrimaryKey> otherMigratingKeys) {
 		this.minWid = minWid;
 		this.keyRangeToPush = keyRangeToPush;
 		this.otherMigratingKeys = otherMigratingKeys;

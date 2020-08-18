@@ -4,19 +4,19 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.elasql.migration.MigrationRangeUpdate;
-import org.elasql.sql.RecordKey;
+import org.elasql.sql.PrimaryKey;
 
 public class SingleTableMigrationRangeUpdate implements MigrationRangeUpdate {
 	
 	private static final long serialVersionUID = 20181101001L;
 	
-	RecordKey partitioningKey;
+	PrimaryKey partitioningKey;
 	TableKeyIterator keyRangeToPush;
 	int sourcePartId, destPartId;
-	Set<RecordKey> otherMigratingKeys = new HashSet<RecordKey>();
+	Set<PrimaryKey> otherMigratingKeys = new HashSet<PrimaryKey>();
 	
 	SingleTableMigrationRangeUpdate(int sourcePartId, int destPartId,
-			RecordKey partitioningKey, TableKeyIterator keyRangeToPush, Set<RecordKey> otherMigratingKeys) {
+			PrimaryKey partitioningKey, TableKeyIterator keyRangeToPush, Set<PrimaryKey> otherMigratingKeys) {
 		this.partitioningKey = partitioningKey;
 		this.keyRangeToPush = keyRangeToPush;
 		this.otherMigratingKeys = otherMigratingKeys;

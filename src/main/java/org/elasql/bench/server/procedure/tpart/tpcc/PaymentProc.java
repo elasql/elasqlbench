@@ -6,8 +6,8 @@ import java.util.Map;
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.tpart.TPartStoredProcedure;
-import org.elasql.sql.RecordKey;
-import org.elasql.sql.RecordKeyBuilder;
+import org.elasql.sql.PrimaryKey;
+import org.elasql.sql.PrimaryKeyBuilder;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.server.param.tpcc.PaymentProcParamHelper;
 import org.vanilladb.core.sql.BigIntConstant;
@@ -47,15 +47,15 @@ public class PaymentProc extends TPartStoredProcedure<PaymentProcParamHelper> {
 
 	}
 
-	private RecordKey warehouseKey, districtKey, customerKey;
-	private RecordKey historyKey;
+	private PrimaryKey warehouseKey, districtKey, customerKey;
+	private PrimaryKey historyKey;
 	// SQL Constants
 	Constant widCon, didCon, cwidCon, cdidCon, cidCon, hidCon;
 	private double Hamount;
 
 	@Override
 	protected void prepareKeys() {
-		RecordKeyBuilder builder;
+		PrimaryKeyBuilder builder;
 
 		// XXX: hard code the history id
 		int cwid = paramHelper.getCwid();
@@ -73,7 +73,7 @@ public class PaymentProc extends TPartStoredProcedure<PaymentProcParamHelper> {
 		Hamount = paramHelper.getHamount();
 
 		// SELECT ... FROM warehouse WHERE w_id = wid
-		builder = new RecordKeyBuilder("warehouse");
+		builder = new PrimaryKeyBuilder("warehouse");
 		builder.addFldVal("w_id", widCon);
 		warehouseKey = builder.build();
 		addReadKey(warehouseKey);
@@ -81,7 +81,7 @@ public class PaymentProc extends TPartStoredProcedure<PaymentProcParamHelper> {
 		addWriteKey(warehouseKey);
 
 		// SELECT ... FROM district WHERE d_w_id = wid AND d_id = did
-		builder = new RecordKeyBuilder("district");
+		builder = new PrimaryKeyBuilder("district");
 		builder.addFldVal("d_w_id", widCon);
 		builder.addFldVal("d_id", didCon);
 		districtKey = builder.build();
@@ -92,7 +92,7 @@ public class PaymentProc extends TPartStoredProcedure<PaymentProcParamHelper> {
 
 		// SELECT ... FROM customer WHERE c_w_id = cwid AND c_d_id = cdid
 		// AND c_id = cidInt
-		builder = new RecordKeyBuilder("customer");
+		builder = new PrimaryKeyBuilder("customer");
 		builder.addFldVal("c_w_id", cwidCon);
 		builder.addFldVal("c_d_id", cdidCon);
 		builder.addFldVal("c_id", cidCon);
@@ -106,7 +106,7 @@ public class PaymentProc extends TPartStoredProcedure<PaymentProcParamHelper> {
 		// INSERT INTO history INSERT INTO history h_id, h_c_id, h_c_d_id,
 		// h_c_w_id,
 		// h_d_id, h_w_id";
-		builder = new RecordKeyBuilder("history");
+		builder = new PrimaryKeyBuilder("history");
 		builder.addFldVal("h_id", hidCon);
 		builder.addFldVal("h_c_id", cidCon);
 		builder.addFldVal("h_c_d_id", cdidCon);
@@ -116,7 +116,7 @@ public class PaymentProc extends TPartStoredProcedure<PaymentProcParamHelper> {
 	}
 
 	@Override
-	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
+	protected void executeSql(Map<PrimaryKey, CachedRecord> readings) {
 		CachedRecord rec = null;
 		double wYtd;
 		String wName;

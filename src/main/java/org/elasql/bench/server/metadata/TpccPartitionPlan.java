@@ -2,8 +2,8 @@ package org.elasql.bench.server.metadata;
 
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants;
 import org.elasql.server.Elasql;
-import org.elasql.sql.RecordKey;
-import org.elasql.sql.RecordKeyBuilder;
+import org.elasql.sql.PrimaryKey;
+import org.elasql.sql.PrimaryKeyBuilder;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.Constant;
@@ -13,11 +13,11 @@ import org.vanilladb.core.sql.Constant;
  */
 public class TpccPartitionPlan extends PartitionPlan {
 
-	public boolean isFullyReplicated(RecordKey key) {
+	public boolean isFullyReplicated(PrimaryKey key) {
 		return key.getTableName().equals("item");
 	}
 	
-	public static Integer getWarehouseId(RecordKey key) {
+	public static Integer getWarehouseId(PrimaryKey key) {
 		// For other tables, partitioned by wid
 		Constant widCon;
 		switch (key.getTableName()) {
@@ -61,7 +61,7 @@ public class TpccPartitionPlan extends PartitionPlan {
 	}
 	
 	@Override
-	public int getPartition(RecordKey key) {
+	public int getPartition(PrimaryKey key) {
 		// If is item table, return self node id
 		// (items are fully replicated over all partitions)
 		if (key.getTableName().equals("item"))
@@ -92,40 +92,40 @@ public class TpccPartitionPlan extends PartitionPlan {
 	}
 
 	@Override
-	public RecordKey getPartitioningKey(RecordKey key) {
-		RecordKeyBuilder builder;
+	public PrimaryKey getPartitioningKey(PrimaryKey key) {
+		PrimaryKeyBuilder builder;
 		
 		switch (key.getTableName()) {
 		case "warehouse":
-			builder = new RecordKeyBuilder("warehouse");
+			builder = new PrimaryKeyBuilder("warehouse");
 			builder.addFldVal("w_id", key.getVal("w_id"));
 			break;
 		case "district":
-			builder = new RecordKeyBuilder("district");
+			builder = new PrimaryKeyBuilder("district");
 			builder.addFldVal("d_w_id", key.getVal("d_w_id"));
 			break;
 		case "stock":
-			builder = new RecordKeyBuilder("stock");
+			builder = new PrimaryKeyBuilder("stock");
 			builder.addFldVal("s_w_id", key.getVal("s_w_id"));
 			break;
 		case "customer":
-			builder = new RecordKeyBuilder("customer");
+			builder = new PrimaryKeyBuilder("customer");
 			builder.addFldVal("c_w_id", key.getVal("c_w_id"));
 			break;
 		case "history":
-			builder = new RecordKeyBuilder("history");
+			builder = new PrimaryKeyBuilder("history");
 			builder.addFldVal("h_c_w_id", key.getVal("h_c_w_id"));
 			break;
 		case "orders":
-			builder = new RecordKeyBuilder("orders");
+			builder = new PrimaryKeyBuilder("orders");
 			builder.addFldVal("o_w_id", key.getVal("o_w_id"));
 			break;
 		case "new_order":
-			builder = new RecordKeyBuilder("new_order");
+			builder = new PrimaryKeyBuilder("new_order");
 			builder.addFldVal("no_w_id", key.getVal("no_w_id"));
 			break;
 		case "order_line":
-			builder = new RecordKeyBuilder("order_line");
+			builder = new PrimaryKeyBuilder("order_line");
 			builder.addFldVal("ol_w_id", key.getVal("ol_w_id"));
 			break;
 		default:

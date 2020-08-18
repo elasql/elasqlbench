@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.elasql.sql.RecordKey;
+import org.elasql.sql.PrimaryKey;
 
 public class MultiTableKeyIterator implements TableKeyIterator, Serializable {
 	
@@ -42,7 +42,7 @@ public class MultiTableKeyIterator implements TableKeyIterator, Serializable {
 	}
 
 	@Override
-	public RecordKey next() {
+	public PrimaryKey next() {
 		String tableName = tableNames.get(currentTableIndex);
 		TableKeyIterator iter = tableIterators.get(tableName);
 		
@@ -64,7 +64,7 @@ public class MultiTableKeyIterator implements TableKeyIterator, Serializable {
 	}
 
 	@Override
-	public boolean isInSubsequentKeys(RecordKey key) {
+	public boolean isInSubsequentKeys(PrimaryKey key) {
 		TableKeyIterator iter = tableIterators.get(key.getTableName());
 		return iter.isInSubsequentKeys(key);
 	}

@@ -9,7 +9,7 @@ import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.AllExecute2pcProcedure;
 import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
 import org.elasql.server.Elasql;
-import org.elasql.sql.RecordKey;
+import org.elasql.sql.PrimaryKey;
 import org.vanilladb.bench.server.procedure.StoredProcedureHelper;
 import org.vanilladb.core.query.algebra.Scan;
 import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
@@ -30,7 +30,7 @@ public class YcsbCheckDatabaseProc extends AllExecute2pcProcedure<StoredProcedur
 	}
 	
 	@Override
-	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
+	protected void executeSql(Map<PrimaryKey, CachedRecord> readings) {
 		if (logger.isLoggable(Level.INFO))
 			logger.info("Checking database for the YCSB benchmarks...");
 		

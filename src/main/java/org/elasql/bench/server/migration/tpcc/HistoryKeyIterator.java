@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 import org.elasql.bench.server.migration.TableKeyIterator;
 import org.elasql.bench.server.procedure.calvin.tpcc.PaymentProc;
-import org.elasql.sql.RecordKey;
-import org.elasql.sql.RecordKeyBuilder;
+import org.elasql.sql.PrimaryKey;
+import org.elasql.sql.PrimaryKeyBuilder;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class HistoryKeyIterator implements TableKeyIterator, Serializable {
@@ -18,7 +18,7 @@ public class HistoryKeyIterator implements TableKeyIterator, Serializable {
 	private int[][][] maxHistoryIds;
 	
 	private boolean hasNext = true;
-	private RecordKeyBuilder keyBuilder = new RecordKeyBuilder("history");
+	private PrimaryKeyBuilder keyBuilder = new PrimaryKeyBuilder("history");
 	
 	public HistoryKeyIterator(int startWid, int wcount) {
 		this.wid = startWid;
@@ -61,7 +61,7 @@ public class HistoryKeyIterator implements TableKeyIterator, Serializable {
 	}
 
 	@Override
-	public RecordKey next() {
+	public PrimaryKey next() {
 		keyBuilder.setVal("h_id", new IntegerConstant(hid));
 		keyBuilder.setVal("h_c_id", new IntegerConstant(cid));
 		keyBuilder.setVal("h_c_d_id", new IntegerConstant(did));
@@ -97,7 +97,7 @@ public class HistoryKeyIterator implements TableKeyIterator, Serializable {
 	}
 
 	@Override
-	public boolean isInSubsequentKeys(RecordKey key) {
+	public boolean isInSubsequentKeys(PrimaryKey key) {
 		if (!key.getTableName().equals("history"))
 			return false;
 		

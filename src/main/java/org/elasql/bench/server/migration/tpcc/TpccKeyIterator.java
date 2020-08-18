@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.elasql.bench.server.migration.TableKeyIterator;
-import org.elasql.sql.RecordKey;
-import org.elasql.sql.RecordKeyBuilder;
+import org.elasql.sql.PrimaryKey;
+import org.elasql.sql.PrimaryKeyBuilder;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class TpccKeyIterator implements TableKeyIterator, Serializable {
@@ -30,23 +30,23 @@ public class TpccKeyIterator implements TableKeyIterator, Serializable {
 			System.out.println(keyIter.next());
 		}
 
-		RecordKeyBuilder builder = new RecordKeyBuilder("warehouse");
+		PrimaryKeyBuilder builder = new PrimaryKeyBuilder("warehouse");
 		builder.addFldVal("w_id", new IntegerConstant(11));
-		RecordKey key = builder.build();
+		PrimaryKey key = builder.build();
 		System.out.println(keyIter.isInSubsequentKeys(key));
 
 		builder.setVal("w_id", new IntegerConstant(12));
 		key = builder.build();
 		System.out.println(keyIter.isInSubsequentKeys(key));
 
-		builder = new RecordKeyBuilder("customer");
+		builder = new PrimaryKeyBuilder("customer");
 		builder.addFldVal("c_w_id", new IntegerConstant(11));
 		builder.addFldVal("c_d_id", new IntegerConstant(5));
 		builder.addFldVal("c_id", new IntegerConstant(10));
 		key = builder.build();
 		System.out.println(keyIter.isInSubsequentKeys(key));
 
-		builder = new RecordKeyBuilder("customer");
+		builder = new PrimaryKeyBuilder("customer");
 		builder.addFldVal("c_w_id", new IntegerConstant(12));
 		builder.addFldVal("c_d_id", new IntegerConstant(5));
 		builder.addFldVal("c_id", new IntegerConstant(10));
@@ -89,7 +89,7 @@ public class TpccKeyIterator implements TableKeyIterator, Serializable {
 	}
 
 	@Override
-	public RecordKey next() {
+	public PrimaryKey next() {
 		String tableName = tableNames.get(currentTableIndex);
 		TableKeyIterator iter = tableIterators.get(tableName);
 		
@@ -111,7 +111,7 @@ public class TpccKeyIterator implements TableKeyIterator, Serializable {
 	}
 
 	@Override
-	public boolean isInSubsequentKeys(RecordKey key) {
+	public boolean isInSubsequentKeys(PrimaryKey key) {
 		TableKeyIterator iter = tableIterators.get(key.getTableName());
 		return iter.isInSubsequentKeys(key);
 	}

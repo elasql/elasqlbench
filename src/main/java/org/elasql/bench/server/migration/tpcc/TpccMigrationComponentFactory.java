@@ -7,8 +7,8 @@ import org.elasql.migration.MigrationComponentFactory;
 import org.elasql.migration.MigrationPlan;
 import org.elasql.migration.MigrationRange;
 import org.elasql.migration.planner.clay.ScatterMigrationPlan;
-import org.elasql.sql.RecordKey;
-import org.elasql.sql.RecordKeyBuilder;
+import org.elasql.sql.PrimaryKey;
+import org.elasql.sql.PrimaryKeyBuilder;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class TpccMigrationComponentFactory extends MigrationComponentFactory {
@@ -25,7 +25,7 @@ public class TpccMigrationComponentFactory extends MigrationComponentFactory {
 		return plan;
 	}
 	
-	public MigrationRange toMigrationRange(int sourceId, int destId, RecordKey partitioningKey) {
+	public MigrationRange toMigrationRange(int sourceId, int destId, PrimaryKey partitioningKey) {
 		TableKeyIterator keyIterator = null;
 		int wid;
 		boolean ignoreInsertion = false;
@@ -99,29 +99,29 @@ public class TpccMigrationComponentFactory extends MigrationComponentFactory {
 		}
 	}
 	
-	private RecordKey newWarehouseKey(int wid) {
-		RecordKeyBuilder builder = new RecordKeyBuilder("warehouse");
+	private PrimaryKey newWarehouseKey(int wid) {
+		PrimaryKeyBuilder builder = new PrimaryKeyBuilder("warehouse");
 		builder.addFldVal("w_id", new IntegerConstant(wid));
 		return builder.build();
 	}
 	
-	private RecordKey newDistrictKey(int d_w_id, int d_id) {
-		RecordKeyBuilder builder = new RecordKeyBuilder("district");
+	private PrimaryKey newDistrictKey(int d_w_id, int d_id) {
+		PrimaryKeyBuilder builder = new PrimaryKeyBuilder("district");
 		builder.addFldVal("d_w_id", new IntegerConstant(d_w_id));
 		builder.addFldVal("d_id", new IntegerConstant(d_id));
 		return builder.build();
 	}
 	
-	private RecordKey newCustomerKey(int c_w_id, int c_d_id, int c_id) {
-		RecordKeyBuilder builder = new RecordKeyBuilder("customer");
+	private PrimaryKey newCustomerKey(int c_w_id, int c_d_id, int c_id) {
+		PrimaryKeyBuilder builder = new PrimaryKeyBuilder("customer");
 		builder.addFldVal("c_w_id", new IntegerConstant(c_w_id));
 		builder.addFldVal("c_d_id", new IntegerConstant(c_d_id));
 		builder.addFldVal("c_id", new IntegerConstant(c_id));
 		return builder.build();
 	}
 	
-	private RecordKey newStockKey(int wid, int iid) {
-		RecordKeyBuilder builder = new RecordKeyBuilder("stock");
+	private PrimaryKey newStockKey(int wid, int iid) {
+		PrimaryKeyBuilder builder = new PrimaryKeyBuilder("stock");
 		builder.addFldVal("s_i_id", new IntegerConstant(iid));
 		builder.addFldVal("s_w_id", new IntegerConstant(wid));
 		return builder.build();

@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 import org.elasql.bench.server.migration.TableKeyIterator;
 import org.elasql.bench.server.procedure.calvin.tpcc.NewOrderProc;
-import org.elasql.sql.RecordKey;
-import org.elasql.sql.RecordKeyBuilder;
+import org.elasql.sql.PrimaryKey;
+import org.elasql.sql.PrimaryKeyBuilder;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.core.sql.IntegerConstant;
 
@@ -19,7 +19,7 @@ public class NewOrderKeyIterator implements TableKeyIterator, Serializable {
 	private int[][] maxOrderIds;
 	
 	private boolean hasNext = true;
-	private RecordKeyBuilder keyBuilder = new RecordKeyBuilder("new_order");
+	private PrimaryKeyBuilder keyBuilder = new PrimaryKeyBuilder("new_order");
 	
 	public NewOrderKeyIterator(int startWid, int wcount) {
 		this.wid = startWid;
@@ -58,7 +58,7 @@ public class NewOrderKeyIterator implements TableKeyIterator, Serializable {
 	}
 
 	@Override
-	public RecordKey next() {
+	public PrimaryKey next() {
 		keyBuilder.setVal("no_w_id", new IntegerConstant(wid));
 		keyBuilder.setVal("no_d_id", new IntegerConstant(did));
 		keyBuilder.setVal("no_o_id", new IntegerConstant(oid));
@@ -88,7 +88,7 @@ public class NewOrderKeyIterator implements TableKeyIterator, Serializable {
 	}
 
 	@Override
-	public boolean isInSubsequentKeys(RecordKey key) {
+	public boolean isInSubsequentKeys(PrimaryKey key) {
 		if (!key.getTableName().equals("new_order"))
 			return false;
 		

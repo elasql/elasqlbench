@@ -21,8 +21,8 @@ import java.util.Map;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
-import org.elasql.sql.RecordKey;
-import org.elasql.sql.RecordKeyBuilder;
+import org.elasql.sql.PrimaryKey;
+import org.elasql.sql.PrimaryKeyBuilder;
 import org.vanilladb.bench.server.param.tpce.TradeResultParamHelper;
 import org.vanilladb.core.sql.BigIntConstant;
 import org.vanilladb.core.sql.Constant;
@@ -31,7 +31,7 @@ import org.vanilladb.core.sql.VarcharConstant;
 
 public class TradeResultProc extends CalvinStoredProcedure<TradeResultParamHelper> {
 	
-	private RecordKey cusAcctKey, customerKey, brokerKey, tradeKey, tradeHistoryKey;
+	private PrimaryKey cusAcctKey, customerKey, brokerKey, tradeKey, tradeHistoryKey;
 	
 	public TradeResultProc(long txNum) {
 		super(txNum, new TradeResultParamHelper());
@@ -39,42 +39,42 @@ public class TradeResultProc extends CalvinStoredProcedure<TradeResultParamHelpe
 
 	@Override
 	protected void prepareKeys(ReadWriteSetAnalyzer analyzer) {
-		RecordKeyBuilder builder;
+		PrimaryKeyBuilder builder;
 		
 		// account
-		builder = new RecordKeyBuilder("customer_account");
+		builder = new PrimaryKeyBuilder("customer_account");
 		builder.addFldVal("ca_id", new BigIntConstant(paramHelper.getAcctId()));
 		cusAcctKey = builder.build();
 		analyzer.addReadKey(cusAcctKey);
 		analyzer.addUpdateKey(cusAcctKey);
 
 		// customer
-		builder = new RecordKeyBuilder("customer");
+		builder = new PrimaryKeyBuilder("customer");
 		builder.addFldVal("c_id", new BigIntConstant(paramHelper.getCustomerId()));
 		customerKey = builder.build();
 		analyzer.addReadKey(customerKey);
 
 		// broker
-		builder = new RecordKeyBuilder("broker");
+		builder = new PrimaryKeyBuilder("broker");
 		builder.addFldVal("b_id", new BigIntConstant(paramHelper.getBrokerId()));
 		brokerKey = builder.build();
 		analyzer.addReadKey(brokerKey);
 
 		// trade
-		builder = new RecordKeyBuilder("trade");
+		builder = new PrimaryKeyBuilder("trade");
 		builder.addFldVal("t_id", new BigIntConstant(paramHelper.getTradeId()));
 		tradeKey = builder.build();
 		analyzer.addReadKey(tradeKey);
 
 		// insert new history
-		builder = new RecordKeyBuilder("trade_history");
+		builder = new PrimaryKeyBuilder("trade_history");
 		builder.addFldVal("th_t_id", new BigIntConstant(paramHelper.getTradeId()));
 		tradeHistoryKey = builder.build();
 		analyzer.addInsertKey(tradeHistoryKey);
 	}
 
 	@Override
-	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
+	protected void executeSql(Map<PrimaryKey, CachedRecord> readings) {
 		// SELECT ca_name, ca_b_id, ca_c_id FROM customer_account WHERE
 		// ca_id = acctId
 		CachedRecord rec = readings.get(cusAcctKey);

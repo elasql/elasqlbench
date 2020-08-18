@@ -7,29 +7,29 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.elasql.migration.MigrationRange;
 import org.elasql.migration.MigrationRangeUpdate;
 import org.elasql.server.Elasql;
-import org.elasql.sql.RecordKey;
+import org.elasql.sql.PrimaryKey;
 
 public class SingleTableMigrationRange implements MigrationRange {
 	
 	// Partitioning key
-	private RecordKey partitioningKey;
+	private PrimaryKey partitioningKey;
 	private int sourcePartId, destPartId;
 	
 	private TableKeyIterator keyRangeToPush;
 	private TableKeyIterator chunkGenerator;
 	
 	// For new inserted keys
-	private Set<RecordKey> unmigratedNewKeys = new HashSet<RecordKey>();
-	private ConcurrentLinkedQueue<RecordKey> nextMigratingNewKeys =
-			new ConcurrentLinkedQueue<RecordKey>();
-	private Set<RecordKey> newKeysInRecentChunk = new HashSet<RecordKey>();
+	private Set<PrimaryKey> unmigratedNewKeys = new HashSet<PrimaryKey>();
+	private ConcurrentLinkedQueue<PrimaryKey> nextMigratingNewKeys =
+			new ConcurrentLinkedQueue<PrimaryKey>();
+	private Set<PrimaryKey> newKeysInRecentChunk = new HashSet<PrimaryKey>();
 	private boolean ignoreInsertion;
 	
 	// We does not remove the contents until the entire migration finishes
-	private Set<RecordKey> migratedKeys = new HashSet<RecordKey>();
+	private Set<PrimaryKey> migratedKeys = new HashSet<PrimaryKey>();
 	
 	// Note: this can only be called from the scheduler
-	public SingleTableMigrationRange(int sourcePartId, int destPartId, RecordKey partitioningKey,
+	public SingleTableMigrationRange(int sourcePartId, int destPartId, PrimaryKey partitioningKey,
 			TableKeyIterator keyIterator, boolean ignoreInsertion) {
 		this.partitioningKey = partitioningKey;
 		this.sourcePartId = sourcePartId;
@@ -40,7 +40,7 @@ public class SingleTableMigrationRange implements MigrationRange {
 	}
 	
 	@Override
-	public boolean addKey(RecordKey key) {
+	public boolean addKey(PrimaryKey key) {
 		if (!contains(key))
 			return false;
 		
@@ -53,12 +53,12 @@ public class SingleTableMigrationRange implements MigrationRange {
 	}
 
 	@Override
-	public boolean contains(RecordKey key) {
-		RecordKey partKey = Elasql.partitionMetaMgr().getPartitioningKey(key);
+	public boolean contains(PrimaryKey key) {
+		PrimaryKey partKey = Elasql.partitionMetaMgr().getPartitioningKey(key);
 		return partitioningKey.equals(partKey);
 	}
 	
-	public boolean isMigrated(RecordKey key) {
+	public boolean isMigrated(PrimaryKey key) {
 		if (!migratedKeys.contains(key)) {
 			if (unmigratedNewKeys.contains(key))
 				return false;
@@ -68,7 +68,7 @@ public class SingleTableMigrationRange implements MigrationRange {
 		return true;
 	}
 	
-	public void setMigrated(RecordKey key) {
+	public void setMigrated(PrimaryKey key) {
 		if (unmigratedNewKeys.remove(key))
 			return;
 		
@@ -81,13 +81,13 @@ public class SingleTableMigrationRange implements MigrationRange {
 	 * If 'useBytesForSize' is enabled, it will use the bytes to represent the chunk size. If not,
 	 * it will use the number of records. 
 	 */
-	public Set<RecordKey> generateNextMigrationChunk(boolean useBytesForSize, int maxChunkSize) {
-		Set<RecordKey> chunk = new HashSet<RecordKey>();
+	public Set<PrimaryKey> generateNextMigrationChunk(boolean useBytesForSize, int maxChunkSize) {
+		Set<PrimaryKey> chunk = new HashSet<PrimaryKey>();
 		int chunkSize = 0;
 		
 		// Migrate the new inserted keys
 		while (!nextMigratingNewKeys.isEmpty() && chunkSize < maxChunkSize) {
-			RecordKey key = nextMigratingNewKeys.poll();
+			PrimaryKey key = nextMigratingNewKeys.poll();
 			
 			// It is Ok that we do not check if the new key is migrated
 			// because if it is migrated, we will prevent it from inserting.
@@ -103,7 +103,7 @@ public class SingleTableMigrationRange implements MigrationRange {
 		
 		// Migrate the other existing keys
 		while (chunkGenerator.hasNext() && chunkSize < maxChunkSize) {
-			RecordKey key = chunkGenerator.next();
+			PrimaryKey key = chunkGenerator.next();
 			
 			if (useBytesForSize)
 				chunkSize += recordSize(key.getTableName());
@@ -134,7 +134,7 @@ public class SingleTableMigrationRange implements MigrationRange {
 		SingleTableMigrationRangeUpdate su = (SingleTableMigrationRangeUpdate) update;
 		if (su.partitioningKey.equals(partitioningKey)) {
 			keyRangeToPush = su.keyRangeToPush;
-			for (RecordKey key : su.otherMigratingKeys)
+			for (PrimaryKey key : su.otherMigratingKeys)
 				setMigrated(key);
 			return true;
 		} else

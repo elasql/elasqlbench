@@ -3,8 +3,8 @@ package org.elasql.bench.server.migration.tpcc;
 import java.io.Serializable;
 
 import org.elasql.bench.server.migration.TableKeyIterator;
-import org.elasql.sql.RecordKey;
-import org.elasql.sql.RecordKeyBuilder;
+import org.elasql.sql.PrimaryKey;
+import org.elasql.sql.PrimaryKeyBuilder;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class CustomerKeyIterator implements TableKeyIterator, Serializable {
@@ -16,7 +16,7 @@ public class CustomerKeyIterator implements TableKeyIterator, Serializable {
 	private int wid, did, cid;
 	
 	private boolean hasNext = true;
-	private RecordKeyBuilder keyBuilder = new RecordKeyBuilder("customer");
+	private PrimaryKeyBuilder keyBuilder = new PrimaryKeyBuilder("customer");
 	
 	public CustomerKeyIterator(int startWid, int wcount) {
 		this.wid = startWid;
@@ -43,7 +43,7 @@ public class CustomerKeyIterator implements TableKeyIterator, Serializable {
 	}
 
 	@Override
-	public RecordKey next() {
+	public PrimaryKey next() {
 		keyBuilder.setVal("c_w_id", new IntegerConstant(wid));
 		keyBuilder.setVal("c_d_id", new IntegerConstant(did));
 		keyBuilder.setVal("c_id", new IntegerConstant(cid));
@@ -73,7 +73,7 @@ public class CustomerKeyIterator implements TableKeyIterator, Serializable {
 	}
 
 	@Override
-	public boolean isInSubsequentKeys(RecordKey key) {
+	public boolean isInSubsequentKeys(PrimaryKey key) {
 		if (!key.getTableName().equals("customer"))
 			return false;
 		

@@ -2,14 +2,14 @@ package org.elasql.bench.server.metadata;
 
 import org.elasql.bench.benchmarks.micro.ElasqlMicrobenchConstants;
 import org.elasql.server.Elasql;
-import org.elasql.sql.RecordKey;
-import org.elasql.sql.RecordKeyBuilder;
+import org.elasql.sql.PrimaryKey;
+import org.elasql.sql.PrimaryKeyBuilder;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.Constant;
 
 public class MicroBenchPartitionPlan extends PartitionPlan {
 	
-	public Integer getItemId(RecordKey key) {
+	public Integer getItemId(PrimaryKey key) {
 		Constant iidCon = key.getVal("i_id");
 		if (iidCon != null) {
 			return (Integer) iidCon.asJavaVal();
@@ -18,7 +18,7 @@ public class MicroBenchPartitionPlan extends PartitionPlan {
 		}
 	}
 	
-	public boolean isFullyReplicated(RecordKey key) {
+	public boolean isFullyReplicated(PrimaryKey key) {
 		if (key.getVal("i_id") != null) {
 			return false;
 		} else {
@@ -30,7 +30,7 @@ public class MicroBenchPartitionPlan extends PartitionPlan {
 		return (iid - 1) / ElasqlMicrobenchConstants.NUM_ITEMS_PER_NODE;
 	}
 	
-	public int getPartition(RecordKey key) {
+	public int getPartition(PrimaryKey key) {
 		Integer iid = getItemId(key);
 		if (iid != null) {
 			return getPartition(iid);
@@ -51,7 +51,7 @@ public class MicroBenchPartitionPlan extends PartitionPlan {
 	}
 
 	@Override
-	public RecordKey getPartitioningKey(RecordKey key) {
+	public PrimaryKey getPartitioningKey(PrimaryKey key) {
 		if (key.getTableName().equals("item"))
 			return key;
 		throw new RuntimeException("Unknown table " + key.getTableName());

@@ -3,8 +3,8 @@ package org.elasql.bench.server.migration.tpcc;
 import java.io.Serializable;
 
 import org.elasql.bench.server.migration.TableKeyIterator;
-import org.elasql.sql.RecordKey;
-import org.elasql.sql.RecordKeyBuilder;
+import org.elasql.sql.PrimaryKey;
+import org.elasql.sql.PrimaryKeyBuilder;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class StockKeyIterator implements TableKeyIterator, Serializable {
@@ -16,7 +16,7 @@ public class StockKeyIterator implements TableKeyIterator, Serializable {
 	private int wid, iid;
 	
 	private boolean hasNext = true;
-	private RecordKeyBuilder keyBuilder = new RecordKeyBuilder("stock");
+	private PrimaryKeyBuilder keyBuilder = new PrimaryKeyBuilder("stock");
 	
 	public StockKeyIterator(int startWid, int wcount) {
 		this.wid = startWid;
@@ -41,7 +41,7 @@ public class StockKeyIterator implements TableKeyIterator, Serializable {
 	}
 
 	@Override
-	public RecordKey next() {
+	public PrimaryKey next() {
 		keyBuilder.setVal("s_i_id", new IntegerConstant(iid));
 		keyBuilder.setVal("s_w_id", new IntegerConstant(wid));
 		
@@ -65,7 +65,7 @@ public class StockKeyIterator implements TableKeyIterator, Serializable {
 	}
 
 	@Override
-	public boolean isInSubsequentKeys(RecordKey key) {
+	public boolean isInSubsequentKeys(PrimaryKey key) {
 		if (!key.getTableName().equals("stock"))
 			return false;
 		
