@@ -2,9 +2,9 @@ package org.elasql.bench.server.metadata;
 
 import org.elasql.bench.benchmarks.micro.ElasqlMicrobenchConstants;
 import org.elasql.server.Elasql;
+import org.elasql.sql.PartitioningKey;
 import org.elasql.sql.PrimaryKey;
 import org.elasql.storage.metadata.PartitionPlan;
-import org.elasql.storage.metadata.PartitioningKey;
 import org.vanilladb.core.sql.Constant;
 
 public class MicroBenchPartitionPlan extends PartitionPlan {
@@ -53,7 +53,7 @@ public class MicroBenchPartitionPlan extends PartitionPlan {
 	@Override
 	public PartitioningKey getPartitioningKey(PrimaryKey key) {
 		if (key.getTableName().equals("item"))
-			return new PartitioningKey(key);
+			return PartitioningKey.fromPrimaryKey(key);
 		throw new RuntimeException("Unknown table " + key.getTableName());
 	}
 }

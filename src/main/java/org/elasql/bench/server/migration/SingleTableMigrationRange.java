@@ -7,8 +7,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.elasql.migration.MigrationRange;
 import org.elasql.migration.MigrationRangeUpdate;
 import org.elasql.server.Elasql;
+import org.elasql.sql.PartitioningKey;
 import org.elasql.sql.PrimaryKey;
-import org.elasql.storage.metadata.PartitioningKey;
 
 public class SingleTableMigrationRange implements MigrationRange {
 	

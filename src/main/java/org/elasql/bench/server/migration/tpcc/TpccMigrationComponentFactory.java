@@ -6,7 +6,7 @@ import org.elasql.bench.server.migration.TableKeyIterator;
 import org.elasql.migration.MigrationComponentFactory;
 import org.elasql.migration.MigrationPlan;
 import org.elasql.migration.MigrationRange;
-import org.elasql.storage.metadata.PartitioningKey;
+import org.elasql.sql.PartitioningKey;
 
 public class TpccMigrationComponentFactory extends MigrationComponentFactory {
 

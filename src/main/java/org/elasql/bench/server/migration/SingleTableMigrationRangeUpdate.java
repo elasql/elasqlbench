@@ -4,8 +4,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.elasql.migration.MigrationRangeUpdate;
+import org.elasql.sql.PartitioningKey;
 import org.elasql.sql.PrimaryKey;
-import org.elasql.storage.metadata.PartitioningKey;
 
 public class SingleTableMigrationRangeUpdate implements MigrationRangeUpdate {
 	

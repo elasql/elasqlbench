@@ -2,10 +2,10 @@ package org.elasql.bench.server.metadata;
 
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants;
 import org.elasql.server.Elasql;
+import org.elasql.sql.PartitioningKey;
 import org.elasql.sql.PrimaryKey;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.storage.metadata.PartitionPlan;
-import org.elasql.storage.metadata.PartitioningKey;
 import org.vanilladb.core.sql.Constant;
 
 /**
@@ -97,28 +97,28 @@ public class TpccPartitionPlan extends PartitionPlan {
 		
 		switch (key.getTableName()) {
 		case "warehouse":
-			partKey = new PartitioningKey(key, "w_id");
+			partKey = PartitioningKey.fromPrimaryKey(key, "w_id");
 			break;
 		case "district":
-			partKey = new PartitioningKey(key, "d_w_id");
+			partKey = PartitioningKey.fromPrimaryKey(key, "d_w_id");
 			break;
 		case "stock":
-			partKey = new PartitioningKey(key, "s_w_id");
+			partKey = PartitioningKey.fromPrimaryKey(key, "s_w_id");
 			break;
 		case "customer":
-			partKey = new PartitioningKey(key, "c_w_id");
+			partKey = PartitioningKey.fromPrimaryKey(key, "c_w_id");
 			break;
 		case "history":
-			partKey = new PartitioningKey(key, "h_c_w_id");
+			partKey = PartitioningKey.fromPrimaryKey(key, "h_c_w_id");
 			break;
 		case "orders":
-			partKey = new PartitioningKey(key, "o_w_id");
+			partKey = PartitioningKey.fromPrimaryKey(key, "o_w_id");
 			break;
 		case "new_order":
-			partKey = new PartitioningKey(key, "no_w_id");
+			partKey = PartitioningKey.fromPrimaryKey(key, "no_w_id");
 			break;
 		case "order_line":
-			partKey = new PartitioningKey(key, "ol_w_id");
+			partKey = PartitioningKey.fromPrimaryKey(key, "ol_w_id");
 			break;
 		default:
 			throw new RuntimeException("Unknown table " + key.getTableName());
