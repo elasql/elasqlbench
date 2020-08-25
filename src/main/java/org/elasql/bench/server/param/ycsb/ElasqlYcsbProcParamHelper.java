@@ -1,8 +1,8 @@
 package org.elasql.bench.server.param.ycsb;
 
-import java.util.Arrays;
 import java.util.HashMap;
 
+import org.elasql.sql.PrimaryKey;
 import org.vanilladb.bench.benchmarks.ycsb.YcsbConstants;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.Schema;
@@ -13,6 +13,12 @@ import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
 
 public class ElasqlYcsbProcParamHelper extends StoredProcedureParamHelper {
 	
+	private static PrimaryKey toPrimaryKey(String tableName, Long ycsbId) {
+		String fieldName = String.format("%s_id", tableName);
+		String idString = String.format(YcsbConstants.ID_FORMAT, ycsbId);
+		return new PrimaryKey(tableName, fieldName, new VarcharConstant(idString));
+	}
+	
 	private int dbType;
 	private int readCount;
 	private int writeCount;
@@ -20,9 +26,9 @@ public class ElasqlYcsbProcParamHelper extends StoredProcedureParamHelper {
 	private Integer[] readTenantIds;
 	private Integer[] writeTenantIds;
 	private Integer[] insertTenantIds;
-	private Integer[] readIds;
-	private Integer[] writeIds;
-	private Integer[] insertIds;
+	private Long[] readIds;
+	private Long[] writeIds;
+	private Long[] insertIds;
 	private String[] writeVals;
 	private String[] insertVals; // All fields use the same value to reduce transmission cost
 	private String[] readVals;
@@ -57,20 +63,32 @@ public class ElasqlYcsbProcParamHelper extends StoredProcedureParamHelper {
 		return "ycsb";
 	}
 	
-	public Integer getReadId(int index) {
+	public Long getReadId(int index) {
 		return readIds[index];
 	}
 	
-	public Integer getWriteId(int index) {
+	public PrimaryKey getReadKey(int index) {
+		return toPrimaryKey(getReadTableName(index), getReadId(index));
+	}
+	
+	public Long getWriteId(int index) {
 		return writeIds[index];
+	}
+	
+	public PrimaryKey getWriteKey(int index) {
+		return toPrimaryKey(getWriteTableName(index), getWriteId(index));
 	}
 	
 	public String getWriteValue(int index) {
 		return writeVals[index];
 	}
 	
-	public Integer getInsertId(int index) {
+	public Long getInsertId(int index) {
 		return insertIds[index];
+	}
+	
+	public PrimaryKey getInsertKey(int index) {
+		return toPrimaryKey(getInsertTableName(index), getInsertId(index));
 	}
 	
 	public void setReadVal(String s, int idx) {
@@ -106,21 +124,21 @@ public class ElasqlYcsbProcParamHelper extends StoredProcedureParamHelper {
 		
 		readCount = (Integer) pars[indexCnt++];
 		readTenantIds = new Integer[readCount];
-		readIds = new Integer[readCount];
+		readIds = new Long[readCount];
 		readVals = new String[readCount];
 		for (int i = 0; i < readCount; i++) {
 			if (dbType == 2)
 				readTenantIds[i] = (Integer) pars[indexCnt++];
-			readIds[i] = (Integer) pars[indexCnt++];
+			readIds[i] = (Long) pars[indexCnt++];
 		}
 
 		writeCount = (Integer) pars[indexCnt++];
 		writeTenantIds = new Integer[writeCount];
-		writeIds = new Integer[writeCount];
+		writeIds = new Long[writeCount];
 		for (int i = 0; i < writeCount; i++) {
 			if (dbType == 2)
 				writeTenantIds[i] = (Integer) pars[indexCnt++];
-			writeIds[i] = (Integer) pars[indexCnt++];
+			writeIds[i] = (Long) pars[indexCnt++];
 		}
 		writeVals = new String[writeCount];
 		for (int i = 0; i < writeCount; i++)
@@ -128,11 +146,11 @@ public class ElasqlYcsbProcParamHelper extends StoredProcedureParamHelper {
 		
 		insertCount = (Integer) pars[indexCnt++];
 		insertTenantIds = new Integer[insertCount];
-		insertIds = new Integer[insertCount];
+		insertIds = new Long[insertCount];
 		for (int i = 0; i < insertCount; i++) {
 			if (dbType == 2)
 				insertTenantIds[i] = (Integer) pars[indexCnt++];
-			insertIds[i] = (Integer) pars[indexCnt++];
+			insertIds[i] = (Long) pars[indexCnt++];
 		}
 		insertVals = new String[insertCount];
 		for (int i = 0; i < insertCount; i++)

@@ -1,6 +1,7 @@
 package org.elasql.bench.server.metadata;
 
 import org.elasql.bench.benchmarks.ycsb.ElasqlYcsbConstants;
+import org.elasql.sql.PartitioningKey;
 import org.elasql.sql.PrimaryKey;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.core.sql.Constant;
@@ -33,5 +34,15 @@ public class YcsbSingleTablePartitionPlan extends PartitionPlan {
 	@Override
 	public void setBasePlan(PartitionPlan plan) {
 		new UnsupportedOperationException();
+	}
+
+	@Override
+	public PartitioningKey getPartitioningKey(PrimaryKey key) {
+		return PartitioningKey.fromPrimaryKey(key);
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("YCSB range partition (each range has %d records)", ElasqlYcsbConstants.INIT_RECORD_PER_PART);
 	}
 }

@@ -1,10 +1,10 @@
 package org.elasql.bench.benchmarks.ycsb.rte;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.elasql.bench.benchmarks.ycsb.ElasqlYcsbConstants;
-import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.benchmarks.ycsb.YcsbConstants;
 import org.vanilladb.bench.benchmarks.ycsb.YcsbTransactionType;
 import org.vanilladb.bench.benchmarks.ycsb.rte.YcsbLatestGenerator;
@@ -29,23 +29,23 @@ public class SingleTableNormalParamGen implements TxParamGenerator<YcsbTransacti
 	private static final AtomicReference<YcsbLatestGenerator> GEN_TEMPLATE;
 	
 	static {
-//		int recordPerTenant = ElasqlYcsbConstants.INIT_RECORD_PER_PART /
-//				ElasqlYcsbConstants.TENANTS_PER_PART;
-//		int tenantCount = PartitionMetaMgr.NUM_PARTITIONS *
-//				ElasqlYcsbConstants.TENANTS_PER_PART;
 		GEN_TEMPLATE = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(ElasqlYcsbConstants.INIT_RECORD_PER_PART,
 						ElasqlYcsbConstants.ZIPFIAN_PARAMETER));
 	}
 	
 	private int numOfPartitions;
-	private YcsbLatestGenerator[] distributionInPart;
+	private YcsbLatestGenerator generator;
 	
 	public SingleTableNormalParamGen(int numOfPartitions) {
 		this.numOfPartitions = numOfPartitions;
-		this.distributionInPart = new YcsbLatestGenerator[numOfPartitions];
-		for (int i = 0; i < numOfPartitions; i++)
-			this.distributionInPart[i] = new YcsbLatestGenerator(GEN_TEMPLATE.get());
+		this.generator = new YcsbLatestGenerator(GEN_TEMPLATE.get());
+	}
+	
+	public static void main(String[] args) {
+		SingleTableNormalParamGen gen = new SingleTableNormalParamGen(5);
+		for (int i = 0; i < 10; i++)
+			System.out.println(Arrays.toString(gen.generateParameter()));
 	}
 
 	@Override
@@ -60,21 +60,35 @@ public class SingleTableNormalParamGen implements TxParamGenerator<YcsbTransacti
 		// Decide the types of transactions
 		boolean isReadWriteTx = (rvg.randomChooseFromDistribution(RW_TX_RATE, 1 - RW_TX_RATE) == 0);
 		boolean isDistTx = (rvg.randomChooseFromDistribution(DIST_TX_RATE, 1 - DIST_TX_RATE) == 0);
+		if (numOfPartitions < 2)
+			isDistTx = false;
 
 		// Generate parameters
 		ArrayList<Object> paramList = new ArrayList<Object>();
 		paramList.add(1); // dbtype = 1 (single-table)
 		
+		// Select a partition
+		int mainPartId = rvg.number(0, numOfPartitions - 1);
+		
 		// Read count
 		paramList.add(TOTAL_RECORD_COUNT);
 		
 		// Read ids
-		ArrayList<Integer> ids = new ArrayList<Integer>();
+		int localReadCount = TOTAL_RECORD_COUNT - REMOTE_RECORD_COUNT;
+		ArrayList<Long> ids = new ArrayList<Long>();
 		for (int i = 0; i < TOTAL_RECORD_COUNT; i++) {
-			Integer id = (int) generator.generateReadId();
+			int partId = mainPartId;
+			
+			// Choose a remote partition
+			if (isDistTx && i >= localReadCount) {
+				while (partId == mainPartId)
+					partId = rvg.number(0, numOfPartitions - 1);
+			}
+			
+			// Choose a key from the partition
+			Long id = chooseKeyInPart(partId);
 			while (ids.contains(id))
-				id = (int) generator.generateReadId();
-			paramList.add(tenantId);
+				id = chooseKeyInPart(partId);
 			paramList.add(id);
 			ids.add(id);
 		}
@@ -84,10 +98,8 @@ public class SingleTableNormalParamGen implements TxParamGenerator<YcsbTransacti
 			paramList.add(TOTAL_RECORD_COUNT);
 			
 			// Write ids
-			for (Integer id : ids) {
-				paramList.add(tenantId);
+			for (Long id : ids)
 				paramList.add(id);
-			}
 			
 			// Write values
 			for (int i = 0; i < TOTAL_RECORD_COUNT; i++)
@@ -106,7 +118,9 @@ public class SingleTableNormalParamGen implements TxParamGenerator<YcsbTransacti
 		return paramList.toArray(new Object[paramList.size()]);
 	}
 	
-	private int chooseARecordInPart(int partId) {
-		
+	private long chooseKeyInPart(int partId) {
+		long partStartId = partId * ElasqlYcsbConstants.INIT_RECORD_PER_PART;
+		long offset = generator.nextValue();
+		return partStartId + offset;
 	}
 }

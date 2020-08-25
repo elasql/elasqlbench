@@ -146,7 +146,7 @@ public class ElasqlStartUp implements SutStartUp {
 		case YCSB:
 			if (logger.isLoggable(Level.INFO))
 				logger.info("using YCSB stored procedures for Calvin");
-			factory = new org.elasql.bench.server.procedure.calvin.ycsb.YcsbStoredProcFactory();
+			factory = new org.elasql.bench.server.procedure.calvin.ycsb.CalvinYcsbStoredProcFactory();
 			break;
 		}
 		factory = new BasicCalvinSpFactory(factory);
@@ -169,7 +169,10 @@ public class ElasqlStartUp implements SutStartUp {
 		case TPCE:
 			throw new UnsupportedOperationException("No TPC-E for now");
 		case YCSB:
-			throw new UnsupportedOperationException("Not implemented for YCSB");
+			if (logger.isLoggable(Level.INFO))
+				logger.info("using YCSB stored procedures for T-Part");
+			factory = new org.elasql.bench.server.procedure.tpart.ycsb.TpartYcsbStoredProcFactory();
+			break;
 		}
 		return factory;
 	}

@@ -1,6 +1,7 @@
 package org.elasql.bench.benchmarks.ycsb.rte;
 
 import org.elasql.bench.benchmarks.ycsb.ElasqlYcsbConstants;
+import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.StatisticMgr;
 import org.vanilladb.bench.benchmarks.ycsb.YcsbTransactionType;
 import org.vanilladb.bench.benchmarks.ycsb.rte.YcsbTxExecutor;
@@ -29,9 +30,12 @@ public class ElasqlYcsbRte extends RemoteTerminalEmulator<YcsbTransactionType> {
 	}
 	
 	private TxParamGenerator<YcsbTransactionType> getParamGen(int nodeId, int rteId) {
+		// TODO: May change due to scaling-out and consolidation
+		int numOfPartitions = PartitionMetaMgr.NUM_PARTITIONS;
+		
 		switch (ElasqlYcsbConstants.DATABASE_MODE) {
 		case SINGLE_TABLE:
-			throw new RuntimeException("Unimplemented");
+			return new SingleTableNormalParamGen(numOfPartitions);
 		case MULTI_TENANTS:
 			int tenantId = nodeId * ElasqlYcsbConstants.TENANTS_PER_PART +
 					rteId % ElasqlYcsbConstants.TENANTS_PER_PART;

@@ -4,7 +4,7 @@ import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.procedure.calvin.CalvinStoredProcedureFactory;
 import org.vanilladb.bench.benchmarks.ycsb.YcsbTransactionType;
 
-public class YcsbStoredProcFactory implements CalvinStoredProcedureFactory {
+public class CalvinYcsbStoredProcFactory implements CalvinStoredProcedureFactory {
 
 	@Override
 	public CalvinStoredProcedure<?> getStoredProcedure(int pid, long txNum) {
@@ -20,7 +20,7 @@ public class YcsbStoredProcFactory implements CalvinStoredProcedureFactory {
 			sp = new YcsbCheckDatabaseProc(txNum);
 			break;
 		case YCSB:
-			sp = new ElasqlYcsbProc(txNum);
+			sp = new CalvinYcsbProc(txNum);
 			break;
 		default:
 			throw new UnsupportedOperationException("The benchmarker does not recognize procedure " + pid + "");

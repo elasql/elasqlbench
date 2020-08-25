@@ -8,24 +8,17 @@ import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
 import org.elasql.sql.PrimaryKey;
-import org.vanilladb.bench.benchmarks.ycsb.YcsbConstants;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.VarcharConstant;
 
-public class ElasqlYcsbProc extends CalvinStoredProcedure<ElasqlYcsbProcParamHelper> {
-	
-	private static PrimaryKey toRecordKey(String tableName, Integer ycsbId) {
-		String fieldName = String.format("%s_id", tableName);
-		String idString = String.format(YcsbConstants.ID_FORMAT, ycsbId);
-		return new PrimaryKey(tableName, fieldName, new VarcharConstant(idString));
-	}
+public class CalvinYcsbProc extends CalvinStoredProcedure<ElasqlYcsbProcParamHelper> {
 	
 	private PrimaryKey[] readKeys;
 	private PrimaryKey[] writeKeys;
 	private PrimaryKey[] insertKeys;
 	private Map<PrimaryKey, Constant> writeConstantMap = new HashMap<PrimaryKey, Constant>();
 
-	public ElasqlYcsbProc(long txNum) {
+	public CalvinYcsbProc(long txNum) {
 		super(txNum, new ElasqlYcsbProcParamHelper());
 	}
 
@@ -35,7 +28,7 @@ public class ElasqlYcsbProc extends CalvinStoredProcedure<ElasqlYcsbProcParamHel
 		readKeys = new PrimaryKey[paramHelper.getReadCount()];
 		for (int i = 0; i < paramHelper.getReadCount(); i++) {
 			// create RecordKey for reading
-			PrimaryKey key = toRecordKey(paramHelper.getReadTableName(i), paramHelper.getReadId(i));
+			PrimaryKey key = paramHelper.getReadKey(i);
 			readKeys[i] = key;
 			analyzer.addReadKey(key);
 		}
@@ -44,7 +37,7 @@ public class ElasqlYcsbProc extends CalvinStoredProcedure<ElasqlYcsbProcParamHel
 		writeKeys = new PrimaryKey[paramHelper.getWriteCount()];
 		for (int i = 0; i < paramHelper.getWriteCount(); i++) {
 			// create record key for writing
-			PrimaryKey key = toRecordKey(paramHelper.getWriteTableName(i), paramHelper.getWriteId(i));
+			PrimaryKey key = paramHelper.getWriteKey(i);
 			writeKeys[i] = key;
 			analyzer.addUpdateKey(key);
 
@@ -57,7 +50,7 @@ public class ElasqlYcsbProc extends CalvinStoredProcedure<ElasqlYcsbProcParamHel
 		insertKeys = new PrimaryKey[paramHelper.getInsertCount()];
 		for (int i = 0; i < paramHelper.getInsertCount(); i++) {
 			// create record key for inserting
-			PrimaryKey key = toRecordKey(paramHelper.getInsertTableName(i), paramHelper.getInsertId(i));
+			PrimaryKey key = paramHelper.getInsertKey(i);
 			insertKeys[i] = key;
 			analyzer.addInsertKey(key);
 		}
