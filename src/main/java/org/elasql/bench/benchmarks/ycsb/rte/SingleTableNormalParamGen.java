@@ -3,6 +3,8 @@ package org.elasql.bench.benchmarks.ycsb.rte;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.elasql.bench.benchmarks.ycsb.ElasqlYcsbConstants;
 import org.vanilladb.bench.benchmarks.ycsb.YcsbConstants;
@@ -17,21 +19,33 @@ import org.vanilladb.bench.util.RandomValueGenerator;
  * <br/>
  * Single-table does not support insertions.
  * 
- * @author SLMT
+ * @author yslin
  */
 public class SingleTableNormalParamGen implements TxParamGenerator<YcsbTransactionType> {
+	private static Logger logger = Logger.getLogger(SingleTableNormalParamGen.class.getName());
 	
 	private static final double RW_TX_RATE = ElasqlYcsbConstants.RW_TX_RATE;
 	private static final double DIST_TX_RATE = ElasqlYcsbConstants.DIST_TX_RATE;
 	private static final int TOTAL_RECORD_COUNT = ElasqlYcsbConstants.TX_RECORD_COUNT;
-	private static final int REMOTE_RECORD_COUNT = ElasqlYcsbConstants.REMOTE_RECORD_COUNT;
+	private static final int REMOTE_RECORD_COUNT = (int) (ElasqlYcsbConstants.TX_RECORD_COUNT * 
+			ElasqlYcsbConstants.REMOTE_RECORD_RATIO);
 	
 	private static final AtomicReference<YcsbLatestGenerator> GEN_TEMPLATE;
 	
 	static {
+		if (ElasqlYcsbConstants.USE_DYNAMIC_RECORD_COUNT)
+			throw new RuntimeException(String.format("%s does not support dynamic record count",
+					SingleTableNormalParamGen.class.getName()));
+		
 		GEN_TEMPLATE = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(ElasqlYcsbConstants.INIT_RECORD_PER_PART,
 						ElasqlYcsbConstants.ZIPFIAN_PARAMETER));
+		
+		if (logger.isLoggable(Level.INFO))
+			logger.info(String.format("Use single-table normal YCSB generators "
+					+ "(Read-write tx ratio: %f, distributed tx ratio: %f, "
+					+ "%d records/tx, %d remote records/dist. tx)",
+					RW_TX_RATE, DIST_TX_RATE, TOTAL_RECORD_COUNT, REMOTE_RECORD_COUNT));
 	}
 	
 	private int numOfPartitions;
