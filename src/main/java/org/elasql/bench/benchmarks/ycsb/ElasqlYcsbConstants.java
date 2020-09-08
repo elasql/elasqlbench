@@ -36,6 +36,11 @@ public class ElasqlYcsbConstants {
 	public static final int ADD_INSERT_IN_WRITE_TX;
 	public static final boolean USE_DYNAMIC_RECORD_COUNT;
 	
+	// Hotspot
+	public static final boolean ENABLE_HOTSPOT;
+	public static final double HOTSPOT_HOTNESS;
+	public static final int HOTSPOT_CHANGE_PERIOD; // in seconds
+	
 	// Fixed record count
 	public static final int TX_RECORD_COUNT;
 	
@@ -94,6 +99,12 @@ public class ElasqlYcsbConstants {
 				.getPropertyAsDouble(ElasqlYcsbConstants.class.getName() + ".DIST_TX_RATE", 0.0);
 		USE_DYNAMIC_RECORD_COUNT = ElasqlBenchProperties.getLoader()
 				.getPropertyAsBoolean(ElasqlYcsbConstants.class.getName() + ".USE_DYNAMIC_RECORD_COUNT", false);
+		ENABLE_HOTSPOT = ElasqlBenchProperties.getLoader()
+				.getPropertyAsBoolean(ElasqlYcsbConstants.class.getName() + ".ENABLE_HOTSPOT", false);
+		HOTSPOT_HOTNESS = ElasqlBenchProperties.getLoader()
+				.getPropertyAsDouble(ElasqlYcsbConstants.class.getName() + ".HOTSPOT_HOTNESS", 0.9);
+		HOTSPOT_CHANGE_PERIOD = ElasqlBenchProperties.getLoader()
+				.getPropertyAsInteger(ElasqlYcsbConstants.class.getName() + ".HOTSPOT_CHANGE_PERIOD", 90);
 		TX_RECORD_COUNT = ElasqlBenchProperties.getLoader()
 				.getPropertyAsInteger(ElasqlYcsbConstants.class.getName() + ".TX_RECORD_COUNT", 2);
 		REMOTE_RECORD_RATIO = ElasqlBenchProperties.getLoader()
