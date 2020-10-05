@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.elasql.bench.util.ElasqlBenchProperties;
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
@@ -19,11 +21,14 @@ import org.vanilladb.bench.ycsb.YcsbConstants;
 import org.vanilladb.bench.ycsb.YcsbTransactionType;
 
 public class SingleHotTenantParamGen implements TxParamGenerator {
+	private static Logger logger = Logger.getLogger(SingleHotTenantParamGen.class
+			.getName());
 	
 	private static final double RW_TX_RATE;
 	private static final double SKEW_PARAMETER;
 //	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
-	private static final int NUM_PARTITIONS = (MigrationMgr.ENABLE_NODE_SCALING && MigrationMgr.IS_SCALING_OUT)?
+//	private static final int NUM_PARTITIONS = (MigrationMgr.ENABLE_NODE_SCALING && MigrationMgr.IS_SCALING_OUT)?
+	private static final int NUM_PARTITIONS = (MigrationMgr.ENABLE_NODE_SCALING)?
 			PartitionMetaMgr.NUM_PARTITIONS - 1: PartitionMetaMgr.NUM_PARTITIONS;
 	public static final int TENANTS_PER_PART = 4;
 	private static final int NUM_TENANTS = NUM_PARTITIONS * TENANTS_PER_PART;
@@ -34,8 +39,6 @@ public class SingleHotTenantParamGen implements TxParamGenerator {
 	private static AtomicLong globalStartTime = new AtomicLong(-1);
 	public static final long WARMUP_TIME = 90 * 1000;
 	private static final double SKEW_RATIO = 0.25;
-	private static final long SENDING_DELAY = 0; // Normal
-//	private static final long SENDING_DELAY = 100; // Under loaded
 
 	private static final AtomicReference<YcsbLatestGenerator> STATIC_GEN_FOR_TANENT;
 
@@ -48,8 +51,12 @@ public class SingleHotTenantParamGen implements TxParamGenerator {
 		STATIC_GEN_FOR_TANENT = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(RECORD_PER_TENANT, SKEW_PARAMETER));
 		
-		System.out.println(String.format("Using single hot tanent workloads with %d tenants in %d partitions",
-				NUM_TENANTS, NUM_PARTITIONS));
+		if (logger.isLoggable(Level.INFO)) {
+			logger.info(String.format("Using single hot tanent workloads with %d tenants in %d partitions",
+					NUM_TENANTS, NUM_PARTITIONS));
+			logger.info(String.format("Sending each transaction with delay %d ms",
+					ElasqlYcsbConstants.SENDING_DELAY));
+		}
 	}
 
 	private static long getGlobalStartTime() {
@@ -163,9 +170,9 @@ public class SingleHotTenantParamGen implements TxParamGenerator {
 		// Insert count
 		paramList.add(0);
 		
-		if (SENDING_DELAY > 0) {
+		if (ElasqlYcsbConstants.SENDING_DELAY > 0) {
 			try {
-				Thread.sleep(SENDING_DELAY);
+				Thread.sleep(ElasqlYcsbConstants.SENDING_DELAY);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
