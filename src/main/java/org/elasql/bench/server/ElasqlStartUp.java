@@ -7,7 +7,6 @@ import org.elasql.bench.server.metadata.MicroBenchMetisPartitionPlan;
 import org.elasql.bench.server.metadata.MicroBenchPartitionPlan;
 import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.bench.server.metadata.TpcePartitionPlan;
-import org.elasql.bench.server.metadata.ycsb.YcsbHashPartitionPlan;
 import org.elasql.bench.server.metadata.ycsb.YcsbMetisPartitionPlan;
 import org.elasql.bench.server.metadata.ycsb.YcsbRangePartitionPlan;
 import org.elasql.bench.server.metadata.ycsb.YcsbSingleTenantScaleOutPartPlan;
@@ -29,7 +28,7 @@ public class ElasqlStartUp implements SutStartUp {
 	
 	// Metis
 	public static final boolean LOAD_METIS_PARTITIONS = false;
-	private static final String METIS_FILE_PATH = "/opt/shared/metis-partitions/google-20/default/tail.part"; 
+	private static final String METIS_DIR_PATH = "/opt/shared/metis-partitions/second-part"; 
 	
 	private static String dbName;
 	private static int nodeId;
@@ -171,7 +170,7 @@ public class ElasqlStartUp implements SutStartUp {
 		case MICRO:
 			partPlan = new MicroBenchPartitionPlan();
 			if (LOAD_METIS_PARTITIONS)
-				partPlan = new MicroBenchMetisPartitionPlan(partPlan, METIS_FILE_PATH);
+				partPlan = new MicroBenchMetisPartitionPlan(partPlan, METIS_DIR_PATH);
 			break;
 		case TPCC:
 			partPlan = new TpccPartitionPlan();
@@ -188,12 +187,13 @@ public class ElasqlStartUp implements SutStartUp {
 					partPlan = new YcsbSingleTenantScaleOutPartPlan(PartitionMetaMgr.NUM_PARTITIONS, 4);
 				}
 			} else {
-//				partPlan = new YcsbRangePartitionPlan(PartitionMetaMgr.NUM_PARTITIONS);
-				partPlan = new YcsbHashPartitionPlan(PartitionMetaMgr.NUM_PARTITIONS);
+				partPlan = new YcsbRangePartitionPlan(PartitionMetaMgr.NUM_PARTITIONS);
+//				partPlan = new YcsbHashPartitionPlan(PartitionMetaMgr.NUM_PARTITIONS);
+//				partPlan = new YcsbSkewedPartitionPlan();
 			}
 			
 			if (LOAD_METIS_PARTITIONS)
-				partPlan = new YcsbMetisPartitionPlan(partPlan, METIS_FILE_PATH);
+				partPlan = new YcsbMetisPartitionPlan(partPlan, METIS_DIR_PATH);
 			
 			break;
 		}

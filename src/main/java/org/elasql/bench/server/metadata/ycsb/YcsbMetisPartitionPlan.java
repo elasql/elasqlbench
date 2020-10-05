@@ -1,19 +1,20 @@
 package org.elasql.bench.server.metadata.ycsb;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.sql.RecordKey;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.storage.metadata.PartitionPlan;
-import org.vanilladb.core.sql.Constant;
 
 // XXX: Need to be checked before using
 public class YcsbMetisPartitionPlan implements PartitionPlan {
@@ -21,82 +22,92 @@ public class YcsbMetisPartitionPlan implements PartitionPlan {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private static final int METIS_DATA_RANGE = 1;
-	private static final int VERTEX_PER_PART = ElasqlYcsbConstants.RECORD_PER_PART / METIS_DATA_RANGE;
-	
 	private PartitionPlan underlayerPlan;
-	private Map<Integer, Integer> metisPlan = new HashMap<Integer, Integer>();
+	private Map<RecordKey, Integer> metisPlan = new HashMap<RecordKey, Integer>();
+	private String metisDirPath;
 	
-	public YcsbMetisPartitionPlan(PartitionPlan defaultPlan, String metisFilePath) {
-		underlayerPlan = defaultPlan;
+	public YcsbMetisPartitionPlan(PartitionPlan defaultPlan, String metisDirPath) {
+		this.underlayerPlan = defaultPlan;
+		this.metisDirPath = metisDirPath;
 		
 		//shoud load metis when loading testbed
-		loadMetisPartitions(metisFilePath);
-		//monitor should commit it
+		loadMetisPartitions(metisDirPath);
 		
 		if (logger.isLoggable(Level.INFO))
-			logger.info("Successfully loaded the Metis partitions");
+			logger.info("Successfully loaded the Metis partitions (" + metisPlan.size() + " records loaded)");
 	}
 
-	public void loadMetisPartitions(String metisFilePath) {
-		File file = new File(metisFilePath);
-		if (!file.exists()) {
-			if (logger.isLoggable(Level.WARNING))
-				logger.warning(String.format("Cannot find Metis partitions at '%s'", metisFilePath));
-			return;
-		}
+	private void loadMetisPartitions(String metisDirPath) {
+		File file = new File(metisDirPath);
+		if (!file.exists())
+			throw new RuntimeException(String.format("Cannot find anything at '%s'", metisDirPath));
+		if (!file.isDirectory())
+			throw new RuntimeException(String.format("'%s' is not a directory", metisDirPath));
 		
-		try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+		
+		try {
 
-			String line;
-//			Map<String, Constant> keyEntryMap;
-			int lineCount = 0;
-			while ((line = br.readLine()) != null) {
-				int newPartId = Integer.parseInt(line);
-				metisPlan.put(lineCount, newPartId);
-				
-//				int higherPart = lineCount / VERTEX_PER_PART; // 123 => 1
-//				int lowerPart = lineCount % VERTEX_PER_PART; // 123 => 23
-//				int startYcsbId = higherPart * ElasqlYcsbConstants.MAX_RECORD_PER_PART + lowerPart * METIS_DATA_RANGE; // 1 * 1000000000 + 23 * 10000
-//				
-//				for (int i = 1; i <= METIS_DATA_RANGE; i++) {
-//					keyEntryMap = new HashMap<String, Constant>();
-//					keyEntryMap.put("ycsb_id", new VarcharConstant(
-//							String.format(YcsbConstants.ID_FORMAT, startYcsbId + i)));
-//					setCurrentLocation(new RecordKey("ycsb", keyEntryMap), newPartId);
-//				}
-				
-				lineCount++;
-			}
+			// Read the mapping file
+			File mappingFile = new File(metisDirPath, "mapping.bin");
+			Map<Integer, RecordKey> mapping = loadMappingFile(mappingFile);
+			
+			// Read the metis partition file
+			File metisFile = new File(metisDirPath, "metis.part");
+			metisPlan = loadPartitionFile(metisFile, mapping);
 
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
+	
+	private Map<Integer, RecordKey> loadMappingFile(File mappingFilePath) throws IOException {
+		Map<Integer, RecordKey> idToKeys = null;
+		try (ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(
+				new FileInputStream(mappingFilePath)))) {
+			try {
+				Map<RecordKey, Integer> keyToIds = (Map<RecordKey, Integer>) in.readObject();
+				idToKeys = new HashMap<Integer, RecordKey>();
+				for (Map.Entry<RecordKey, Integer> entry : keyToIds.entrySet()) {
+					idToKeys.put(Integer.valueOf(entry.getValue()), entry.getKey());
+				}
+			} catch (ClassNotFoundException e) {
+				e.printStackTrace();
+				throw new RuntimeException("Cannot read the mapping file from '" + mappingFilePath + "'");
+			}
+		}
+		return idToKeys;
+	}
+	
+	private Map<RecordKey, Integer> loadPartitionFile(File partitionFilePath,
+			Map<Integer, RecordKey> idToKeys) throws IOException {
+		Map<RecordKey, Integer> partitions = new HashMap<RecordKey, Integer>();
+		
+		try (BufferedReader reader = new BufferedReader(new FileReader(partitionFilePath))) {
+			String line = reader.readLine();
+			int id = 1;
+			while (line != null) {
+				Integer partId = Integer.valueOf(Integer.parseInt(line.trim()));
+				RecordKey key = idToKeys.get(Integer.valueOf(id));
+				partitions.put(key, partId);
+				
+				// Next line
+				id++;
+				line = reader.readLine();
+			}
+		}
+		
+		return partitions;
+	}
 
 	public boolean isFullyReplicated(RecordKey key) {
 		return underlayerPlan.isFullyReplicated(key);
 	}
-	
-	public int convertToVertexId(int ycsbId)
-	{
-		ycsbId -= 1; // [1, N] => [0, N-1]
-		int partId = ycsbId / ElasqlYcsbConstants.MAX_RECORD_PER_PART;
-		int vertexIdInPart = (ycsbId % ElasqlYcsbConstants.MAX_RECORD_PER_PART) / METIS_DATA_RANGE;
-		return partId * VERTEX_PER_PART + vertexIdInPart;
-	}
 
 	public int getPartition(RecordKey key) {
 		// Check the metis first
-		Constant idCon = key.getKeyVal("ycsb_id");
-		if (idCon != null) {
-			int ycsbId = Integer.parseInt((String) idCon.asJavaVal());
-			int vid = convertToVertexId(ycsbId);
-			Integer id = metisPlan.get(vid);
-			
-			if (id != null)
-				return id;
-		}
+		Integer id = metisPlan.get(key);
+		if (id != null)
+			return id;
 			
 		// If not found, check the underlayer plan
 		return underlayerPlan.getPartition(key);
@@ -104,22 +115,30 @@ public class YcsbMetisPartitionPlan implements PartitionPlan {
 
 	@Override
 	public PartitionPlan getBasePartitionPlan() {
-		return this;
+		return underlayerPlan.getBasePartitionPlan();
 	}
 
 	@Override
 	public boolean isBasePartitionPlan() {
-		return true;
+		return false;
 	}
 
 	@Override
 	public void changeBasePartitionPlan(PartitionPlan plan) {
-		throw new RuntimeException("There is no base partition plan in "
-				+ "YcsbMetisPartitionPlan that can be changed");
+		if (underlayerPlan.isBasePartitionPlan()) {
+			underlayerPlan = plan;
+		} else {
+			underlayerPlan.changeBasePartitionPlan(plan);
+		}
 	}
 
 	@Override
 	public int numberOfPartitions() {
 		return PartitionMetaMgr.NUM_PARTITIONS;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("MetisPartition (partition file: %s): [%s]", metisDirPath, underlayerPlan.toString());
 	}
 }
