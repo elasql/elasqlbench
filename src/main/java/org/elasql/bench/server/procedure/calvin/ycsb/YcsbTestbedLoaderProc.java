@@ -6,6 +6,7 @@ import java.util.logging.Logger;
 
 import org.elasql.bench.ycsb.ElasqlYcsbConstants;
 import org.elasql.cache.CachedRecord;
+import org.elasql.migration.MigrationMgr;
 import org.elasql.procedure.calvin.AllExecuteProcedure;
 import org.elasql.server.Elasql;
 import org.elasql.sql.RecordKey;
@@ -47,6 +48,10 @@ public class YcsbTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 //		int startIId = Elasql.serverId() * ElasqlYcsbConstants.MAX_RECORD_PER_PART + 1;
 //		generateItems(startIId, ElasqlYcsbConstants.RECORD_PER_PART);
 		int numOfParts = Elasql.partitionMetaMgr().getCurrentNumOfParts();
+		if (MigrationMgr.ENABLE_NODE_SCALING && !MigrationMgr.IS_SCALING_OUT &&
+				ElasqlYcsbConstants.WORKLOAD_TYPE == ElasqlYcsbConstants.WorkloadType.SINGLE_HOT_TENANT) {
+			numOfParts = 3;
+		}
 		generateItems(1, ElasqlYcsbConstants.RECORD_PER_PART * numOfParts);
 
 		if (logger.isLoggable(Level.INFO))
