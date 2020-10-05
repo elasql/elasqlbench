@@ -52,7 +52,7 @@ public class ElasqlTpccBenchmarker extends TpccBenchmarker {
 		// Idea: Make each client pin some RTEs on one of warehouses on server 0.
 		// Implementation:
 		// - Client 0 distributes its RTEs evenly to warehouses of server 0.
-		// - Client X (except for client 0) pins its first Y RTEs to warehouse X of server 0.
+		// - Client X (X != 0) pins its first Y RTEs to warehouse X of server 0.
 		// - Y decides how hot server 0 is.
 		if (nodeId == 0) {
 			RemoteTerminalEmulator rte = new ElasqlTpccRte(conn, statMgr, startWid + nextWidOffset + 1);
