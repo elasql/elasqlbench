@@ -34,9 +34,15 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 	private static final double GLOBAL_SKEW;
 	private static final int GLOBAL_SKEW_CHANGE_PERIOD = 1; // in seconds
 	
-	private static final int TOTAL_READ_COUNT = 2;
-	private static final int REMOTE_READ_COUNT = 1;
-
+	private static final int TOTAL_READ_COUNT = 16;
+	private static final int REMOTE_READ_COUNT = 8;
+	
+	private static final boolean IS_DYNAMIC_READ_COUNT = false;
+	private static final int MEAN_READ_COUNT = 5;
+	private static final int STD_READ_COUNT = 5;
+	
+	private static final long SENDING_DELAY = ElasqlYcsbConstants.SENDING_DELAY; // ms
+	
 	private static final int NUM_PARTITIONS =
 			(MigrationManager.ENABLE_NODE_SCALING && MigrationManager.IS_SCALING_OUT)?
 			PartitionMetaMgr.NUM_PARTITIONS - 1: PartitionMetaMgr.NUM_PARTITIONS;
@@ -178,6 +184,15 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 			System.out.println("Benchmark starts at " + currentTime);
 		}
 		
+		// Delay the transaction
+		if (SENDING_DELAY > 0) {
+			try {
+				Thread.sleep(SENDING_DELAY);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
 		// Check current time
 		long pt = (System.currentTimeMillis() - startTime) - WARMUP_TIME;
 		int timePoint = (int) (pt / 1000);
@@ -217,15 +232,29 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 		// =====================
 		// Generating Parameters
 		// =====================
-
-		int localReadCount = TOTAL_READ_COUNT;
-
+		
+		int totalReadCount = TOTAL_READ_COUNT;
+		int remoteReadCount = REMOTE_READ_COUNT;
+		
+		if (IS_DYNAMIC_READ_COUNT) {
+			double zeroMeanRandom = rvg.rng().nextGaussian();
+			int randomCount = (int) (MEAN_READ_COUNT + zeroMeanRandom * STD_READ_COUNT);
+			if (randomCount <= 1)
+				randomCount = 2;
+			if (randomCount > 50)
+				randomCount = 50;
+			
+			totalReadCount = randomCount;
+			remoteReadCount = randomCount / 2;
+		}
+		
+		int localReadCount = totalReadCount;
 		if (isDistributedTx) {
-			localReadCount -= REMOTE_READ_COUNT;
+			localReadCount -= remoteReadCount;
 		}
 
 		// Read count
-		paramList.add(TOTAL_READ_COUNT);
+		paramList.add(totalReadCount);
 
 		// Read ids (in integer)
 		Set<Integer> chosenIds = new HashSet<Integer>();
@@ -251,7 +280,7 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 				center *= (((timeOffset % windowSize) / GLOBAL_SKEW_CHANGE_PERIOD) + 1); 
 			}
 			
-			for (int i = 0; i < REMOTE_READ_COUNT; i++) {
+			for (int i = 0; i < remoteReadCount; i++) {
 				int id = chooseARecordGlobally(center);
 				while (!chosenIds.add(id))
 					id = chooseARecordGlobally(center);
@@ -265,14 +294,14 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 		if (isReadWriteTx) {
 
 			// Write count
-			paramList.add(TOTAL_READ_COUNT);
+			paramList.add(totalReadCount);
 
 			// Write ids (in integer)
 			for (Integer id : chosenIds)
 				paramList.add(id);
 
 			// Write values
-			for (int i = 0; i < TOTAL_READ_COUNT; i++)
+			for (int i = 0; i < totalReadCount; i++)
 				paramList.add(rvg.randomAString(YcsbConstants.CHARS_PER_FIELD));
 
 		} else {

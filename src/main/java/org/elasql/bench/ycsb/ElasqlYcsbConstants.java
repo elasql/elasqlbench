@@ -6,6 +6,8 @@ public class ElasqlYcsbConstants {
 	
 	public static final int RECORD_PER_PART = 10_000_000;
 	public static final int MAX_RECORD_PER_PART = 100_000_000; // for insertion
+
+	public static final long SENDING_DELAY; // 0: Normal, 100 is enough for underloaded
 	
 	public static enum WorkloadType {
 		GOOGLE, MULTI_TENANTS
@@ -13,6 +15,8 @@ public class ElasqlYcsbConstants {
 	public static final WorkloadType WORKLOAD_TYPE;
 	
 	static {
+		SENDING_DELAY = ElasqlBenchProperties.getLoader()
+				.getPropertyAsLong(ElasqlYcsbConstants.class.getName() + ".SENDING_DELAY", 0);
 		int workloadType = ElasqlBenchProperties.getLoader().getPropertyAsInteger(
 				ElasqlYcsbConstants.class.getName() + ".WORKLOAD_TYPE", 1);
 		switch (workloadType) {
