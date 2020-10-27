@@ -259,8 +259,12 @@ public class YcsbMigrationManager extends MigrationManager {
 
 		// Convert group keys to individual RecordKey
 		for (RecordKey represetKey : migratingGroups) {
+			
+			if (logger.isLoggable(Level.FINE))
+				logger.fine("Add represented key for migration: " + represetKey);
+			
 			int startYcsbId = toYcsbId(represetKey);
-			for (int offset = 0; offset <= GROUP_SIZE; offset++) {
+			for (int offset = 0; offset < GROUP_SIZE; offset++) {
 				addOrSleep(dataSet, toRecordKey(startYcsbId + offset));
 			}
 		}
