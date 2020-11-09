@@ -34,14 +34,14 @@ public class GoogleComplexWorkloadsParamGen implements TxParamGenerator {
 	private static final double GLOBAL_SKEW;
 	private static final int GLOBAL_SKEW_CHANGE_PERIOD = 1; // in seconds
 	
-	private static final int TOTAL_READ_COUNT = 16;
-	private static final int REMOTE_READ_COUNT = 8;
+	private static final int TOTAL_READ_COUNT = 2;
+	private static final int REMOTE_READ_COUNT = 1;
 	
 	private static final boolean IS_DYNAMIC_READ_COUNT = false;
-	private static final int MEAN_READ_COUNT = 5;
-	private static final int STD_READ_COUNT = 5;
+	private static final int MEAN_READ_COUNT = 20;
+	private static final int STD_READ_COUNT = 10;
 	
-	private static final int SENDING_DELAY = 0; // ms
+	private static final long SENDING_DELAY = ElasqlYcsbConstants.SENDING_DELAY; // ms
 	
 	private static final int NUM_PARTITIONS = (MigrationMgr.ENABLE_NODE_SCALING && MigrationMgr.IS_SCALING_OUT)?
 			PartitionMetaMgr.NUM_PARTITIONS - 1: PartitionMetaMgr.NUM_PARTITIONS;
