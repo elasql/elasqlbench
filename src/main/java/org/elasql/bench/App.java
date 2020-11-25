@@ -5,6 +5,7 @@ import org.elasql.bench.remote.sp.ElasqlSpDriver;
 import org.elasql.bench.tpcc.ElasqlTpccBenchmarker;
 import org.elasql.bench.tpce.ElasqlTpceBenchmarker;
 import org.elasql.bench.ycsb.ElasqlYcsbBenchmarker;
+import org.elasql.bench.ycsbmt.YcsbMtBenchmarker;
 import org.vanilladb.bench.Benchmarker;
 import org.vanilladb.bench.BenchmarkerParameters;
 import org.vanilladb.bench.remote.SutDriver;
@@ -47,6 +48,9 @@ public class App {
 			break;
 		case YCSB:
 			benchmarker = new ElasqlYcsbBenchmarker(driver, nodeId);
+			break;
+		case YCSB_MT:
+			benchmarker = new YcsbMtBenchmarker(driver, nodeId);
 			break;
 		}
 		

@@ -10,6 +10,8 @@ import org.elasql.bench.server.metadata.TpcePartitionPlan;
 import org.elasql.bench.server.metadata.ycsb.YcsbMetisPartitionPlan;
 import org.elasql.bench.server.metadata.ycsb.YcsbRangePartitionPlan;
 import org.elasql.bench.server.metadata.ycsb.YcsbSingleTenantScaleOutPartPlan;
+import org.elasql.bench.server.metadata.ycsbmt.YcsbMtPartitionPlan;
+import org.elasql.bench.server.migraion.DummyMigrationMgr;
 import org.elasql.bench.server.migraion.TpccMigrationMgr;
 import org.elasql.bench.server.migraion.YcsbMigrationMgr;
 import org.elasql.bench.server.procedure.calvin.tpce.TpceStoredProcFactory;
@@ -110,6 +112,8 @@ public class ElasqlStartUp implements SutStartUp {
 			throw new UnsupportedOperationException("No TPC-E for now");
 		case YCSB:
 			throw new UnsupportedOperationException("No YCSB for now");
+		case YCSB_MT:
+			throw new UnsupportedOperationException("No YCSB_MT for now");
 		}
 		return factory;
 	}
@@ -137,6 +141,11 @@ public class ElasqlStartUp implements SutStartUp {
 				logger.info("using YCSB stored procedures for Calvin");
 			factory = new YcsbStoredProcFactory();
 			break;
+		case YCSB_MT:
+			if (logger.isLoggable(Level.INFO))
+				logger.info("using YCSB-MT stored procedures for Calvin");
+			factory = new org.elasql.bench.server.procedure.calvin.ycsbmt.YcsbMtStoredProcFactory();
+			break;
 		}
 		return factory;
 	}
@@ -160,6 +169,12 @@ public class ElasqlStartUp implements SutStartUp {
 			if (logger.isLoggable(Level.INFO))
 				logger.info("using YCSB stored procedures for T-Part");
 			factory = new org.elasql.bench.server.procedure.tpart.ycsb.YcsbStoredProcFactory();
+			break;
+		case YCSB_MT:
+			if (logger.isLoggable(Level.INFO))
+				logger.info("using YCSB-MT stored procedures for T-Part");
+			factory = new org.elasql.bench.server.procedure.tpart.ycsbmt.YcsbMtStoredProcFactory();
+			break;
 		}
 		return factory;
 	}
@@ -196,6 +211,9 @@ public class ElasqlStartUp implements SutStartUp {
 				partPlan = new YcsbMetisPartitionPlan(partPlan, METIS_DIR_PATH);
 			
 			break;
+		case YCSB_MT:
+			partPlan = new YcsbMtPartitionPlan();
+			break;
 		}
 		return partPlan;
 	}
@@ -210,6 +228,8 @@ public class ElasqlStartUp implements SutStartUp {
 			throw new UnsupportedOperationException("No TPC-E Migration Manager for now");
 		case YCSB:
 			return new YcsbMigrationMgr();
+		case YCSB_MT:
+			return new DummyMigrationMgr();
 		}
 		return null;
 	}
