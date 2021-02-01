@@ -70,6 +70,7 @@ public class CalvinYcsbProc extends CalvinStoredProcedure<ElasqlYcsbProcParamHel
 			String fieldName = paramHelper.getWriteTableName(i) + "_1";
 			CachedRecord rec = readings.get(writeKeys[i]);
 			rec.setVal(fieldName, writeConstantMap.get(writeKeys[i]));
+			update(writeKeys[i], rec);
 		}
 
 		// INSERT INTO ycsb (ycsb_id, ycsb_1, ...) VALUES ("...", "...", ...)

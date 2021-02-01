@@ -69,6 +69,7 @@ public class TpartYcsbProc extends TPartStoredProcedure<ElasqlYcsbProcParamHelpe
 			String fieldName = paramHelper.getWriteTableName(idx) + "_1";
 			CachedRecord rec = readings.get(writeKeys[idx]);
 			rec.setVal(fieldName, writeConstantMap.get(writeKeys[idx]));
+			update(writeKeys[idx], rec);
 		}
 		
 		// INSERT INTO ycsb (ycsb_id, ycsb_1, ...) VALUES ("...", "...", ...)
