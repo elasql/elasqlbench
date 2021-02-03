@@ -16,8 +16,6 @@
 package org.elasql.bench.benchmarks.tpcc;
 
 import org.elasql.bench.server.metadata.TpccPartitionPlan;
-import org.elasql.bench.server.metadata.migration.TpccBeforePartPlan;
-import org.elasql.bench.server.metadata.migration.scaleout.TpccScaleoutBeforePartPlan;
 import org.vanilladb.bench.StatisticMgr;
 import org.vanilladb.bench.benchmarks.tpcc.TpccBenchmark;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
@@ -26,24 +24,10 @@ import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 
 public class ElasqlTpccBenchmark extends TpccBenchmark {
 	
-	private static final TpccPartitionPlan partPlan;
-			
-	static {
-		switch (ElasqlTpccConstants.PARTITION_STRATEGY) {
-		case MGCRAB_SCALING_OUT:
-			partPlan = new TpccScaleoutBeforePartPlan();
-			break;
-		case MGCRAB_CONSOLIDATION:
-			partPlan = new TpccBeforePartPlan();
-			break;
-		default:
-			partPlan = new TpccPartitionPlan();
-			break;
-		}
-	}
+	private static final TpccPartitionPlan partPlan = new TpccPartitionPlan();
 	
 	public static TpccPartitionPlan getPartitionPlan() {
-		return partPlan;
+		return partPlan;	
 	}
 	
 	public static int getNumOfWarehouses() {
@@ -53,17 +37,7 @@ public class ElasqlTpccBenchmark extends TpccBenchmark {
 	private TpccRteGenerator rteGenerator;
 	
 	public ElasqlTpccBenchmark(int nodeId) {
-		switch (ElasqlTpccConstants.PARTITION_STRATEGY) {
-		case MGCRAB_SCALING_OUT:
-			rteGenerator = new TpccScaleoutTestRteGenerator(nodeId);
-			break;
-		case MGCRAB_CONSOLIDATION:
-			rteGenerator = new TpccMigrationTestRteGenerator(nodeId);
-			break;
-		default:
-			rteGenerator = new TpccStandardRteGenerator(nodeId);
-			break;
-		}
+		rteGenerator = new TpccStandardRteGenerator(nodeId);
 	}
 
 	@Override

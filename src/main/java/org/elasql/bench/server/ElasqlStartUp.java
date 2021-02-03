@@ -22,16 +22,11 @@ import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
 import org.elasql.bench.benchmarks.ycsb.ElasqlYcsbConstants;
 import org.elasql.bench.server.metadata.MicroBenchPartitionPlan;
 import org.elasql.bench.server.metadata.TpcePartitionPlan;
-import org.elasql.bench.server.metadata.YcsbMultiTenantsPartitionPlan;
 import org.elasql.bench.server.metadata.YcsbSingleTablePartitionPlan;
-import org.elasql.bench.server.migration.tpcc.TpccMigrationComponentFactory;
 import org.elasql.bench.server.procedure.calvin.BasicCalvinSpFactory;
-import org.elasql.migration.DummyMigrationComponentFactory;
-import org.elasql.migration.MigrationComponentFactory;
 import org.elasql.procedure.DdStoredProcedureFactory;
 import org.elasql.procedure.calvin.CalvinStoredProcedureFactory;
 import org.elasql.procedure.naive.NaiveStoredProcedureFactory;
-import org.elasql.procedure.tpart.TPartStoredProcedureFactory;
 import org.elasql.server.Elasql;
 import org.elasql.storage.metadata.PartitionPlan;
 import org.vanilladb.bench.BenchmarkerParameters;
@@ -56,8 +51,7 @@ public class ElasqlStartUp implements SutStartUp {
 			System.out.println("Usage: ./startup [DB Name] [Node Id] ([Is Sequencer])");
 		}
 		
-		Elasql.init(dbName, nodeId, isSequencer, getStoredProcedureFactory(), getPartitionPlan(),
-				getMigrationComponentFactory());
+		Elasql.init(dbName, nodeId, isSequencer, getStoredProcedureFactory(), getPartitionPlan());
 
 		if (logger.isLoggable(Level.INFO))
 			logger.info("ElaSQL server ready");
@@ -104,8 +98,7 @@ public class ElasqlStartUp implements SutStartUp {
 		case HERMES:
 		case G_STORE:
 		case LEAP:
-			factory = getTPartSpFactory();
-			break;
+			throw new UnsupportedOperationException("No T-Part system");
 		}
 		return factory;
 	}
@@ -153,30 +146,6 @@ public class ElasqlStartUp implements SutStartUp {
 		return factory;
 	}
 	
-	private TPartStoredProcedureFactory getTPartSpFactory() {
-		TPartStoredProcedureFactory factory = null;
-		switch (BenchmarkerParameters.BENCH_TYPE) {
-		case MICRO:
-			if (logger.isLoggable(Level.INFO))
-				logger.info("using Micro-benchmark stored procedures for T-Part");
-			factory = new org.elasql.bench.server.procedure.tpart.micro.MicrobenchStoredProcFactory();
-			break;
-		case TPCC:
-			if (logger.isLoggable(Level.INFO))
-				logger.info("using TPC-C stored procedures for T-Part");
-			factory = new org.elasql.bench.server.procedure.tpart.tpcc.TpccStoredProcFactory();
-			break;
-		case TPCE:
-			throw new UnsupportedOperationException("No TPC-E for now");
-		case YCSB:
-			if (logger.isLoggable(Level.INFO))
-				logger.info("using YCSB stored procedures for T-Part");
-			factory = new org.elasql.bench.server.procedure.tpart.ycsb.TpartYcsbStoredProcFactory();
-			break;
-		}
-		return factory;
-	}
-	
 	private PartitionPlan getPartitionPlan() {
 		PartitionPlan partPlan = null;
 		switch (BenchmarkerParameters.BENCH_TYPE) {
@@ -195,28 +164,11 @@ public class ElasqlStartUp implements SutStartUp {
 				partPlan = new YcsbSingleTablePartitionPlan();
 				break;
 			case MULTI_TABLE:
-				partPlan = new YcsbMultiTenantsPartitionPlan();
-				break;
+				throw new UnsupportedOperationException("unimplemented");
 			default:
 				throw new RuntimeException("You should not be here");
 			}
 		}
 		return partPlan;
-	}
-	
-	private MigrationComponentFactory getMigrationComponentFactory() {
-		MigrationComponentFactory comFactory = null;
-		switch (BenchmarkerParameters.BENCH_TYPE) {
-		case MICRO:
-			comFactory = new DummyMigrationComponentFactory("No implementation for migration on the micro benchmarks");
-		case TPCC:
-			comFactory = new TpccMigrationComponentFactory();
-			break;
-		case TPCE:
-			comFactory = new DummyMigrationComponentFactory("No implementation for migration on the TPC-E benchmarks");
-		case YCSB:
-			comFactory = new DummyMigrationComponentFactory("No implementation for migration on the YCSB benchmarks");
-		}
-		return comFactory;
 	}
 }
