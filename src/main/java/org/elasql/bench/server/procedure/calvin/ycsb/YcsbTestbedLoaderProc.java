@@ -49,8 +49,8 @@ public class YcsbTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 			populateSingleTableDB();
 			break;
 			
-		case MULTI_TENANTS:
-			populateMultiTenantsDB();
+		case MULTI_TABLE:
+			populateMultiTableDB();
 			break;
 			
 		default:
@@ -82,18 +82,21 @@ public class YcsbTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 		generateRecords("ycsb", 1, ElasqlYcsbConstants.INIT_RECORD_PER_PART * numOfParts);
 	}
 	
-	private void populateMultiTenantsDB() {
+	private void populateMultiTableDB() {
 		if (logger.isLoggable(Level.INFO))
 			logger.info("Populating multi-tenants YCSB database...");
 		
-		int serverId = Elasql.serverId();
-		int tenantStartId = serverId * ElasqlYcsbConstants.TENANTS_PER_PART;
-		int tenantEndId = (serverId + 1) * ElasqlYcsbConstants.TENANTS_PER_PART;
-		int recordPerTenant = ElasqlYcsbConstants.INIT_RECORD_PER_PART / ElasqlYcsbConstants.TENANTS_PER_PART;
-		for (int tenantId = tenantStartId; tenantId < tenantEndId; tenantId++) {
-			String tableName = String.format("ycsb%d", tenantId);
-			generateRecords(tableName, 1, recordPerTenant);
-		}
+		throw new UnsupportedOperationException("Unimplemented");
+		
+		// The below design is out-dated
+//		int serverId = Elasql.serverId();
+//		int tenantStartId = serverId * ElasqlYcsbConstants.TENANTS_PER_PART;
+//		int tenantEndId = (serverId + 1) * ElasqlYcsbConstants.TENANTS_PER_PART;
+//		int recordPerTenant = ElasqlYcsbConstants.INIT_RECORD_PER_PART / ElasqlYcsbConstants.TENANTS_PER_PART;
+//		for (int tenantId = tenantStartId; tenantId < tenantEndId; tenantId++) {
+//			String tableName = String.format("ycsb%d", tenantId);
+//			generateRecords(tableName, 1, recordPerTenant);
+//		}
 	}
 	
 	private void generateRecords(String tableName, int startId, int recordCount) {

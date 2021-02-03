@@ -40,7 +40,7 @@ public class YcsbCheckDatabaseProc extends AllExecute2pcProcedure<StoredProcedur
 			checkSingleTableDB();
 			break;
 			
-		case MULTI_TENANTS:
+		case MULTI_TABLE:
 			checkMultiTenantsDB();
 			break;
 			

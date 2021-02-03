@@ -41,7 +41,7 @@ public class SingleTableMultiTenantParamGen implements TxParamGenerator<YcsbTran
 	private static final AtomicReference<YcsbLatestGenerator> GEN_TEMPLATE;
 	
 	// To delay replaying the workload (in milliseconds)
-	private static final long DELAY_START_TIME = 90_000;
+	private static final long DELAY_START_TIME = 120_000;
 	private static final AtomicLong GLOBAL_START_TIME = new AtomicLong(0);
 	
 	private static boolean reporterEnabled = false;
@@ -52,8 +52,7 @@ public class SingleTableMultiTenantParamGen implements TxParamGenerator<YcsbTran
 					SingleTableMultiTenantParamGen.class.getName()));
 		
 		GEN_TEMPLATE = new AtomicReference<YcsbLatestGenerator>(
-				new YcsbLatestGenerator(ElasqlYcsbConstants.INIT_RECORD_PER_PART,
-						ElasqlYcsbConstants.ZIPFIAN_PARAMETER));
+				new YcsbLatestGenerator(RECORDS_PER_TENANT, ElasqlYcsbConstants.ZIPFIAN_PARAMETER));
 		
 		if (logger.isLoggable(Level.INFO))
 			logger.info(String.format("Use single-table multi-tenant YCSB generators "
@@ -92,13 +91,20 @@ public class SingleTableMultiTenantParamGen implements TxParamGenerator<YcsbTran
 				int timeOffset = getCurrentTimeOffset();
 
 				if (ENABLE_HOTSPOT && timeOffset >= 0) {
-					int hotspotPartId = (timeOffset / HOTSPOT_CHANGE_PERIOD) / numberOfPartitions;
-					System.out.println(String.format("Hotspot: %d", hotspotPartId));
+					int hotspotPartId = (timeOffset / HOTSPOT_CHANGE_PERIOD) % numberOfPartitions;
+					System.out.println(String.format("Time Offset: %d, hotspot part: %d",
+							timeOffset, hotspotPartId));
 				} else {
-					System.out.println(String.format("No hotspot"));
+					System.out.println(String.format("Time Offset: %d, no hotspot", timeOffset));
 				}
 			}
 		}).start();
+	}
+	
+	public static void main(String[] args) {
+		SingleTableMultiTenantParamGen gen = new SingleTableMultiTenantParamGen(4);
+		for (int i = 0; i < 10; i++)
+			System.out.println(Arrays.toString(gen.generateParameter()));
 	}
 	
 	private int numOfPartitions;
@@ -109,12 +115,6 @@ public class SingleTableMultiTenantParamGen implements TxParamGenerator<YcsbTran
 		this.generator = new YcsbLatestGenerator(GEN_TEMPLATE.get());
 		
 		enableReporter(numOfPartitions);
-	}
-	
-	public static void main(String[] args) {
-		SingleTableMultiTenantParamGen gen = new SingleTableMultiTenantParamGen(5);
-		for (int i = 0; i < 10; i++)
-			System.out.println(Arrays.toString(gen.generateParameter()));
 	}
 
 	@Override
@@ -128,10 +128,6 @@ public class SingleTableMultiTenantParamGen implements TxParamGenerator<YcsbTran
 		
 		// Check the current time point
 		int timeOffset = getCurrentTimeOffset();
-		boolean hasHotspot = false;
-		if (timeOffset >= 0 && ENABLE_HOTSPOT) {
-			hasHotspot = true;
-		}
 
 		// Decide the types of transactions
 		boolean isReadWriteTx = (rvg.randomChooseFromDistribution(RW_TX_RATE, 1 - RW_TX_RATE) == 0);
@@ -142,9 +138,8 @@ public class SingleTableMultiTenantParamGen implements TxParamGenerator<YcsbTran
 		
 		// Select a partition
 		int mainPartId = 0;
-		if (hasHotspot) {
-			int hotspotPartId = (timeOffset / HOTSPOT_CHANGE_PERIOD) /
-					numOfPartitions;
+		if (ENABLE_HOTSPOT && timeOffset >= 0) {
+			int hotspotPartId = (timeOffset / HOTSPOT_CHANGE_PERIOD) % numOfPartitions;
 			
 			// Choose a partition with respect to hotness
 			if (rvg.rng().nextDouble() > HOTSPOT_HOTNESS) {
@@ -203,9 +198,7 @@ public class SingleTableMultiTenantParamGen implements TxParamGenerator<YcsbTran
 	}
 	
 	private long chooseKeyInTenant(int tenantId) {
-		int partId = tenantId / TENANTS_PER_PART;
-		int tanentOffset = tenantId % TENANTS_PER_PART;
-		long tanentStartId = partId * RECORDS_PER_PART + tanentOffset * RECORDS_PER_TENANT;
+		long tanentStartId = tenantId * RECORDS_PER_TENANT;
 		long offset = generator.nextValue();
 		return tanentStartId + offset;
 	}

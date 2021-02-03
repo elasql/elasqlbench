@@ -40,13 +40,15 @@ public class ElasqlYcsbRte extends RemoteTerminalEmulator<YcsbTransactionType> {
 				return new SingleTableNormalParamGen(numOfPartitions);
 			case GOOGLE:
 				return new SingleTableGoogleParamGen();
+			case MULTI_TENANT:
+				return new SingleTableMultiTenantParamGen(numOfPartitions);
 			default:
 				throw new UnsupportedOperationException("Workload " + ElasqlYcsbConstants.WORKLOAD_TYPE + " is not supported.");
 			}
-		case MULTI_TENANTS:
-			int tenantId = nodeId * ElasqlYcsbConstants.TENANTS_PER_PART +
-					rteId % ElasqlYcsbConstants.TENANTS_PER_PART;
-			return new MultitenantNormalParamGen(tenantId);
+		case MULTI_TABLE:
+//			int tenantId = nodeId * ElasqlYcsbConstants.TENANTS_PER_PART +
+//					rteId % ElasqlYcsbConstants.TENANTS_PER_PART;
+			throw new UnsupportedOperationException("Unimplemented");
 		default:
 			throw new RuntimeException("You should not be here");
 		}

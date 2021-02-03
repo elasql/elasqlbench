@@ -194,7 +194,7 @@ public class ElasqlStartUp implements SutStartUp {
 			case SINGLE_TABLE:
 				partPlan = new YcsbSingleTablePartitionPlan();
 				break;
-			case MULTI_TENANTS:
+			case MULTI_TABLE:
 				partPlan = new YcsbMultiTenantsPartitionPlan();
 				break;
 			default:

@@ -27,7 +27,7 @@ public class ElasqlYcsbSchemaBuilderParamHelper extends StoredProcedureParamHelp
 			
 			break;
 			
-		case MULTI_TENANTS:
+		case MULTI_TABLE:
 			int numOfTenants = ElasqlYcsbConstants.TENANTS_PER_PART *
 					PartitionMetaMgr.NUM_PARTITIONS;
 			

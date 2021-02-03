@@ -11,7 +11,7 @@ public class ElasqlYcsbConstants {
 	
 	// Database Mode
 	public static enum DatabaseMode {
-		SINGLE_TABLE, MULTI_TENANTS
+		SINGLE_TABLE, MULTI_TABLE
 	}
 	public static final DatabaseMode DATABASE_MODE;
 	
@@ -25,7 +25,7 @@ public class ElasqlYcsbConstants {
 	
 	// Workloads
 	public static enum WorkloadType {
-		NORMAL, GOOGLE, SKEWED
+		NORMAL, GOOGLE, MULTI_TENANT
 	}
 	public static final WorkloadType WORKLOAD_TYPE;
 	
@@ -64,7 +64,7 @@ public class ElasqlYcsbConstants {
 			DATABASE_MODE = DatabaseMode.SINGLE_TABLE;
 			break;
 		case 2:
-			DATABASE_MODE = DatabaseMode.MULTI_TENANTS;
+			DATABASE_MODE = DatabaseMode.MULTI_TABLE;
 			break;
 		default:
 			throw new IllegalArgumentException("No database mode in YCSB for " + databaseMode);	
@@ -81,7 +81,7 @@ public class ElasqlYcsbConstants {
 			WORKLOAD_TYPE = WorkloadType.GOOGLE;
 			break;
 		case 3:
-			WORKLOAD_TYPE = WorkloadType.SKEWED;
+			WORKLOAD_TYPE = WorkloadType.MULTI_TENANT;
 			break;
 		default:
 			throw new IllegalArgumentException("No YCSB workload for " + workloadType);	
