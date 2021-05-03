@@ -14,7 +14,7 @@ public class TpccMigrationComponentFactory extends MigrationComponentFactory {
 	public MigrationPlan newPredefinedMigrationPlan() {
 //		return new TpccPredefinedMigrationPlan();
 		// TODO
-		throw new RuntimeException("Unimplemented");
+		throw new UnsupportedOperationException("Unimplemented");
 	}
 	
 	public MigrationRange toMigrationRange(int sourceId, int destId, PartitioningKey partitioningKey) {

@@ -22,7 +22,6 @@ import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
 import org.elasql.bench.benchmarks.ycsb.ElasqlYcsbConstants;
 import org.elasql.bench.server.metadata.MicroBenchPartitionPlan;
 import org.elasql.bench.server.metadata.TpcePartitionPlan;
-import org.elasql.bench.server.metadata.YcsbMultiTenantsPartitionPlan;
 import org.elasql.bench.server.metadata.YcsbSingleTablePartitionPlan;
 import org.elasql.bench.server.migration.tpcc.TpccMigrationComponentFactory;
 import org.elasql.bench.server.procedure.calvin.BasicCalvinSpFactory;
@@ -195,8 +194,7 @@ public class ElasqlStartUp implements SutStartUp {
 				partPlan = new YcsbSingleTablePartitionPlan();
 				break;
 			case MULTI_TABLE:
-				partPlan = new YcsbMultiTenantsPartitionPlan();
-				break;
+				throw new UnsupportedOperationException("Unimplemented");
 			default:
 				throw new RuntimeException("You should not be here");
 			}
