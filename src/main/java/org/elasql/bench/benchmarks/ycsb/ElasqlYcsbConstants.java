@@ -25,7 +25,7 @@ public class ElasqlYcsbConstants {
 	
 	// Workloads
 	public static enum WorkloadType {
-		NORMAL, GOOGLE, MULTI_TENANT
+		NORMAL, GOOGLE, MULTI_TENANT, HOT_COUNTER
 	}
 	public static final WorkloadType WORKLOAD_TYPE;
 	
@@ -55,6 +55,10 @@ public class ElasqlYcsbConstants {
 	public static final String GOOGLE_TRACE_FILE;
 	public static final int GOOGLE_TRACE_LENGTH;
 	
+	// Hot Counter
+	public static final int HOT_COUNT_PER_PART;
+	public static final double HOT_UPDATE_RATE_IN_RW_TX;
+	
 	static {
 		// Database Mode
 		int databaseMode = ElasqlBenchProperties.getLoader().getPropertyAsInteger(
@@ -83,6 +87,9 @@ public class ElasqlYcsbConstants {
 		case 3:
 			WORKLOAD_TYPE = WorkloadType.MULTI_TENANT;
 			break;
+		case 4:
+			WORKLOAD_TYPE = WorkloadType.HOT_COUNTER;
+			break;
 		default:
 			throw new IllegalArgumentException("No YCSB workload for " + workloadType);	
 		}
@@ -94,9 +101,9 @@ public class ElasqlYcsbConstants {
 		TENANTS_PER_PART = ElasqlBenchProperties.getLoader()
 				.getPropertyAsInteger(ElasqlYcsbConstants.class.getName() + ".TENANTS_PER_PART", 1);
 		RW_TX_RATE = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlYcsbConstants.class.getName() + ".RW_TX_RATE", 0.2);
+				.getPropertyAsDouble(ElasqlYcsbConstants.class.getName() + ".RW_TX_RATE", 0.5);
 		DIST_TX_RATE = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlYcsbConstants.class.getName() + ".DIST_TX_RATE", 0.0);
+				.getPropertyAsDouble(ElasqlYcsbConstants.class.getName() + ".DIST_TX_RATE", 0.5);
 		USE_DYNAMIC_RECORD_COUNT = ElasqlBenchProperties.getLoader()
 				.getPropertyAsBoolean(ElasqlYcsbConstants.class.getName() + ".USE_DYNAMIC_RECORD_COUNT", false);
 		ENABLE_HOTSPOT = ElasqlBenchProperties.getLoader()
@@ -121,6 +128,10 @@ public class ElasqlYcsbConstants {
 				.getPropertyAsString(ElasqlYcsbConstants.class.getName() + ".GOOGLE_TRACE_FILE", "");
 		GOOGLE_TRACE_LENGTH = ElasqlBenchProperties.getLoader()
 				.getPropertyAsInteger(ElasqlYcsbConstants.class.getName() + ".GOOGLE_TRACE_LENGTH", 0);
+		HOT_COUNT_PER_PART = ElasqlBenchProperties.getLoader()
+				.getPropertyAsInteger(ElasqlYcsbConstants.class.getName() + ".HOT_COUNT_PER_PART", 1);
+		HOT_UPDATE_RATE_IN_RW_TX = ElasqlBenchProperties.getLoader()
+				.getPropertyAsDouble(ElasqlYcsbConstants.class.getName() + ".HOT_UPDATE_RATE_IN_RW_TX", 0.1);
 	}
 	
 	public static double[][] loadGoogleWorkloadTrace(int numberOfPartitions) {

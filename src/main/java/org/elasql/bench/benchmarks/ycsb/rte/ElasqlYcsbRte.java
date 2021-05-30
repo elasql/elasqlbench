@@ -42,6 +42,8 @@ public class ElasqlYcsbRte extends RemoteTerminalEmulator<YcsbTransactionType> {
 				return new SingleTableGoogleParamGen();
 			case MULTI_TENANT:
 				return new SingleTableMultiTenantParamGen(numOfPartitions);
+			case HOT_COUNTER:
+				return new SingleTableHotCounterParamGen(numOfPartitions);
 			default:
 				throw new UnsupportedOperationException("Workload " + ElasqlYcsbConstants.WORKLOAD_TYPE + " is not supported.");
 			}
