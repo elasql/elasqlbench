@@ -1,26 +1,35 @@
 package org.elasql.bench.server.metadata.migration.scaleout;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.elasql.bench.server.metadata.TpccPartitionPlan;
+import org.elasql.bench.util.ElasqlBenchProperties;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 
-public class TpccScaleoutBeforePartPlan extends TpccPartitionPlan {
+public class TpccScaleoutBeforePartPlan extends TpccPartitionPlan implements Serializable {
 	
-	// 1 to 1
-	public static final int NUM_HOT_PARTS = 1;
-	public static final int HOT_WAREHOUSE_PER_HOT_PART = 1;
+	private static final long serialVersionUID = 20210602002l;
 	
-	// 3 to 3
-//	public static final int NUM_HOT_PARTS = 3;
-//	public static final int HOT_WAREHOUSE_PER_HOT_PART = 1;
+	public static final int NUM_HOT_PARTS;
+	public static final int HOT_WAREHOUSE_PER_HOT_PART;
 	
-	// 3 to 6
-//	public static final int NUM_HOT_PARTS = 3;
-//	public static final int HOT_WAREHOUSE_PER_HOT_PART = 2;
+	static {
+		NUM_HOT_PARTS = ElasqlBenchProperties.getLoader()
+				.getPropertyAsInteger(TpccScaleoutBeforePartPlan.class.getName() + ".NUM_HOT_PARTS", 1);
+		HOT_WAREHOUSE_PER_HOT_PART = ElasqlBenchProperties.getLoader()
+				.getPropertyAsInteger(TpccScaleoutBeforePartPlan.class.getName() + ".HOT_WAREHOUSE_PER_HOT_PART", 1);
+		
+		int minPartitionNeeded = NUM_HOT_PARTS + NUM_HOT_PARTS * HOT_WAREHOUSE_PER_HOT_PART;
+		if (PartitionMetaMgr.NUM_PARTITIONS < minPartitionNeeded)
+			throw new IllegalArgumentException(String.format(
+					"%d partitions are not enough for a scale-out scenario with "
+					+ "% hot partitions and %d hot warehouse in each partition",
+					PartitionMetaMgr.NUM_PARTITIONS, NUM_HOT_PARTS, HOT_WAREHOUSE_PER_HOT_PART));
+	}
 	
 	// we wish to distribute the hot warehouses to the empty partitions
 	// each empty partition should get one hot warehouse.
@@ -38,7 +47,7 @@ public class TpccScaleoutBeforePartPlan extends TpccPartitionPlan {
 	}
 	
 	/**
-	 * E.g. 3 Nodes:
+	 * E.g. 3 nodes with 1 hot partition which has 1 hot warehouse:
 	 * - Node 0 {1~10,21}
 	 * - Node 1 {11~20}
 	 * - Node 2 {}
@@ -65,7 +74,8 @@ public class TpccScaleoutBeforePartPlan extends TpccPartitionPlan {
 			
 			for (Integer wid : wids.get(partId))
 				sb.append(String.format("%d, ", wid));
-			sb.delete(sb.length() - 2, sb.length());
+			if (wids.get(partId).size() > 0)
+				sb.delete(sb.length() - 2, sb.length());
 			
 			sb.append("], ");
 		}

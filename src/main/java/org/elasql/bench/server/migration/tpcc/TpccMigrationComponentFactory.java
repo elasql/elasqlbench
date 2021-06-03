@@ -1,5 +1,8 @@
 package org.elasql.bench.server.migration.tpcc;
 
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants;
+import org.elasql.bench.server.metadata.migration.scaleout.TpccScaleoutAfterPartPlan;
+import org.elasql.bench.server.metadata.migration.scaleout.TpccScaleoutBeforePartPlan;
 import org.elasql.bench.server.migration.DummyKeyIterator;
 import org.elasql.bench.server.migration.SingleTableMigrationRange;
 import org.elasql.bench.server.migration.TableKeyIterator;
@@ -12,8 +15,15 @@ public class TpccMigrationComponentFactory extends MigrationComponentFactory {
 
 	@Override
 	public MigrationPlan newPredefinedMigrationPlan() {
-//		return new TpccPredefinedMigrationPlan();
-		// TODO
+		switch (ElasqlTpccConstants.PARTITION_STRATEGY) {
+		case MGCRAB_SCALING_OUT:
+			return new TpccMigrationPlan(new TpccScaleoutBeforePartPlan(),
+					new TpccScaleoutAfterPartPlan());
+		case MGCRAB_CONSOLIDATION:
+			// TODO
+		default:
+			// TODO
+		}
 		throw new UnsupportedOperationException("Unimplemented");
 	}
 	

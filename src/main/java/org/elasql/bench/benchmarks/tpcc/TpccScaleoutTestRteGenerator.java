@@ -19,6 +19,7 @@ public class TpccScaleoutTestRteGenerator implements TpccRteGenerator {
 	private static final int NUM_OF_NON_EMPTY_PARTS = 
 			TpccScaleoutBeforePartPlan.NUM_HOT_PARTS + TpccScaleoutBeforePartPlan.NUM_NORMAL_PARTS;
 	
+	// Debug
 	public static void main(String[] args) {
 		for (int nodeId = 0; nodeId < PartitionMetaMgr.NUM_PARTITIONS; nodeId++) {
 			TpccScaleoutTestRteGenerator gen = new TpccScaleoutTestRteGenerator(nodeId);
