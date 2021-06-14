@@ -28,7 +28,8 @@ import java.util.logging.Logger;
 
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.AllExecuteProcedure;
-import org.elasql.sql.RecordKey;
+import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
+import org.elasql.sql.PrimaryKey;
 import org.vanilladb.bench.benchmarks.tpce.data.TpceDataManager;
 import org.vanilladb.core.server.VanillaDb;
 import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
@@ -43,20 +44,19 @@ public class TpceTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 	}
 	
 	public TpceTestbedLoaderProc(long txNum) {
-		super(txNum, StoredProcedureParamHelper.DefaultParamHelper());
+		super(txNum, StoredProcedureParamHelper.newDefaultParamHelper());
 	}
 
 	@Override
-	protected void prepareKeys() {
+	protected void prepareKeys(ReadWriteSetAnalyzer analyzer) {
 		// do nothing
 		// XXX: We should lock those tables
 		// List<String> writeTables = Arrays.asList(paramHelper.getTables());
 		// localWriteTables.addAll(writeTables);
-
 	}
 	
 	@Override
-	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
+	protected void executeSql(Map<PrimaryKey, CachedRecord> readings) {
 		if (logger.isLoggable(Level.INFO))
 			logger.info("Start loading testbed...");
 
@@ -297,7 +297,7 @@ public class TpceTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 	}
 	
 	private void executeUpdate(String sql) {
-		int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+		int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 		if (result <= 0)
 			throw new RuntimeException();
 	}

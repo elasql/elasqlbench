@@ -22,8 +22,9 @@ import java.util.logging.Logger;
 import org.elasql.bench.benchmarks.micro.ElasqlMicrobenchConstants;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.AllExecuteProcedure;
+import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
 import org.elasql.server.Elasql;
-import org.elasql.sql.RecordKey;
+import org.elasql.sql.PrimaryKey;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.server.param.micro.TestbedLoaderParamHelper;
 import org.vanilladb.core.server.VanillaDb;
@@ -38,16 +39,15 @@ public class MicroTestbedLoaderProc extends AllExecuteProcedure<TestbedLoaderPar
 	}
 
 	@Override
-	protected void prepareKeys() {
+	protected void prepareKeys(ReadWriteSetAnalyzer analyzer) {
 		// do nothing
 		// XXX: We should lock those tables
 		// List<String> writeTables = Arrays.asList(paramHelper.getTables());
 		// localWriteTables.addAll(writeTables);
-
 	}
 	
 	@Override
-	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
+	protected void executeSql(Map<PrimaryKey, CachedRecord> readings) {
 		if (logger.isLoggable(Level.INFO))
 			logger.info("Start loading testbed...");
 
@@ -92,13 +92,13 @@ public class MicroTestbedLoaderProc extends AllExecuteProcedure<TestbedLoaderPar
 			logger.info("Create tables...");
 		
 		for (String cmd : paramHelper.getTableSchemas())
-			VanillaDb.newPlanner().executeUpdate(cmd, tx);
+			VanillaDb.newPlanner().executeUpdate(cmd, getTransaction());
 		
 		if (logger.isLoggable(Level.FINE))
 			logger.info("Create indexes...");
 
 		for (String cmd : paramHelper.getIndexSchemas())
-			VanillaDb.newPlanner().executeUpdate(cmd, tx);
+			VanillaDb.newPlanner().executeUpdate(cmd, getTransaction());
 		
 		if (logger.isLoggable(Level.FINE))
 			logger.info("Finish creating schemas.");
@@ -124,7 +124,7 @@ public class MicroTestbedLoaderProc extends AllExecuteProcedure<TestbedLoaderPar
 			sql = "INSERT INTO item(i_id, i_im_id, i_name, i_price, i_data) VALUES (" + iid + ", " + iimid + ", '"
 					+ iname + "', " + iprice + ", '" + idata + "' )";
 
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
 				throw new RuntimeException();
 		}

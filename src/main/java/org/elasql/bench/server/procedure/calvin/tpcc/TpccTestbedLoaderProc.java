@@ -19,11 +19,13 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
+import org.elasql.bench.server.metadata.TpccPartitionPlan;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.AllExecuteProcedure;
+import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
 import org.elasql.server.Elasql;
-import org.elasql.sql.RecordKey;
-import org.elasql.storage.metadata.PartitionMetaMgr;
+import org.elasql.sql.PrimaryKey;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
 import org.vanilladb.bench.util.DoublePlainPrinter;
@@ -39,22 +41,22 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 	private TpccValueGenerator rg = new TpccValueGenerator();
 
 	public TpccTestbedLoaderProc(long txNum) {
-		super(txNum, StoredProcedureParamHelper.DefaultParamHelper());
+		super(txNum, StoredProcedureParamHelper.newDefaultParamHelper());
 	}
 
 	@Override
-	protected void prepareKeys() {
+	protected void prepareKeys(ReadWriteSetAnalyzer analyzer) {
 		// do nothing
 		// XXX: We should lock those tables
 		// List<String> writeTables = Arrays.asList(paramHelper.getTables());
 		// localWriteTables.addAll(writeTables);
-
 	}
 
 	@Override
-	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
+	protected void executeSql(Map<PrimaryKey, CachedRecord> readings) {
+		TpccPartitionPlan partPlan = ElasqlTpccBenchmark.getPartitionPlan();
 		if (logger.isLoggable(Level.INFO))
-			logger.info("Start loading testbed...");
+			logger.info("Start loading testbed. Using partition plan: " + partPlan);
 
 		// turn off logging set value to speed up loading process
 		// TODO: remove this hack code in the future
@@ -64,12 +66,10 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 		generateItems(1, TpccConstants.NUM_ITEMS);
 
 		// Generate warehouse
-		int wPerPart = TpccConstants.NUM_WAREHOUSES / PartitionMetaMgr.NUM_PARTITIONS;
-		int startWid = Elasql.serverId() * wPerPart + 1;
-		int endWid = (Elasql.serverId() + 1) * wPerPart;
-
-		for (int wid = startWid; wid <= endWid; wid++)
-			generateWarehouseInstance(wid);
+		for (int wid = 1; wid <= partPlan.numOfWarehouses(); wid++) {
+			if (partPlan.getPartition(wid) == Elasql.serverId())
+				generateWarehouseInstance(wid);
+		}
 
 		if (logger.isLoggable(Level.INFO))
 			logger.info("Loading completed. Flush all loading data to disks...");
@@ -121,7 +121,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 			sql = "INSERT INTO item(i_id, i_im_id, i_name, i_price, i_data) VALUES (" + iid + ", " + iimid + ", '"
 					+ iname + "', " + DoublePlainPrinter.toPlainString(iprice) + ", '" + idata + "' )";
 
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
 				throw new RuntimeException();
 		}
@@ -176,7 +176,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 		sb.append("', '").append(wcity).append("', '").append(wstate);
 		sb.append("', '").append(wzip).append("', ").append(DoublePlainPrinter.toPlainString(wtax));
 		sb.append(", ").append(DoublePlainPrinter.toPlainString(wytd)).append(" )");
-		int result = VanillaDb.newPlanner().executeUpdate(sb.toString(), tx);
+		int result = VanillaDb.newPlanner().executeUpdate(sb.toString(), getTransaction());
 		if (result <= 0)
 			throw new RuntimeException();
 	}
@@ -210,7 +210,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 					+ "s_ytd, s_order_cnt, s_remote_cnt, s_data) VALUES (" + siid + ", " + swid + ", " + squantity
 					+ ", '" + sd1 + "', '" + sd2 + "', '" + sd3 + "', '" + sd4 + "', '" + sd5 + "', '" + sd6 + "', '"
 					+ sd7 + "', '" + sd8 + "', '" + sd9 + "', '" + sd10 + "', 0, 0, 0, '" + sdata + "')";
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
 				throw new RuntimeException();
 		}
@@ -238,7 +238,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 					+ "', '" + dst2 + "', '" + dcity + "', '" + dstate + "', '" + dzip + "', "
 					+ DoublePlainPrinter.toPlainString(dtax) + ", " + DoublePlainPrinter.toPlainString(dytd) + ", "
 					+ (TpccConstants.CUSTOMERS_PER_DISTRICT + 1) + ")";
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
 				throw new RuntimeException();
 		}
@@ -288,7 +288,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 					+ DoublePlainPrinter.toPlainString(cbal) + ", " + DoublePlainPrinter.toPlainString(cytdpay)
 					+ ", 1, 0, '" + cdata + "')";
 
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
 				throw new RuntimeException();
 		}
@@ -310,7 +310,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 					+ "h_d_id,h_w_id, h_date, h_amount, h_data ) VALUES (1, " + hcid + ", " + did + "," + wid + ","
 					+ did + "," + wid + "," + hdate + "," + DoublePlainPrinter.toPlainString(hamount) + ", '" + hdata
 					+ "')";
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
 				throw new RuntimeException();
 		}
@@ -329,13 +329,17 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 				ocarid = rg.number(TpccConstants.MIN_CARRIER_ID, TpccConstants.MAX_CARRIER_ID);
 			else
 				ocarid = TpccConstants.NULL_CARRIER_ID;
-			ol_cnt = rg.number(TpccConstants.MIN_OL_CNT, TpccConstants.MAX_OL_CNT);
+			// Note: We change ol_cnt to 10, instead of a random number in 5~15
+			// so that when we generate migration keys we will not have to scan the db
+			// to ensure how many order line there are for each order.
+//			ol_cnt = rg.number(TpccConstants.MIN_OL_CNT, TpccConstants.MAX_OL_CNT);
+			ol_cnt = 10;
 
 			String sql = "INSERT INTO ORDERS(o_id, o_c_id, o_d_id, "
 					+ "o_w_id, o_entry_d, o_carrier_id, o_ol_cnt, o_all_local) VALUES (" + oid + ", " + ocid + ", "
 					+ did + "," + wid + "," + oenrtyd + "," + ocarid + ", " + ol_cnt + ",1)";
 
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
 				throw new RuntimeException();
 
@@ -367,7 +371,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 					+ "," + warehouseId + "," + olnum + "," + oliid + ", " + warehouseId + ", " + oldeld + ", 5, "
 					+ DoublePlainPrinter.toPlainString(olamount) + ", '" + oldistinfo + "')";
 
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
 				throw new RuntimeException();
 		}
@@ -379,7 +383,7 @@ public class TpccTestbedLoaderProc extends AllExecuteProcedure<StoredProcedurePa
 			nooid = i;
 			String sql = "INSERT INTO new_order(no_o_id, no_d_id, no_w_id) VALUES (" + nooid + "," + did + "," + wid
 					+ ")";
-			int result = VanillaDb.newPlanner().executeUpdate(sql, tx);
+			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
 				throw new RuntimeException();
 		}

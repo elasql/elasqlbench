@@ -23,12 +23,12 @@ import java.util.Random;
 import org.elasql.bench.benchmarks.micro.ElasqlMicrobenchConstants;
 import org.elasql.bench.util.ElasqlBenchProperties;
 import org.elasql.storage.metadata.PartitionMetaMgr;
-import org.vanilladb.bench.benchmarks.micro.MicrobenchmarkTxnType;
+import org.vanilladb.bench.benchmarks.micro.MicrobenchTransactionType;
 import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
 import org.vanilladb.bench.rte.TxParamGenerator;
 import org.vanilladb.bench.util.RandomNonRepeatGenerator;
 
-public class ElasqlMicrobenchParamGen implements TxParamGenerator<MicrobenchmarkTxnType> {
+public class ElasqlMicrobenchParamGen implements TxParamGenerator<MicrobenchTransactionType> {
 	
 	// Transaaction Type
 	private static final double DIST_TX_RATE;
@@ -126,8 +126,8 @@ public class ElasqlMicrobenchParamGen implements TxParamGenerator<Microbenchmark
 	}
 
 	@Override
-	public MicrobenchmarkTxnType getTxnType() {
-		return MicrobenchmarkTxnType.MICRO_TXN;
+	public MicrobenchTransactionType getTxnType() {
+		return MicrobenchTransactionType.MICRO_TXN;
 	}
 
 	// a main application for debugging

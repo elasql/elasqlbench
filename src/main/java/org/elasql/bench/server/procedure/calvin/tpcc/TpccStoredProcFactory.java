@@ -15,8 +15,6 @@
  *******************************************************************************/
 package org.elasql.bench.server.procedure.calvin.tpcc;
 
-import org.elasql.bench.server.procedure.calvin.StartProfilingProc;
-import org.elasql.bench.server.procedure.calvin.StopProfilingProc;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.procedure.calvin.CalvinStoredProcedureFactory;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
@@ -33,11 +31,8 @@ public class TpccStoredProcFactory implements CalvinStoredProcedureFactory {
 		case TESTBED_LOADER:
 			sp = new TpccTestbedLoaderProc(txNum);
 			break;
-		case START_PROFILING:
-			sp = new StartProfilingProc(txNum);
-			break;
-		case STOP_PROFILING:
-			sp = new StopProfilingProc(txNum);
+		case CHECK_DATABASE:
+			sp = new TpccCheckDatabaseProc(txNum);
 			break;
 		case NEW_ORDER:
 			sp = new NewOrderProc(txNum);
@@ -46,7 +41,7 @@ public class TpccStoredProcFactory implements CalvinStoredProcedureFactory {
 			sp = new PaymentProc(txNum);
 			break;
 		default:
-			throw new UnsupportedOperationException("Procedure " + TpccTransactionType.fromProcedureId(pid) + " is not supported for now");
+			throw new UnsupportedOperationException("The benchmarker does not recognize procedure " + pid + "");
 		}
 		return sp;
 	}

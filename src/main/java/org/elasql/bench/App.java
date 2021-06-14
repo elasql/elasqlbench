@@ -15,22 +15,12 @@
  *******************************************************************************/
 package org.elasql.bench;
 
-import org.elasql.bench.benchmarks.micro.ElasqlMicroBenchmarker;
-import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmarker;
-import org.elasql.bench.benchmarks.tpce.ElasqlTpceBenchmarker;
-import org.elasql.bench.remote.sp.ElasqlSpDriver;
-import org.vanilladb.bench.Benchmarker;
-import org.vanilladb.bench.BenchmarkerParameters;
-import org.vanilladb.bench.remote.SutDriver;
-
 public class App {
 
 	private static int nodeId;
 	private static int action;
 	
 	public static void main(String[] args) {
-		Benchmarker benchmarker = null;
-		
 		try {
 			parseArguments(args);
 		} catch (IllegalArgumentException e) {
@@ -38,35 +28,13 @@ public class App {
 			System.out.println("Usage: ./app [Node Id] [Action]");
 		}
 		
-		// Create a driver for connection
-		SutDriver driver = null;
-		switch (BenchmarkerParameters.CONNECTION_MODE) {
-		case JDBC:
-			throw new UnsupportedOperationException("ElaSQL does not support JDBC");
-		case SP:
-			driver = new ElasqlSpDriver(nodeId);
-			break;
-		}
-		
-		// Create a benchmarker
-		switch (BenchmarkerParameters.BENCH_TYPE) {
-		case MICRO:
-			benchmarker = new ElasqlMicroBenchmarker(driver, nodeId);
-			break;
-		case TPCC:
-			benchmarker = new ElasqlTpccBenchmarker(driver, nodeId);
-			break;
-		case TPCE:
-			benchmarker = new ElasqlTpceBenchmarker(driver, nodeId);
-			break;
-		}
-		
+		ElasqlBench controller = new ElasqlBench(nodeId);
 		switch (action) {
 		case 1: // Load testbed
-			benchmarker.loadTestbed();
+			controller.loadTestbed();
 			break;
 		case 2: // Benchmarking
-			benchmarker.benchmark();
+			controller.benchmark();
 			break;
 		}
 	}
