@@ -20,11 +20,7 @@ You will need the following tools to compile and run this project:
 
 ## Getting Started
 
-TBA
-
-## System Configurations
-
-TBA
+Please check out our [Getting Started Guide](https://github.com/elasql/documentation/blob/master/doc/getting_started.pdf).
 
 ## Linking via Maven
 
@@ -42,6 +38,6 @@ If you have any question, you can either open an issue here or contact [elasql@d
 
 ## License
 
-Copyright 2016-2018 elasql.org contributors
+Copyright 2016-2021 elasql.org contributors
 
 Licensed under the [Apache License 2.0](LICENSE)
