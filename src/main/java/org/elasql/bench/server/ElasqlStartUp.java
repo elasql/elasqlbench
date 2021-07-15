@@ -42,8 +42,8 @@ public class ElasqlStartUp implements SutStartUp {
 	
 	private String dbName;
 	private int nodeId;
-	private boolean isSequencer;
 
+	@Override
 	public void startup(String[] args) {
 		if (logger.isLoggable(Level.INFO))
 			logger.info("initializing benchmarker server...");
@@ -52,10 +52,10 @@ public class ElasqlStartUp implements SutStartUp {
 			parseArguments(args);
 		} catch (IllegalArgumentException e) {
 			System.out.println("Error: " + e.getMessage());
-			System.out.println("Usage: ./startup [DB Name] [Node Id] ([Is Sequencer])");
+			System.out.println("Usage: ./startup [DB Name] [Node Id]");
 		}
 		
-		Elasql.init(dbName, nodeId, isSequencer, getStoredProcedureFactory(), getPartitionPlan(),
+		Elasql.init(dbName, nodeId, getStoredProcedureFactory(), getPartitionPlan(),
 				getMigrationComponentFactory());
 
 		if (logger.isLoggable(Level.INFO))
@@ -75,18 +75,6 @@ public class ElasqlStartUp implements SutStartUp {
 			nodeId = Integer.parseInt(args[1]);
 		} catch (NumberFormatException e) {
 			throw new IllegalArgumentException(String.format("'%s' is not a number", args[1]));
-		}
-		
-		// #3 Is sequencer ?
-		isSequencer = false;
-		if (args.length > 2) {
-			try {
-				int num = Integer.parseInt(args[2]);
-				if (num == 1)
-					isSequencer = true;
-			} catch (NumberFormatException e) {
-				throw new IllegalArgumentException(String.format("'%s' is not a number", args[2]));
-			}
 		}
 	}
 	
