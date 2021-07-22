@@ -13,8 +13,8 @@ import org.vanilladb.bench.util.RandomValueGenerator;
 
 /**
  * Parameter format: [1, read count, (read id array), write count,
- * (write id array), (write value array), insert count = 0]<br/>
- * <br/>
+ * (write id array), (write value array), insert count = 0]<br>
+ * <br>
  * Single-table does not support insertions.
  * 
  * @author yslin

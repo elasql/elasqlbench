@@ -124,8 +124,6 @@ public class TpccMigrationRange implements MigrationRange {
 	 * MigrationRangeUpdate is used by background pushes to update the migration
 	 * range in a single action. If we did not use this manner, it would require
 	 * to record which keys are migrated. This might create large memory overhead.
-	 * 
-	 * @return
 	 */
 	@Override
 	public MigrationRangeUpdate generateStatusUpdate() {
