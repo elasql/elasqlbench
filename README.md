@@ -28,7 +28,7 @@ Please check out our [Getting Started Guide](https://github.com/elasql/documenta
 <dependency>
   <groupId>org.elasql</groupId>
   <artifactId>bench</artifactId>
-  <version>0.2.1</version>
+  <version>0.2.2</version>
 </dependency>
 ```
 
