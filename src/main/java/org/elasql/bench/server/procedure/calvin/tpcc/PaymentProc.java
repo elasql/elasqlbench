@@ -1,19 +1,36 @@
+/*******************************************************************************
+ * Copyright 2016, 2018 elasql.org contributors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
 package org.elasql.bench.server.procedure.calvin.tpcc;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.elasql.bench.server.param.tpcc.PaymentProcParamHelper;
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
-import org.elasql.sql.RecordKey;
-import org.vanilladb.bench.tpcc.TpccConstants;
+import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
+import org.elasql.sql.PrimaryKey;
+import org.elasql.sql.PrimaryKeyBuilder;
+import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
+import org.vanilladb.bench.server.param.tpcc.PaymentProcParamHelper;
 import org.vanilladb.core.sql.BigIntConstant;
 import org.vanilladb.core.sql.Constant;
 import org.vanilladb.core.sql.DoubleConstant;
 import org.vanilladb.core.sql.IntegerConstant;
 import org.vanilladb.core.sql.VarcharConstant;
-
 
 public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 
@@ -21,19 +38,22 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 	// TODO: This should be another way to solve the problem
 	private static int[][][] historyIds;
 	static {
-		historyIds = new int[TpccConstants.NUM_WAREHOUSES][TpccConstants.DISTRICTS_PER_WAREHOUSE][TpccConstants.CUSTOMERS_PER_DISTRICT];
-		for (int i = 0; i < TpccConstants.NUM_WAREHOUSES; i++)
+		int warehouseCount = ElasqlTpccBenchmark.getNumOfWarehouses();
+		historyIds = new int[warehouseCount][TpccConstants.DISTRICTS_PER_WAREHOUSE][TpccConstants.CUSTOMERS_PER_DISTRICT];
+		for (int i = 0; i < warehouseCount; i++)
 			for (int j = 0; j < TpccConstants.DISTRICTS_PER_WAREHOUSE; j++)
 				for (int k = 0; k < TpccConstants.CUSTOMERS_PER_DISTRICT; k++)
 					historyIds[i][j][k] = 2;
 	}
 
 	/**
-	 * This method should be accessed by the thread of the scheduler.
+	 * Get the id for the next history record. Note that this method should be
+	 * accessed by the thread of the scheduler.
 	 * 
-	 * @param wid
-	 * @param did
-	 * @return
+	 * @param wid the warehouse id
+	 * @param did the district id
+	 * @param cid the customer id
+	 * @return the id for the next history record
 	 */
 	public static int getNextHistoryId(int wid, int did, int cid) {
 		return historyIds[wid - 1][did - 1][cid - 1];
@@ -44,77 +64,75 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 
 	}
 
-	private RecordKey warehouseKey, districtKey, customerKey;
-	private RecordKey historyKey;
+	private PrimaryKey warehouseKey, districtKey, customerKey;
+	private PrimaryKey historyKey;
 	// SQL Constants
-	Constant widCon, didCon, cwidCon, cdidCon, cidIntCon, hidCon;
+	Constant widCon, didCon, cwidCon, cdidCon, cidCon, hidCon;
 	private double Hamount;
 
 	@Override
-	protected void prepareKeys() {
-		Map<String, Constant> keyEntryMap = null;
-		widCon = new IntegerConstant(paramHelper.getWid());
-		didCon = new IntegerConstant(paramHelper.getDid());
-		cwidCon = new IntegerConstant(paramHelper.getCwid());
-		cdidCon = new IntegerConstant(paramHelper.getCdid());
-		Hamount = paramHelper.getHamount();
+	protected void prepareKeys(ReadWriteSetAnalyzer analyzer) {
+		PrimaryKeyBuilder builder;
 
 		// XXX: hard code the history id
-		int cwid = paramHelper.getWid();
+		int cwid = paramHelper.getCwid();
 		int cdid = paramHelper.getCdid();
 		int cid = paramHelper.getcid();
-		int fakeHid = historyIds[cwid - 1][cdid - 1][cid - 1];
-		historyIds[cwid - 1][cdid - 1][cid - 1] = fakeHid + 1;
-		hidCon = new IntegerConstant(fakeHid);
+		int hid = historyIds[cwid - 1][cdid - 1][cid - 1];
+		historyIds[cwid - 1][cdid - 1][cid - 1] = hid + 1;
+
+		widCon = new IntegerConstant(paramHelper.getWid());
+		didCon = new IntegerConstant(paramHelper.getDid());
+		cwidCon = new IntegerConstant(cwid);
+		cdidCon = new IntegerConstant(cdid);
+		cidCon = new IntegerConstant(cid);
+		hidCon = new IntegerConstant(hid);
+		Hamount = paramHelper.getHamount();
 
 		// SELECT ... FROM warehouse WHERE w_id = wid
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("w_id", widCon);
-		warehouseKey = new RecordKey("warehouse", keyEntryMap);
-		addReadKey(warehouseKey);
-		// UPDATE ... FROM warehous WHERE w_id = wid
-		addWriteKey(warehouseKey);
+		builder = new PrimaryKeyBuilder("warehouse");
+		builder.addFldVal("w_id", widCon);
+		warehouseKey = builder.build();
+		analyzer.addReadKey(warehouseKey);
+		// UPDATE ... FROM warehouse WHERE w_id = wid
+		analyzer.addUpdateKey(warehouseKey);
 
 		// SELECT ... FROM district WHERE d_w_id = wid AND d_id = did
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("d_w_id", widCon);
-		keyEntryMap.put("d_id", didCon);
-		districtKey = new RecordKey("district", keyEntryMap);
-		addReadKey(districtKey);
+		builder = new PrimaryKeyBuilder("district");
+		builder.addFldVal("d_w_id", widCon);
+		builder.addFldVal("d_id", didCon);
+		districtKey = builder.build();
+		analyzer.addReadKey(districtKey);
 
 		// UPDATE ... WHERE d_w_id = wid AND d_id = did
-		addWriteKey(districtKey);
-
-		cidIntCon = new IntegerConstant(paramHelper.getcid());
+		analyzer.addUpdateKey(districtKey);
 
 		// SELECT ... FROM customer WHERE c_w_id = cwid AND c_d_id = cdid
 		// AND c_id = cidInt
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("c_w_id", cwidCon);
-		keyEntryMap.put("c_d_id", cdidCon);
-		keyEntryMap.put("c_id", cidIntCon);
-		customerKey = new RecordKey("customer", keyEntryMap);
-		addReadKey(customerKey);
+		builder = new PrimaryKeyBuilder("customer");
+		builder.addFldVal("c_w_id", cwidCon);
+		builder.addFldVal("c_d_id", cdidCon);
+		builder.addFldVal("c_id", cidCon);
+		customerKey = builder.build();
+		analyzer.addReadKey(customerKey);
 
 		// UPDATE ... FROM customer WHERE c_w_id = cwid AND c_d_id = cdid
 		// AND c_id = cidInt
-		addWriteKey(customerKey);
+		analyzer.addUpdateKey(customerKey);
 
 		// INSERT INTO history INSERT INTO history h_id, h_c_id, h_c_d_id,
-		// h_c_w_id,
-		// h_d_id, h_w_id";
-		keyEntryMap = new HashMap<String, Constant>();
-		keyEntryMap.put("h_id", hidCon);
-		keyEntryMap.put("h_c_id", cidIntCon);
-		keyEntryMap.put("h_c_d_id", cdidCon);
-		keyEntryMap.put("h_c_w_id", cwidCon);
-		historyKey = new RecordKey("history", keyEntryMap);
-		addInsertKey(historyKey);
-
+		// h_c_w_id, h_d_id, h_w_id
+		builder = new PrimaryKeyBuilder("history");
+		builder.addFldVal("h_id", hidCon);
+		builder.addFldVal("h_c_id", cidCon);
+		builder.addFldVal("h_c_d_id", cdidCon);
+		builder.addFldVal("h_c_w_id", cwidCon);
+		historyKey = builder.build();
+		analyzer.addInsertKey(historyKey);
 	}
 
 	@Override
-	protected void executeSql(Map<RecordKey, CachedRecord> readings) {
+	protected void executeSql(Map<PrimaryKey, CachedRecord> readings) {
 		CachedRecord rec = null;
 		double wYtd;
 		String wName;
@@ -227,7 +245,7 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 		Map<String, Constant> fldVals = null;
 		fldVals = new HashMap<String, Constant>();
 		fldVals.put("h_id", hidCon);
-		fldVals.put("h_c_id", cidIntCon);
+		fldVals.put("h_c_id", cidCon);
 		fldVals.put("h_c_d_id", cdidCon);
 		fldVals.put("h_c_w_id", cwidCon);
 		fldVals.put("h_d_id", didCon);
