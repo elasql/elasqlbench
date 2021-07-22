@@ -32,7 +32,6 @@ import org.vanilladb.core.sql.DoubleConstant;
 import org.vanilladb.core.sql.IntegerConstant;
 import org.vanilladb.core.sql.VarcharConstant;
 
-
 public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 
 	// XXX: hard code the history id
@@ -48,11 +47,13 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 	}
 
 	/**
-	 * This method should be accessed by the thread of the scheduler.
+	 * Get the id for the next history record. Note that this method should be
+	 * accessed by the thread of the scheduler.
 	 * 
-	 * @param wid
-	 * @param did
-	 * @return
+	 * @param wid the warehouse id
+	 * @param did the district id
+	 * @param cid the customer id
+	 * @return the id for the next history record
 	 */
 	public static int getNextHistoryId(int wid, int did, int cid) {
 		return historyIds[wid - 1][did - 1][cid - 1];
@@ -72,14 +73,14 @@ public class PaymentProc extends CalvinStoredProcedure<PaymentProcParamHelper> {
 	@Override
 	protected void prepareKeys(ReadWriteSetAnalyzer analyzer) {
 		PrimaryKeyBuilder builder;
-		
+
 		// XXX: hard code the history id
 		int cwid = paramHelper.getCwid();
 		int cdid = paramHelper.getCdid();
 		int cid = paramHelper.getcid();
 		int hid = historyIds[cwid - 1][cdid - 1][cid - 1];
 		historyIds[cwid - 1][cdid - 1][cid - 1] = hid + 1;
-		
+
 		widCon = new IntegerConstant(paramHelper.getWid());
 		didCon = new IntegerConstant(paramHelper.getDid());
 		cwidCon = new IntegerConstant(cwid);
