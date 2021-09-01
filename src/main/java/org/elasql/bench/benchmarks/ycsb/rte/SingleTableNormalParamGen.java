@@ -38,14 +38,10 @@ public class SingleTableNormalParamGen implements TxParamGenerator<YcsbTransacti
 	private static final double REMOTE_RECORD_RATIO = ElasqlYcsbConstants.REMOTE_RECORD_RATIO;
 	
 	static {
-//		if (ElasqlYcsbConstants.USE_DYNAMIC_RECORD_COUNT)
-//			throw new RuntimeException(String.format("%s does not support dynamic record count",
-//					SingleTableNormalParamGen.class.getName()));
-		
+
 		GEN_TEMPLATE = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(ElasqlYcsbConstants.INIT_RECORD_PER_PART,
 						ElasqlYcsbConstants.ZIPFIAN_PARAMETER));
-		
 		
 		String recordStr = "";
 		if (USE_DYNAMIC_RECORD_COUNT) {
@@ -112,7 +108,7 @@ public class SingleTableNormalParamGen implements TxParamGenerator<YcsbTransacti
 		int localReadCount = (int) (recordCount * (1 - REMOTE_RECORD_RATIO));
 		
 		ArrayList<Long> ids = new ArrayList<Long>();
-		for (int i = 0; i < recordCount; i++) { // Modified:
+		for (int i = 0; i < recordCount; i++) {
 			int partId = mainPartId;
 			
 			// Choose a remote partition

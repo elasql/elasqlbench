@@ -106,7 +106,7 @@ public class ElasqlYcsbConstants {
 		DIST_TX_RATE = ElasqlBenchProperties.getLoader()
 				.getPropertyAsDouble(ElasqlYcsbConstants.class.getName() + ".DIST_TX_RATE", 0.5);
 		USE_DYNAMIC_RECORD_COUNT = ElasqlBenchProperties.getLoader()
-				.getPropertyAsBoolean(ElasqlYcsbConstants.class.getName() + ".USE_DYNAMIC_RECORD_COUNT", true);
+				.getPropertyAsBoolean(ElasqlYcsbConstants.class.getName() + ".USE_DYNAMIC_RECORD_COUNT", false);
 		ENABLE_HOTSPOT = ElasqlBenchProperties.getLoader()
 				.getPropertyAsBoolean(ElasqlYcsbConstants.class.getName() + ".ENABLE_HOTSPOT", false);
 		HOTSPOT_HOTNESS = ElasqlBenchProperties.getLoader()
