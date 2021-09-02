@@ -27,9 +27,6 @@ public class SingleTableNormalParamGen implements TxParamGenerator<YcsbTransacti
 	private static final double RW_TX_RATE = ElasqlYcsbConstants.RW_TX_RATE;
 	private static final double DIST_TX_RATE = ElasqlYcsbConstants.DIST_TX_RATE;
 	private static final int TOTAL_RECORD_COUNT = ElasqlYcsbConstants.TX_RECORD_COUNT;
-	private static final int REMOTE_RECORD_COUNT = (int) (ElasqlYcsbConstants.TX_RECORD_COUNT * 
-			ElasqlYcsbConstants.REMOTE_RECORD_RATIO);
-	
 	
 	private static final AtomicReference<YcsbLatestGenerator> GEN_TEMPLATE;
 	
@@ -48,8 +45,8 @@ public class SingleTableNormalParamGen implements TxParamGenerator<YcsbTransacti
 			recordStr = String.format("use dynamic record count with min: %d records/tx, range: %d, and remote record ratio: %f",
 					TOTAL_RECORD_COUNT, DYNAMIC_RECORD_COUNT_RANGE, REMOTE_RECORD_RATIO);
 		} else {
-			recordStr = String.format("%d records/tx, %d remote records/dist. tx",
-					TOTAL_RECORD_COUNT, REMOTE_RECORD_COUNT);
+			recordStr = String.format("%d records/tx, remote record ratio: %f",
+					TOTAL_RECORD_COUNT, REMOTE_RECORD_RATIO);
 		}
 		
 		if (logger.isLoggable(Level.INFO))
