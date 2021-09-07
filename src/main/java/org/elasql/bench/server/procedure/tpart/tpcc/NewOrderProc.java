@@ -308,4 +308,14 @@ public class NewOrderProc extends TPartStoredProcedure<NewOrderProcParamHelper> 
 	public double getWeight() {
 		return 6 + paramHelper.getOlCount() * 4;
 	}
+
+	@Override
+	public int getCacheWriteNum(){
+		return 1 + paramHelper.getOlCount();
+	}
+
+	@Override
+	public int getCacheInsertNum(){
+		return 2 + paramHelper.getOlCount();
+	}
 }

@@ -245,4 +245,14 @@ public class PaymentProc extends TPartStoredProcedure<PaymentProcParamHelper> {
 	public double getWeight() {
 		return 7;
 	}
+
+	@Override
+	public int getCacheWriteNum(){
+		return 3;
+	}
+
+	@Override
+	public int getCacheInsertNum(){
+		return 1;
+	}
 }

@@ -84,4 +84,14 @@ public class TpartYcsbProc extends TPartStoredProcedure<ElasqlYcsbProcParamHelpe
 				paramHelper.getInsertCount();
 	}
 
+	@Override
+	public int getCacheWriteNum(){
+		return writeKeys.length;
+	}
+
+	@Override
+	public int getCacheInsertNum(){
+		return paramHelper.getInsertCount();
+	}
+
 }

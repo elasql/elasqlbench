@@ -72,4 +72,14 @@ public class MicroTxnProc extends TPartStoredProcedure<MicroTxnProcParamHelper> 
 	public double getWeight() {
 		return paramHelper.getWriteCount() + paramHelper.getReadCount();
 	}
+
+	@Override
+	public int getCacheWriteNum(){
+		return paramHelper.getWriteCount();
+	}
+
+	@Override
+	public int getCacheInsertNum(){
+		return 0;
+	}
 }
