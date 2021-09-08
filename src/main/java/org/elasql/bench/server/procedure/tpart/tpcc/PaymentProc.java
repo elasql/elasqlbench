@@ -245,4 +245,10 @@ public class PaymentProc extends TPartStoredProcedure<PaymentProcParamHelper> {
 	public double getWeight() {
 		return 7;
 	}
+
+	// MODIFIED: Count the number of the arithmetic operations 
+	@Override
+	public int getArithNum(){
+		return 5;
+	}
 }

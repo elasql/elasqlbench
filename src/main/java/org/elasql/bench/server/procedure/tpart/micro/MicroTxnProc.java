@@ -72,4 +72,10 @@ public class MicroTxnProc extends TPartStoredProcedure<MicroTxnProcParamHelper> 
 	public double getWeight() {
 		return paramHelper.getWriteCount() + paramHelper.getReadCount();
 	}
+
+	// MODIFIED: Count the number of the arithmetic operations 
+	@Override
+	public int getArithNum(){
+		return 0;
+	}
 }

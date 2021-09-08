@@ -308,4 +308,10 @@ public class NewOrderProc extends TPartStoredProcedure<NewOrderProcParamHelper> 
 	public double getWeight() {
 		return 6 + paramHelper.getOlCount() * 4;
 	}
+
+	// MODIFIED: Count the number of the arithmetic operations 
+	@Override
+	public int getArithNum(){
+		return 1 + 12 * paramHelper.getOlCount();
+	}
 }

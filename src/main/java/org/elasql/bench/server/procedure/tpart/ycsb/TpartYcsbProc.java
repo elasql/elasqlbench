@@ -84,4 +84,9 @@ public class TpartYcsbProc extends TPartStoredProcedure<ElasqlYcsbProcParamHelpe
 				paramHelper.getInsertCount();
 	}
 
+	// MODIFIED: Count the number of the arithmetic operations 
+	@Override
+	public int getArithNum(){
+		return 0;
+	}
 }
