@@ -34,4 +34,14 @@ public class StopProfilingProc extends TPartStoredProcedure<StoredProcedureParam
 	public double getWeight() {
 		return 0;
 	}
+	
+	@Override
+	public int getCacheWriteNum(){
+		return 0;
+	}
+
+	@Override
+	public int getCacheInsertNum(){
+		return 0;
+	}
 }

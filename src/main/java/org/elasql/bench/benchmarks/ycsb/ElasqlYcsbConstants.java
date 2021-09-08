@@ -47,6 +47,7 @@ public class ElasqlYcsbConstants {
 	// Dynamic record count
 	public static final int RECORD_COUNT_MEAN;
 	public static final int RECORD_COUNT_STD;
+	public static final int DYNAMIC_RECORD_COUNT_RANGE;
 	
 	// Zipfian
 	public static final double ZIPFIAN_PARAMETER;
@@ -132,6 +133,8 @@ public class ElasqlYcsbConstants {
 				.getPropertyAsInteger(ElasqlYcsbConstants.class.getName() + ".HOT_COUNT_PER_PART", 1);
 		HOT_UPDATE_RATE_IN_RW_TX = ElasqlBenchProperties.getLoader()
 				.getPropertyAsDouble(ElasqlYcsbConstants.class.getName() + ".HOT_UPDATE_RATE_IN_RW_TX", 0.1);
+		DYNAMIC_RECORD_COUNT_RANGE = ElasqlBenchProperties.getLoader()
+				.getPropertyAsInteger(ElasqlYcsbConstants.class.getName() + ".DYNAMIC_RECORD_COUNT_RANGE", 5);
 	}
 	
 	public static double[][] loadGoogleWorkloadTrace(int numberOfPartitions) {

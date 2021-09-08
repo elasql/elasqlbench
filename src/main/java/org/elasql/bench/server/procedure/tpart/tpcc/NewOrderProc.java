@@ -314,4 +314,14 @@ public class NewOrderProc extends TPartStoredProcedure<NewOrderProcParamHelper> 
 	public int getArithNum(){
 		return 1 + 12 * paramHelper.getOlCount();
 	}
+	
+	@Override
+	public int getCacheWriteNum(){
+		return 1 + paramHelper.getOlCount();
+	}
+
+	@Override
+	public int getCacheInsertNum(){
+		return 2 + paramHelper.getOlCount();
+	}
 }

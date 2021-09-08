@@ -78,4 +78,14 @@ public class MicroTxnProc extends TPartStoredProcedure<MicroTxnProcParamHelper> 
 	public int getArithNum(){
 		return 0;
 	}
+
+	@Override
+	public int getCacheWriteNum(){
+		return paramHelper.getWriteCount();
+	}
+
+	@Override
+	public int getCacheInsertNum(){
+		return 0;
+	}
 }

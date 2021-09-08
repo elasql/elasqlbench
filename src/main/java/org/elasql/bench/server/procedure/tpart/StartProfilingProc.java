@@ -34,5 +34,15 @@ public class StartProfilingProc extends TPartStoredProcedure<StoredProcedurePara
 	public double getWeight() {
 		return 0;
 	}
+
+	@Override
+	public int getCacheWriteNum(){
+		return 0;
+	}
+
+	@Override
+	public int getCacheInsertNum(){
+		return 0;
+	}
 }
 
