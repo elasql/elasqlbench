@@ -91,6 +91,7 @@ public class ElasqlStartUp implements SutStartUp {
 		case HERMES:
 		case G_STORE:
 		case LEAP:
+		case HERMES_CONTROL:
 			factory = getTPartSpFactory();
 			break;
 		}
