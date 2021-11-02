@@ -41,7 +41,7 @@ public class MicroTxnProc extends TPartStoredProcedure<MicroTxnProcParamHelper> 
 			newPrice = paramHelper.getNewItemPrice(idx);
 
 			PrimaryKey key = new PrimaryKey("item", "i_id", new IntegerConstant(iid));
-			addWriteKey(key);
+			addUpdateKey(key);
 
 			// Create key-value pairs for writing
 			Constant c = new DoubleConstant(newPrice);

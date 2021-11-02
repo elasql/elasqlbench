@@ -91,7 +91,7 @@ public class NewOrderProc extends TPartStoredProcedure<NewOrderProcParamHelper> 
 		addReadKey(districtKey);
 
 		// UPDATE ... WHERE d_w_id = wid AND d_id = did
-		addWriteKey(districtKey);
+		addUpdateKey(districtKey);
 
 		// SELECT ... WHERE c_w_id = wid AND c_d_id = did AND c_id = cid
 		builder = new PrimaryKeyBuilder("customer");
@@ -147,7 +147,7 @@ public class NewOrderProc extends TPartStoredProcedure<NewOrderProcParamHelper> 
 			addReadKey(orderLineKeys[i][1]);
 
 			// UPDATE ... WHERE s_i_id = olIId AND s_w_id = olSupplyWId
-			addWriteKey(orderLineKeys[i][1]);
+			addUpdateKey(orderLineKeys[i][1]);
 
 			// INSERT INTO order_line (ol_o_id, ol_w_id, ol_d_id, ol_number,
 			// ...)

@@ -79,7 +79,7 @@ public class PaymentProc extends TPartStoredProcedure<PaymentProcParamHelper> {
 		warehouseKey = builder.build();
 		addReadKey(warehouseKey);
 		// UPDATE ... FROM warehous WHERE w_id = wid
-		addWriteKey(warehouseKey);
+		addUpdateKey(warehouseKey);
 
 		// SELECT ... FROM district WHERE d_w_id = wid AND d_id = did
 		builder = new PrimaryKeyBuilder("district");
@@ -89,7 +89,7 @@ public class PaymentProc extends TPartStoredProcedure<PaymentProcParamHelper> {
 		addReadKey(districtKey);
 
 		// UPDATE ... WHERE d_w_id = wid AND d_id = did
-		addWriteKey(districtKey);
+		addUpdateKey(districtKey);
 
 		// SELECT ... FROM customer WHERE c_w_id = cwid AND c_d_id = cdid
 		// AND c_id = cidInt
@@ -102,7 +102,7 @@ public class PaymentProc extends TPartStoredProcedure<PaymentProcParamHelper> {
 
 		// UPDATE ... FROM customer WHERE c_w_id = cwid AND c_d_id = cdid
 		// AND c_id = cidInt
-		addWriteKey(customerKey);
+		addUpdateKey(customerKey);
 
 		// INSERT INTO history INSERT INTO history h_id, h_c_id, h_c_d_id,
 		// h_c_w_id,

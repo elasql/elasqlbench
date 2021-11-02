@@ -38,7 +38,7 @@ public class TpartYcsbProc extends TPartStoredProcedure<ElasqlYcsbProcParamHelpe
 			// create record key for writing
 			PrimaryKey key = paramHelper.getWriteKey(i);
 			writeKeys[i] = key;
-			addWriteKey(key);
+			addUpdateKey(key);
 			
 			// Create key-value pairs for writing
 			Constant c = new VarcharConstant(paramHelper.getWriteValue(i));
