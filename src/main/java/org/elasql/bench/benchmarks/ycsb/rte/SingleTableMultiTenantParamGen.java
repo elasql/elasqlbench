@@ -41,7 +41,7 @@ public class SingleTableMultiTenantParamGen implements TxParamGenerator<YcsbTran
 	private static final AtomicReference<YcsbLatestGenerator> GEN_TEMPLATE;
 	
 	// To delay replaying the workload (in milliseconds)
-	private static final long DELAY_START_TIME = 120_000;
+	private static final long DELAY_START_TIME = 60_000;
 	private static final AtomicLong GLOBAL_START_TIME = new AtomicLong(0);
 	
 	private static boolean reporterEnabled = false;
