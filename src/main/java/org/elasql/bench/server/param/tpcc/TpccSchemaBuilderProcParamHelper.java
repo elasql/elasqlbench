@@ -20,7 +20,6 @@ import org.vanilladb.core.sql.storedprocedure.SpResultRecord;
 import org.vanilladb.core.sql.storedprocedure.StoredProcedureParamHelper;
 
 public class TpccSchemaBuilderProcParamHelper extends StoredProcedureParamHelper {
-
 	private final String TPCC_TABLES_DDL[] = {
 			"CREATE TABLE warehouse ( w_id INT, w_name VARCHAR(10), "
 					+ "w_street_1 VARCHAR(20), w_street_2 VARCHAR(20), w_city VARCHAR(20), "
@@ -61,13 +60,17 @@ public class TpccSchemaBuilderProcParamHelper extends StoredProcedureParamHelper
 //			"CREATE INDEX idx_customer ON customer (c_id)",
 			"CREATE INDEX idx_customer ON customer (c_w_id, c_d_id, c_id)",
 //			"CREATE INDEX idx_history ON history (h_c_id)",
-			"CREATE INDEX idx_history ON history (h_c_w_id, h_c_d_id, h_c_id, h_id)",
+			// TPCC won't read history
+//			"CREATE INDEX idx_history ON history (h_c_w_id, h_c_d_id, h_c_id, h_id)",
 //			"CREATE INDEX idx_order ON orders (o_id)",
-			"CREATE INDEX idx_order ON orders (o_w_id, o_d_id, o_id)",
+			// TPCC won't read orders 
+//			"CREATE INDEX idx_order ON orders (o_w_id, o_d_id, o_id)",
 //			"CREATE INDEX idx_new_order ON new_order (no_o_id)",
-			"CREATE INDEX idx_new_order ON new_order (no_w_id, no_d_id, no_o_id)",
+			// TPCC won't read new_order
+//			"CREATE INDEX idx_new_order ON new_order (no_w_id, no_d_id, no_o_id)",
 //			"CREATE INDEX idx_order_line ON order_line (ol_o_id)",
-			"CREATE INDEX idx_order_line ON order_line (ol_w_id, ol_d_id, ol_o_id, ol_number)",
+			// TPCC won't read order_line
+//			"CREATE INDEX idx_order_line ON order_line (ol_w_id, ol_d_id, ol_o_id, ol_number)",
 //			"CREATE INDEX idx_stock ON stock (s_i_id)",
 			"CREATE INDEX idx_stock ON stock (s_w_id, s_i_id)",
 			"CREATE INDEX idx_item ON item (i_id)" };
