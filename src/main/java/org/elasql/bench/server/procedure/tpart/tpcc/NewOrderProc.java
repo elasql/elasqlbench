@@ -78,27 +78,20 @@ public class NewOrderProc extends TPartStoredProcedure<NewOrderProcParamHelper> 
 		// =================== Keys for steps 1 ===================
 
 		// SELECT ... FROM warehouse WHERE w_id = wid
-		builder = new PrimaryKeyBuilder("warehouse");
-		builder.addFldVal("w_id", widCon);
-		warehouseKey = builder.build();
+		warehouseKey = PrimaryKeyCache.getWarehouseKey(paramHelper.getWid());
 		addReadKey(warehouseKey);
 
 		// SELECT ... FROM district WHERE d_w_id = wid AND d_id = did
-		builder = new PrimaryKeyBuilder("district");
-		builder.addFldVal("d_w_id", widCon);
-		builder.addFldVal("d_id", didCon);
-		districtKey = builder.build();
+		districtKey = PrimaryKeyCache.getDistrictKey(paramHelper.getWid(),
+				paramHelper.getDid());
 		addReadKey(districtKey);
 
 		// UPDATE ... WHERE d_w_id = wid AND d_id = did
 		addUpdateKey(districtKey);
 
 		// SELECT ... WHERE c_w_id = wid AND c_d_id = did AND c_id = cid
-		builder = new PrimaryKeyBuilder("customer");
-		builder.addFldVal("c_w_id", widCon);
-		builder.addFldVal("c_d_id", didCon);
-		builder.addFldVal("c_id", cidCon);
-		customerKey = builder.build();
+		customerKey = PrimaryKeyCache.getCustomerKey(paramHelper.getWid(),
+				paramHelper.getDid(), paramHelper.getCid());
 		addReadKey(customerKey);
 
 		// INSERT INTO orders (o_id, o_w_id, o_d_id, ...) VALUES (nextOId, wid,
@@ -133,9 +126,7 @@ public class NewOrderProc extends TPartStoredProcedure<NewOrderProcParamHelper> 
 			Constant olNumCon = new IntegerConstant(i + 1);
 
 			// SELECT ... FROM item WHERE i_id = olIId
-			builder = new PrimaryKeyBuilder("item");
-			builder.addFldVal("i_id", olIIdCon);
-			orderLineKeys[i][0] = builder.build();
+			orderLineKeys[i][0] = PrimaryKeyCache.getItemKey(olIId);
 			addReadKey(orderLineKeys[i][0]);
 
 			// SELECT ... FROM stock WHERE s_i_id = olIId AND s_w_id =

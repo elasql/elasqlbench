@@ -74,18 +74,14 @@ public class PaymentProc extends TPartStoredProcedure<PaymentProcParamHelper> {
 		Hamount = paramHelper.getHamount();
 
 		// SELECT ... FROM warehouse WHERE w_id = wid
-		builder = new PrimaryKeyBuilder("warehouse");
-		builder.addFldVal("w_id", widCon);
-		warehouseKey = builder.build();
+		warehouseKey = PrimaryKeyCache.getWarehouseKey(paramHelper.getWid());
 		addReadKey(warehouseKey);
 		// UPDATE ... FROM warehous WHERE w_id = wid
 		addUpdateKey(warehouseKey);
 
 		// SELECT ... FROM district WHERE d_w_id = wid AND d_id = did
-		builder = new PrimaryKeyBuilder("district");
-		builder.addFldVal("d_w_id", widCon);
-		builder.addFldVal("d_id", didCon);
-		districtKey = builder.build();
+		districtKey = PrimaryKeyCache.getDistrictKey(paramHelper.getWid(),
+				paramHelper.getDid());
 		addReadKey(districtKey);
 
 		// UPDATE ... WHERE d_w_id = wid AND d_id = did
@@ -93,11 +89,7 @@ public class PaymentProc extends TPartStoredProcedure<PaymentProcParamHelper> {
 
 		// SELECT ... FROM customer WHERE c_w_id = cwid AND c_d_id = cdid
 		// AND c_id = cidInt
-		builder = new PrimaryKeyBuilder("customer");
-		builder.addFldVal("c_w_id", cwidCon);
-		builder.addFldVal("c_d_id", cdidCon);
-		builder.addFldVal("c_id", cidCon);
-		customerKey = builder.build();
+		customerKey = PrimaryKeyCache.getCustomerKey(cwid, cdid, cid);
 		addReadKey(customerKey);
 
 		// UPDATE ... FROM customer WHERE c_w_id = cwid AND c_d_id = cdid
