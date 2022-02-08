@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
 import org.elasql.bench.benchmarks.ycsb.ElasqlYcsbConstants;
 import org.elasql.bench.server.metadata.MicroBenchPartitionPlan;
+import org.elasql.bench.server.metadata.ReconBenchPartitionPlan;
 import org.elasql.bench.server.metadata.TpcePartitionPlan;
 import org.elasql.bench.server.metadata.YcsbSingleTablePartitionPlan;
 import org.elasql.bench.server.migration.tpcc.TpccMigrationComponentFactory;
@@ -108,6 +109,8 @@ public class ElasqlStartUp implements SutStartUp {
 			throw new UnsupportedOperationException("No TPC-E for now");
 		case YCSB:
 			throw new UnsupportedOperationException("Not implemented for YCSB");
+		case RECON:
+			throw new UnsupportedOperationException("No Recon for now");
 		}
 		return factory;
 	}
@@ -135,6 +138,11 @@ public class ElasqlStartUp implements SutStartUp {
 				logger.info("using YCSB stored procedures for Calvin");
 			factory = new org.elasql.bench.server.procedure.calvin.ycsb.CalvinYcsbStoredProcFactory();
 			break;
+		case RECON:
+			if (logger.isLoggable(Level.INFO))
+				logger.info("using Recon stored procedures for Calvin");
+			factory = new org.elasql.bench.server.procedure.calvin.recon.ReconbenchStoredProcFactory();
+			break;
 		}
 		factory = new BasicCalvinSpFactory(factory);
 		return factory;
@@ -160,6 +168,8 @@ public class ElasqlStartUp implements SutStartUp {
 				logger.info("using YCSB stored procedures for T-Part");
 			factory = new org.elasql.bench.server.procedure.tpart.ycsb.TpartYcsbStoredProcFactory();
 			break;
+		case RECON:
+			throw new UnsupportedOperationException("No Recon");
 		}
 		return factory;
 	}
@@ -186,6 +196,9 @@ public class ElasqlStartUp implements SutStartUp {
 			default:
 				throw new RuntimeException("You should not be here");
 			}
+		case RECON:
+			partPlan = new ReconBenchPartitionPlan();
+			break;
 		}
 		return partPlan;
 	}
@@ -195,13 +208,19 @@ public class ElasqlStartUp implements SutStartUp {
 		switch (BenchmarkerParameters.BENCH_TYPE) {
 		case MICRO:
 			comFactory = new DummyMigrationComponentFactory("No implementation for migration on the micro benchmarks");
+			break;
 		case TPCC:
 			comFactory = new TpccMigrationComponentFactory();
 			break;
 		case TPCE:
 			comFactory = new DummyMigrationComponentFactory("No implementation for migration on the TPC-E benchmarks");
+			break;
 		case YCSB:
 			comFactory = new DummyMigrationComponentFactory("No implementation for migration on the YCSB benchmarks");
+			break;
+		case RECON:
+			comFactory = new DummyMigrationComponentFactory("No implementation for migration on the RECON benchmarks");
+			break;
 		}
 		return comFactory;
 	}

@@ -8,6 +8,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.elasql.bench.benchmarks.micro.ElasqlMicroBenchmark;
+import org.elasql.bench.benchmarks.recon.ElasqlReconBenchmark;
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
 import org.elasql.bench.benchmarks.tpce.ElasqlTpceBenchmark;
 import org.elasql.bench.benchmarks.ycsb.ElasqlYcsbBenchmark;
@@ -185,6 +186,8 @@ public class ElasqlBench implements DirectMessageListener {
 			return new ElasqlTpceBenchmark(nodeId);
 		case YCSB:
 			return new ElasqlYcsbBenchmark(nodeId);
+		case RECON:
+			return new ElasqlReconBenchmark();
 		}
 		return null;
 	}
