@@ -19,12 +19,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.elasql.bench.benchmarks.micro.rte.ElasqlMicrobenchParamGen;
 import org.elasql.bench.benchmarks.recon.ElasqlReconbenchConstants;
 import org.elasql.bench.util.ElasqlBenchProperties;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.benchmarks.recon.ReconbenchTransactionType;
-import org.vanilladb.bench.benchmarks.recon.rte.ReconbenchmarkParamGen;
 import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
 import org.vanilladb.bench.rte.TxParamGenerator;
 import org.vanilladb.bench.util.BenchProperties;
@@ -66,28 +64,28 @@ public abstract class ElasqlReconbenchParamGen implements TxParamGenerator<Recon
 
 	static {
 		DIST_TX_RATE = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlMicrobenchParamGen.class.getName() + ".DIST_TX_RATE", 0.0);
+				.getPropertyAsDouble(ElasqlReconbenchParamGen.class.getName() + ".DIST_TX_RATE", 0.0);
 		RW_TX_RATE = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlMicrobenchParamGen.class.getName() + ".RW_TX_RATE", 0.0);
+				.getPropertyAsDouble(ElasqlReconbenchParamGen.class.getName() + ".RW_TX_RATE", 0.0);
 		SKEW_TX_RATE = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlMicrobenchParamGen.class.getName() + ".SKEW_TX_RATE", 0.0);
+				.getPropertyAsDouble(ElasqlReconbenchParamGen.class.getName() + ".SKEW_TX_RATE", 0.0);
 		LONG_READ_TX_RATE = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlMicrobenchParamGen.class.getName() + ".LONG_READ_TX_RATE", 0.0);
+				.getPropertyAsDouble(ElasqlReconbenchParamGen.class.getName() + ".LONG_READ_TX_RATE", 0.0);
 		
 		TOTAL_READ_COUNT = ElasqlBenchProperties.getLoader()
-				.getPropertyAsInteger(ElasqlMicrobenchParamGen.class.getName() + ".TOTAL_READ_COUNT", 10);
+				.getPropertyAsInteger(ElasqlReconbenchParamGen.class.getName() + ".TOTAL_READ_COUNT", 10);
 		LOCAL_HOT_COUNT = ElasqlBenchProperties.getLoader()
-				.getPropertyAsInteger(ElasqlMicrobenchParamGen.class.getName() + ".LOCAL_HOT_COUNT", 1);
+				.getPropertyAsInteger(ElasqlReconbenchParamGen.class.getName() + ".LOCAL_HOT_COUNT", 1);
 		REMOTE_HOT_COUNT = ElasqlBenchProperties.getLoader()
-				.getPropertyAsInteger(ElasqlMicrobenchParamGen.class.getName() + ".REMOTE_HOT_COUNT", 0);
+				.getPropertyAsInteger(ElasqlReconbenchParamGen.class.getName() + ".REMOTE_HOT_COUNT", 0);
 		REMOTE_COLD_COUNT = ElasqlBenchProperties.getLoader()
-				.getPropertyAsInteger(ElasqlMicrobenchParamGen.class.getName() + ".REMOTE_COLD_COUNT", 5);
+				.getPropertyAsInteger(ElasqlReconbenchParamGen.class.getName() + ".REMOTE_COLD_COUNT", 5);
 		WRITE_RATIO_IN_RW_TX = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlMicrobenchParamGen.class.getName() + ".WRITE_RATIO_IN_RW_TX", 0.5);
+				.getPropertyAsDouble(ElasqlReconbenchParamGen.class.getName() + ".WRITE_RATIO_IN_RW_TX", 0.5);
 		HOT_CONFLICT_RATE = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlMicrobenchParamGen.class.getName() + ".HOT_CONFLICT_RATE", 0.01);
+				.getPropertyAsDouble(ElasqlReconbenchParamGen.class.getName() + ".HOT_CONFLICT_RATE", 0.01);
 		SKEW_PERCENTAGE = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlMicrobenchParamGen.class.getName() + ".SKEW_PERCENTAGE", 0.2);
+				.getPropertyAsDouble(ElasqlReconbenchParamGen.class.getName() + ".SKEW_PERCENTAGE", 0.2);
 		
 		DATA_SIZE_PER_PART = ElasqlReconbenchConstants.NUM_ITEMS_PER_NODE;
 		HOT_DATA_SIZE_PER_PART = (int) (1.0 / HOT_CONFLICT_RATE);

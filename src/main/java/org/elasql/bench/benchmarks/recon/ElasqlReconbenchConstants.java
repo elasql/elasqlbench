@@ -15,7 +15,6 @@
  *******************************************************************************/
 package org.elasql.bench.benchmarks.recon;
 
-import org.elasql.bench.benchmarks.micro.ElasqlMicrobenchConstants;
 import org.elasql.bench.util.ElasqlBenchProperties;
 
 public class ElasqlReconbenchConstants {
@@ -24,7 +23,7 @@ public class ElasqlReconbenchConstants {
 	
 	static {
 		NUM_ITEMS_PER_NODE = ElasqlBenchProperties.getLoader().getPropertyAsInteger(
-				ElasqlMicrobenchConstants.class.getName() + ".NUM_ITEMS_PER_NODE", 100000);
+				ElasqlReconbenchConstants.class.getName() + ".NUM_ITEMS_PER_NODE", 100000);
 	}
 
 }
