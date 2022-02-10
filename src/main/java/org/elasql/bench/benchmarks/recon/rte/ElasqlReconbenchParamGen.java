@@ -60,7 +60,7 @@ public abstract class ElasqlReconbenchParamGen implements TxParamGenerator<Recon
 	private static final int RANDOM_SWAP_FACTOR = 20;
 
 	// Index Update
-	private static final int INDEX_UPDATE_COUNT;
+	protected static final int INDEX_UPDATE_COUNT;
 
 	static {
 		DIST_TX_RATE = ElasqlBenchProperties.getLoader()

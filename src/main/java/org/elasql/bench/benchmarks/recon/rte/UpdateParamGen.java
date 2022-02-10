@@ -37,9 +37,9 @@ public class UpdateParamGen extends ElasqlReconbenchParamGen {
 		int mainPartition = 0;
 		mainPartition = rvg.number(0, NUM_PARTITIONS - 1);
 		
-		// Choose 2 local hot records for swap
-		chooseHotData(paramList, mainPartition, localHotCount);
-		chooseHotData(paramList, mainPartition, localHotCount);
+		// Choose local hot records for swap
+		for (int i = 0; i < INDEX_UPDATE_COUNT; i++)
+			chooseHotData(paramList, mainPartition, localHotCount);
 		
 		return paramList.toArray(new Object[0]);
 	}
