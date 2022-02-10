@@ -54,17 +54,17 @@ public class UpdateTxnProc extends CalvinStoredProcedure<UpdateTxProcParamHelper
 
 	@Override
 	protected void executeSql(Map<PrimaryKey, CachedRecord> readings) {
-		// SELECT i_id FROM ref WHERE r_id = ...
+		// SELECT r_iid FROM ref WHERE r_id = ...
 		int idx = 0;
 		for (CachedRecord rec : readings.values()) {
-			paramHelper.setRefIid((int) rec.getVal("i_id").asJavaVal(), idx++);
+			paramHelper.setRefIid((int) rec.getVal("r_iid").asJavaVal(), idx++);
 		}
 		
-		// UPDATE ref SET i_id = ... WHERE r_id = ...
+		// UPDATE ref SET r_iid = ... WHERE r_id = ...
 		idx = 0;
 		for (PrimaryKey key : writeKeyList) {
 			CachedRecord rec = readings.get(key);
-			rec.setVal("i_id", new IntegerConstant(paramHelper.getNewRefIid(idx++)));
+			rec.setVal("r_iid", new IntegerConstant(paramHelper.getNewRefIid(idx++)));
 			update(key, rec);
 		}
 	}

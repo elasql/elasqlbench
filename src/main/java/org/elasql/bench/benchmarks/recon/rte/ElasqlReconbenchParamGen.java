@@ -270,8 +270,8 @@ public abstract class ElasqlReconbenchParamGen implements TxParamGenerator<Recon
 		RandomNonRepeatGenerator rg = new RandomNonRepeatGenerator(HOT_DATA_SIZE_PER_PART);
 		for (int i = 0; i < count; i++) {
 			int tmp = rg.next(); // 1 ~ size
-			int itemId = minMainPart + tmp;
-			paramList.add(itemId);
+			int choosenId = minMainPart + tmp;
+			paramList.add(choosenId);
 		}
 
 	}
@@ -281,8 +281,8 @@ public abstract class ElasqlReconbenchParamGen implements TxParamGenerator<Recon
 		RandomNonRepeatGenerator rg = new RandomNonRepeatGenerator(COLD_DATA_SIZE_PER_PART);
 		for (int i = 0; i < count; i++) {
 			int tmp = rg.next(); // 1 ~ size
-			int itemId = minMainPartColdData + tmp;
-			paramList.add(itemId);
+			int choosenId = minMainPartColdData + tmp;
+			paramList.add(choosenId);
 		}
 	
 	}

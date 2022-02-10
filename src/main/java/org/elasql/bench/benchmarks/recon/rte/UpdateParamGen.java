@@ -31,15 +31,13 @@ public class UpdateParamGen extends ElasqlReconbenchParamGen {
 	public Object[] generateParameter() {
 		TpccValueGenerator rvg = new TpccValueGenerator();
 		ArrayList<Object> paramList = new ArrayList<Object>();
-		paramList.add(getIndexUpdateCount());
+		paramList.add(INDEX_UPDATE_COUNT);
 		
-		int localHotCount = LOCAL_HOT_COUNT;
 		int mainPartition = 0;
 		mainPartition = rvg.number(0, NUM_PARTITIONS - 1);
 		
 		// Choose local hot records for swap
-		for (int i = 0; i < INDEX_UPDATE_COUNT; i++)
-			chooseHotData(paramList, mainPartition, localHotCount);
+		chooseHotData(paramList, mainPartition, INDEX_UPDATE_COUNT);
 		
 		return paramList.toArray(new Object[0]);
 	}

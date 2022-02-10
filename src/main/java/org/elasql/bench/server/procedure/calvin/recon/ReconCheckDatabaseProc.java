@@ -79,7 +79,7 @@ public class ReconCheckDatabaseProc extends AllExecute2pcProcedure<StoredProcedu
 	
 	private boolean checkRefTable(int startRId, int endRId) {
 		if (logger.isLoggable(Level.FINE))
-			logger.fine("Checking refs from r_id=" + startRId + " to i_id=" + endRId);
+			logger.fine("Checking refs from r_id=" + startRId + " to r_iid=" + endRId);
 		
 		// Use a bit array to record existence
 		int total = endRId - startRId + 1;

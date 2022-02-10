@@ -56,12 +56,12 @@ public class ReconTxnProc extends CalvinStoredProcedure<BenchReconTxnProcParamHe
 
 	@Override
 	protected void executeSql(Map<PrimaryKey, CachedRecord> readings) {
-		// SELECT i_id FROM ref WHERE r_id = ...
+		// SELECT r_iid FROM ref WHERE r_id = ...
 		int idx = 0;
 		for (CachedRecord rec : readings.values()) {
 			if (paramHelper.getWriteCount() > 0 && idx == 0)
-				paramHelper.setWriteItemId((int) rec.getVal("i_id").asJavaVal(), idx);
-			paramHelper.setReadItemId((int) rec.getVal("i_id").asJavaVal(), idx++);
+				paramHelper.setWriteItemId((int) rec.getVal("r_iid").asJavaVal(), idx);
+			paramHelper.setReadItemId((int) rec.getVal("r_iid").asJavaVal(), idx++);
 		}
 	}
 }

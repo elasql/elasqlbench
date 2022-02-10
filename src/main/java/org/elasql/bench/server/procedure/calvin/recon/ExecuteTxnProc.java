@@ -97,13 +97,13 @@ public class ExecuteTxnProc extends CalvinStoredProcedure<BenchExecuteTxnProcPar
 
 	@Override
 	protected void executeSql(Map<PrimaryKey, CachedRecord> readings) {
-		// SELECT i_id FROM ref WHERE r_id = ...
+		// SELECT r_iid FROM ref WHERE r_id = ...
 		// Is the record changed ?
 		int idx = 0;
 		for(PrimaryKey refKey : refKeys) {
-			int iid = (int) readings.get(refKey).getVal("i_id").asJavaVal();
-			if (iid != paramHelper.getReadItemId(idx)) {
-				paramHelper.setReadItemId(iid, idx);
+			int riid = (int) readings.get(refKey).getVal("r_iid").asJavaVal();
+			if (riid != paramHelper.getReadItemId(idx)) {
+				paramHelper.setReadItemId(riid, idx);
 				// abort : cause this tx has not write anything, so nothing should be undo.
 				// send new tx
 				finished = false;

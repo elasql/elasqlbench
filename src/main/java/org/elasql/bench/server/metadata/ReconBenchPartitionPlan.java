@@ -1,6 +1,6 @@
 package org.elasql.bench.server.metadata;
 
-import org.elasql.bench.benchmarks.micro.ElasqlMicrobenchConstants;
+import org.elasql.bench.benchmarks.recon.ElasqlReconbenchConstants;
 import org.elasql.server.Elasql;
 import org.elasql.sql.PartitioningKey;
 import org.elasql.sql.PrimaryKey;
@@ -28,7 +28,7 @@ public class ReconBenchPartitionPlan extends PartitionPlan {
 	}
 	
 	public boolean isFullyReplicated(PrimaryKey key) {
-		if (key.getVal("i_id") != null) {
+		if (key.getVal("r_id") != null) {
 			return false;
 		} else if (key.getVal("i_id") != null) {
 			return false;
@@ -37,14 +37,14 @@ public class ReconBenchPartitionPlan extends PartitionPlan {
 		}
 	}
 	
-	public int getPartition(int iid) {
-		return (iid - 1) / ElasqlMicrobenchConstants.NUM_ITEMS_PER_NODE;
+	public int getPartition(int id) {
+		return (id - 1) / ElasqlReconbenchConstants.NUM_ITEMS_PER_NODE;
 	}
 	
 	public int getPartition(PrimaryKey key) {
-		Integer iid = getItemId(key);
-		if (iid != null) {
-			return getPartition(iid);
+		Integer id = getItemId(key);
+		if (id != null) {
+			return getPartition(id);
 		} else {
 			// Fully replicated
 			return Elasql.serverId();

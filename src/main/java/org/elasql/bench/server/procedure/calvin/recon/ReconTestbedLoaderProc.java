@@ -138,15 +138,15 @@ public class ReconTestbedLoaderProc extends AllExecuteProcedure<ReconSchemaBuild
 		if (logger.isLoggable(Level.FINE))
 			logger.info("Start populating ref from r_id=" + startRId + " to r_id=" + endRId);
 
-		int rid, iid;
+		int rid, riid;
 		String sql;
 		
 		for (int i = startRId; i <= endRId; i++) {
 			rid = i;
-			iid = i;
+			riid = i;
 
 			// Deterministic value generation by item id
-			sql = "INSERT INTO ref(r_id, i_id) VALUES (" + rid + ", " + iid + " )";
+			sql = "INSERT INTO ref(r_id, r_iid) VALUES (" + rid + ", " + riid + " )";
 //			System.out.println(sql);
 			int result = VanillaDb.newPlanner().executeUpdate(sql, getTransaction());
 			if (result <= 0)
