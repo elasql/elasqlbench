@@ -50,9 +50,8 @@ public class ReconTxnProc extends CalvinStoredProcedure<BenchReconTxnProcParamHe
 	
 	@Override
 	public void afterCommit() {
-		Object[] params = new Object[] {getClientId(), getConnectionId(), txNum,  paramHelper.generateParameter()};
-		Elasql.connectionMgr().sendStoredProcedureCall(false, 
-				ReconbenchStoredProcFactory.EXECUTE, params);
+		Elasql.connectionMgr().sendStoredProcedureCall(false, getClientId(), getConnectionId(), txNum,
+				ReconbenchStoredProcFactory.EXECUTE, paramHelper.generateParameter());
 	}
 
 	@Override
