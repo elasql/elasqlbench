@@ -1,9 +1,6 @@
 package org.elasql.bench.benchmarks.tpcc;
 
 import org.elasql.bench.util.ElasqlBenchProperties;
-import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
-import org.vanilladb.bench.benchmarks.tpcc.rte.TpccTxExecutor;
-import org.vanilladb.bench.util.BenchProperties;
 
 public class ElasqlTpccParameters {
 
@@ -24,22 +21,22 @@ public class ElasqlTpccParameters {
 	public static final int WAREHOUSE_PER_PART;
 	
 	static {
-		ENABLE_THINK_AND_KEYING_TIME = BenchProperties.getLoader()
-				.getPropertyAsBoolean(TpccTxExecutor.class.getName() +
+		ENABLE_THINK_AND_KEYING_TIME = ElasqlBenchProperties.getLoader()
+				.getPropertyAsBoolean(ElasqlTpccParameters.class.getName() +
 						".ENABLE_THINK_AND_KEYING_TIME", false);
 		
-		FREQUENCY_TOTAL = BenchProperties.getLoader().getPropertyAsInteger(
-				TpccConstants.class.getName() + ".FREQUENCY_TOTAL", 100);
-		FREQUENCY_NEW_ORDER = BenchProperties.getLoader().getPropertyAsInteger(
-				TpccConstants.class.getName() + ".FREQUENCY_NEW_ORDER", 45);
-		FREQUENCY_PAYMENT = BenchProperties.getLoader().getPropertyAsInteger(
-				TpccConstants.class.getName() + ".FREQUENCY_PAYMENT", 43);
-		FREQUENCY_ORDER_STATUS = BenchProperties.getLoader().getPropertyAsInteger(
-				TpccConstants.class.getName() + ".FREQUENCY_ORDER_STATUS", 4);
-		FREQUENCY_DELIVERY = BenchProperties.getLoader().getPropertyAsInteger(
-				TpccConstants.class.getName() + ".FREQUENCY_DELIVERY", 4);
-		FREQUENCY_STOCK_LEVEL = BenchProperties.getLoader().getPropertyAsInteger(
-				TpccConstants.class.getName() + ".FREQUENCY_STOCK_LEVEL", 4);
+		FREQUENCY_TOTAL = ElasqlBenchProperties.getLoader().getPropertyAsInteger(
+				ElasqlTpccParameters.class.getName() + ".FREQUENCY_TOTAL", 100);
+		FREQUENCY_NEW_ORDER = ElasqlBenchProperties.getLoader().getPropertyAsInteger(
+				ElasqlTpccParameters.class.getName() + ".FREQUENCY_NEW_ORDER", 45);
+		FREQUENCY_PAYMENT = ElasqlBenchProperties.getLoader().getPropertyAsInteger(
+				ElasqlTpccParameters.class.getName() + ".FREQUENCY_PAYMENT", 43);
+		FREQUENCY_ORDER_STATUS = ElasqlBenchProperties.getLoader().getPropertyAsInteger(
+				ElasqlTpccParameters.class.getName() + ".FREQUENCY_ORDER_STATUS", 4);
+		FREQUENCY_DELIVERY = ElasqlBenchProperties.getLoader().getPropertyAsInteger(
+				ElasqlTpccParameters.class.getName() + ".FREQUENCY_DELIVERY", 4);
+		FREQUENCY_STOCK_LEVEL = ElasqlBenchProperties.getLoader().getPropertyAsInteger(
+				ElasqlTpccParameters.class.getName() + ".FREQUENCY_STOCK_LEVEL", 4);
 		
 		int strategy = ElasqlBenchProperties.getLoader().getPropertyAsInteger(
 				ElasqlTpccParameters.class.getName() + ".PARTITION_STRATEGY", 1);
