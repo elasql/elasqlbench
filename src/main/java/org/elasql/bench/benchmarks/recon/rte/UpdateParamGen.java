@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import org.elasql.bench.benchmarks.recon.ReconbenchTransactionType;
 import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
 
-public class UpdateParamGen extends ElasqlReconbenchParamGen {
+public class UpdateParamGen extends ReconbenchParamGen {
 	
 	@Override
 	public ReconbenchTransactionType getTxnType() {

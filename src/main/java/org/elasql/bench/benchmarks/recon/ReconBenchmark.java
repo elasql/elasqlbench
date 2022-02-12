@@ -26,7 +26,7 @@ import org.vanilladb.bench.remote.SutConnection;
 import org.vanilladb.bench.remote.SutResultSet;
 import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 
-public class ElasqlReconBenchmark extends Benchmark {
+public class ReconBenchmark extends Benchmark {
 
 	@Override
 	public Set<BenchTransactionType> getBenchmarkingTxTypes() {

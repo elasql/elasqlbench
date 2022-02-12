@@ -23,9 +23,9 @@ import org.vanilladb.bench.remote.SutConnection;
 import org.vanilladb.bench.rte.TransactionExecutor;
 import org.vanilladb.bench.rte.jdbc.JdbcExecutor;
 
-public class ElasqlReconbenchTxExecutor extends TransactionExecutor<ReconbenchTransactionType> {
+public class ReconbenchTxExecutor extends TransactionExecutor<ReconbenchTransactionType> {
 		
-	public ElasqlReconbenchTxExecutor(ElasqlReconbenchParamGen pg) {
+	public ReconbenchTxExecutor(ReconbenchParamGen pg) {
 		this.pg = pg;
 	}
 

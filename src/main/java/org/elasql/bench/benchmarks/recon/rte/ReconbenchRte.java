@@ -26,9 +26,9 @@ import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 import org.vanilladb.bench.rte.TransactionExecutor;
 import org.vanilladb.bench.util.BenchProperties;
 
-public class ElasqlReconbenchRte extends RemoteTerminalEmulator<ReconbenchTransactionType> {
+public class ReconbenchRte extends RemoteTerminalEmulator<ReconbenchTransactionType> {
 	
-	private Map<BenchTransactionType, ElasqlReconbenchTxExecutor> executors;
+	private Map<BenchTransactionType, ReconbenchTxExecutor> executors;
 	private long priviousTime = 0l;
 	
 	// Index Update Frequency
@@ -37,16 +37,16 @@ public class ElasqlReconbenchRte extends RemoteTerminalEmulator<ReconbenchTransa
 	
 	static {
 		UPDATE_TIME_PER_SECOND = BenchProperties.getLoader()
-				.getPropertyAsInteger(ElasqlReconbenchRte.class.getName() + ".INDEX_UPDATE_RATE", 1);
+				.getPropertyAsInteger(ReconbenchRte.class.getName() + ".INDEX_UPDATE_RATE", 1);
 		UPDATE_PERIOD = 1000 / UPDATE_TIME_PER_SECOND;
 	}
 	
-	public ElasqlReconbenchRte(SutConnection conn, StatisticMgr statMgr, long rteSleepTime) {
+	public ReconbenchRte(SutConnection conn, StatisticMgr statMgr, long rteSleepTime) {
 		super(conn, statMgr, rteSleepTime);
-		executors = new HashMap<BenchTransactionType, ElasqlReconbenchTxExecutor>();
-		executors.put(ReconbenchTransactionType.RECON, new ElasqlReconbenchTxExecutor(new ReconParamGen()));
-		executors.put(ReconbenchTransactionType.EXECUTE, new ElasqlReconbenchTxExecutor(new ExecuteParamGen()));
-		executors.put(ReconbenchTransactionType.UPDATE, new ElasqlReconbenchTxExecutor(new UpdateParamGen()));
+		executors = new HashMap<BenchTransactionType, ReconbenchTxExecutor>();
+		executors.put(ReconbenchTransactionType.RECON, new ReconbenchTxExecutor(new ReconParamGen()));
+		executors.put(ReconbenchTransactionType.EXECUTE, new ReconbenchTxExecutor(new ExecuteParamGen()));
+		executors.put(ReconbenchTransactionType.UPDATE, new ReconbenchTxExecutor(new UpdateParamGen()));
 	}
 	
 	protected ReconbenchTransactionType getNextTxType() {

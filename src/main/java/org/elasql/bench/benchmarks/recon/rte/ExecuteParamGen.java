@@ -17,7 +17,7 @@ package org.elasql.bench.benchmarks.recon.rte;
 
 import org.elasql.bench.benchmarks.recon.ReconbenchTransactionType;
 
-public class ExecuteParamGen extends ElasqlReconbenchParamGen {
+public class ExecuteParamGen extends ReconbenchParamGen {
 	
 	@Override
 	public ReconbenchTransactionType getTxnType() {
