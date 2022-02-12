@@ -29,7 +29,7 @@ public class ElasqlTpccBenchmark extends TpccBenchmark {
 	private static final TpccPartitionPlan partPlan;
 			
 	static {
-		switch (ElasqlTpccConstants.PARTITION_STRATEGY) {
+		switch (ElasqlTpccParameters.PARTITION_STRATEGY) {
 		case MGCRAB_SCALING_OUT:
 			partPlan = new TpccScaleoutBeforePartPlan();
 			break;
@@ -53,7 +53,7 @@ public class ElasqlTpccBenchmark extends TpccBenchmark {
 	private TpccRteGenerator rteGenerator;
 	
 	public ElasqlTpccBenchmark(int nodeId) {
-		switch (ElasqlTpccConstants.PARTITION_STRATEGY) {
+		switch (ElasqlTpccParameters.PARTITION_STRATEGY) {
 		case MGCRAB_SCALING_OUT:
 			rteGenerator = new TpccScaleoutTestRteGenerator(nodeId);
 			break;

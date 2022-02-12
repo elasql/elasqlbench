@@ -34,7 +34,7 @@ private static Logger logger = Logger.getLogger(TpccStandardRteGenerator.class.g
 	private int rtesTargetHotspot = 0;
 	
 	public TpccStandardRteGenerator(int nodeId) {
-		this.startWid = nodeId * ElasqlTpccConstants.WAREHOUSE_PER_PART + 1;
+		this.startWid = nodeId * ElasqlTpccParameters.WAREHOUSE_PER_PART + 1;
 		this.nodeId = nodeId;
 		
 		if (HOT_RTE_END_ID > 0 && logger.isLoggable(Level.INFO))
@@ -82,7 +82,7 @@ private static Logger logger = Logger.getLogger(TpccStandardRteGenerator.class.g
 		
 		// Find the next id
 		nextWidOffset++;
-		if (nextWidOffset >= ElasqlTpccConstants.WAREHOUSE_PER_PART) {
+		if (nextWidOffset >= ElasqlTpccParameters.WAREHOUSE_PER_PART) {
 			nextWidOffset = 0;
 			nextDid++;
 			if (nextDid > TpccConstants.DISTRICTS_PER_WAREHOUSE) {
