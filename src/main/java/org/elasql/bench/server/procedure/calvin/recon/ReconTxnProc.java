@@ -17,12 +17,12 @@ package org.elasql.bench.server.procedure.calvin.recon;
 
 import java.util.Map;
 
+import org.elasql.bench.server.param.recon.BenchReconTxnProcParamHelper;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
 import org.elasql.server.Elasql;
 import org.elasql.sql.PrimaryKey;
-import org.vanilladb.bench.server.param.recon.BenchReconTxnProcParamHelper;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class ReconTxnProc extends CalvinStoredProcedure<BenchReconTxnProcParamHelper> {

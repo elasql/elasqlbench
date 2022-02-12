@@ -15,9 +15,9 @@
  *******************************************************************************/
 package org.elasql.bench.server.procedure.calvin.recon;
 
+import org.elasql.bench.benchmarks.recon.ReconbenchTransactionType;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.procedure.calvin.CalvinStoredProcedureFactory;
-import org.vanilladb.bench.benchmarks.recon.ReconbenchTransactionType;
 
 public class ReconbenchStoredProcFactory implements CalvinStoredProcedureFactory {
 	

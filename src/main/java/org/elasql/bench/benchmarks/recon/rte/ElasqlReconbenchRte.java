@@ -18,10 +18,9 @@ package org.elasql.bench.benchmarks.recon.rte;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.elasql.bench.benchmarks.recon.ReconbenchTransactionType;
 import org.vanilladb.bench.BenchTransactionType;
-import org.vanilladb.bench.BenchmarkerParameters;
 import org.vanilladb.bench.StatisticMgr;
-import org.vanilladb.bench.benchmarks.recon.ReconbenchTransactionType;
 import org.vanilladb.bench.remote.SutConnection;
 import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 import org.vanilladb.bench.rte.TransactionExecutor;
@@ -42,8 +41,8 @@ public class ElasqlReconbenchRte extends RemoteTerminalEmulator<ReconbenchTransa
 		UPDATE_PERIOD = 1000 / UPDATE_TIME_PER_SECOND;
 	}
 	
-	public ElasqlReconbenchRte(SutConnection conn, StatisticMgr statMgr) {
-		super(conn, statMgr);
+	public ElasqlReconbenchRte(SutConnection conn, StatisticMgr statMgr, long rteSleepTime) {
+		super(conn, statMgr, rteSleepTime);
 		executors = new HashMap<BenchTransactionType, ElasqlReconbenchTxExecutor>();
 		executors.put(ReconbenchTransactionType.RECON, new ElasqlReconbenchTxExecutor(new ReconParamGen()));
 		executors.put(ReconbenchTransactionType.EXECUTE, new ElasqlReconbenchTxExecutor(new ExecuteParamGen()));
@@ -75,14 +74,7 @@ public class ElasqlReconbenchRte extends RemoteTerminalEmulator<ReconbenchTransa
 			}
 			priviousTime = System.currentTimeMillis();
 		} else {
-			if (BenchmarkerParameters.RTE_SLEEP_TIME > 0) {
-				try {
-					Thread.sleep(BenchmarkerParameters.RTE_SLEEP_TIME);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-					throw new RuntimeException(e);
-				}
-			}
+			super.sleep();
 		}
 	}
 

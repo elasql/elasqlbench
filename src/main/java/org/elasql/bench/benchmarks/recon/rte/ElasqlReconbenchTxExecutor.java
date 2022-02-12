@@ -15,9 +15,10 @@
  *******************************************************************************/
 package org.elasql.bench.benchmarks.recon.rte;
 
+import org.elasql.bench.ElasqlBenchParameters;
+import org.elasql.bench.benchmarks.recon.ReconbenchTransactionType;
 import org.elasql.bench.remote.sp.ElasqlBenchSpResultSet;
 import org.vanilladb.bench.TxnResultSet;
-import org.vanilladb.bench.benchmarks.recon.ReconbenchTransactionType;
 import org.vanilladb.bench.remote.SutConnection;
 import org.vanilladb.bench.rte.TransactionExecutor;
 import org.vanilladb.bench.rte.jdbc.JdbcExecutor;
@@ -44,7 +45,7 @@ public class ElasqlReconbenchTxExecutor extends TransactionExecutor<ReconbenchTr
 			txnRT = txnEndTime - txnRT;
 			
 			// display output
-			if (TransactionExecutor.DISPLAY_RESULT)
+			if (ElasqlBenchParameters.SHOW_TXN_RESPONSE_ON_CONSOLE)
 				System.out.println(pg.getTxnType() + " " + result.outputMsg());
 
 			return new TxnResultSet(pg.getTxnType(), txnRT, txnEndTime,

@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.Random;
 
 import org.elasql.bench.benchmarks.recon.ElasqlReconbenchConstants;
+import org.elasql.bench.benchmarks.recon.ReconbenchTransactionType;
 import org.elasql.bench.util.ElasqlBenchProperties;
 import org.elasql.storage.metadata.PartitionMetaMgr;
-import org.vanilladb.bench.benchmarks.recon.ReconbenchTransactionType;
 import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
 import org.vanilladb.bench.rte.TxParamGenerator;
 import org.vanilladb.bench.util.BenchProperties;

@@ -15,17 +15,50 @@
  *******************************************************************************/
 package org.elasql.bench.benchmarks.recon;
 
-import org.elasql.bench.benchmarks.recon.rte.ElasqlReconbenchRte;
+import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.vanilladb.bench.BenchTransactionType;
+import org.vanilladb.bench.Benchmark;
 import org.vanilladb.bench.StatisticMgr;
-import org.vanilladb.bench.benchmarks.recon.ReconBenchmark;
-import org.vanilladb.bench.benchmarks.recon.ReconbenchTransactionType;
 import org.vanilladb.bench.remote.SutConnection;
+import org.vanilladb.bench.remote.SutResultSet;
 import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 
-public class ElasqlReconBenchmark extends ReconBenchmark {
-	
+public class ElasqlReconBenchmark extends Benchmark {
+
 	@Override
-	public RemoteTerminalEmulator<ReconbenchTransactionType> createRte(SutConnection conn, StatisticMgr statMgr) {
-		return new ElasqlReconbenchRte(conn, statMgr);
+	public Set<BenchTransactionType> getBenchmarkingTxTypes() {
+		Set<BenchTransactionType> txTypes = new HashSet<BenchTransactionType>();
+		for (ReconbenchTransactionType txType : ReconbenchTransactionType.values()) {
+			if (txType.isBenchmarkingProcedure())
+				txTypes.add(txType);
+		}
+		return txTypes;
+	}
+
+	@Override
+	public void executeLoadingProcedure(SutConnection conn) throws SQLException {
+		conn.callStoredProc(ReconbenchTransactionType.TESTBED_LOADER.getProcedureId(), new Object[] {});
+	}
+
+	@Override
+	public RemoteTerminalEmulator<?> createRte(SutConnection conn, StatisticMgr statMgr, long rteSleepTime) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean executeDatabaseCheckProcedure(SutConnection conn) throws SQLException {
+		SutResultSet result = null;
+		ReconbenchTransactionType txnType = ReconbenchTransactionType.CHECK_DATABASE;
+		result = conn.callStoredProc(txnType.getProcedureId(), new Object[] {});
+		return result.isCommitted();
+	}
+
+	@Override
+	public String getBenchmarkName() {
+		return "reconbench";
 	}
 }
