@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 
 import org.elasql.bench.benchmarks.tpcc.rte.ElasqlTpccRte;
 import org.elasql.bench.util.ElasqlBenchProperties;
-import org.vanilladb.bench.BenchmarkerParameters;
+import org.elasql.bench.ElasqlBenchParameters;
 import org.vanilladb.bench.StatisticMgr;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
@@ -23,7 +23,7 @@ private static Logger logger = Logger.getLogger(TpccStandardRteGenerator.class.g
 	static {
 		SKEW_RATIO = ElasqlBenchProperties.getLoader().getPropertyAsDouble(
 				TpccStandardRteGenerator.class.getName() + ".SKEW_RATIO", 0.0);
-		HOT_RTE_END_ID = (int) (BenchmarkerParameters.NUM_RTES * SKEW_RATIO);
+		HOT_RTE_END_ID = (int) (ElasqlBenchParameters.NUM_RTES * SKEW_RATIO);
 	}
 	
 	private int nodeId;
@@ -43,11 +43,12 @@ private static Logger logger = Logger.getLogger(TpccStandardRteGenerator.class.g
 	
 	@Override
 	public int getNumOfRTEs() {
-		return BenchmarkerParameters.NUM_RTES;
+		return ElasqlBenchParameters.NUM_RTES;
 	}
 
 	@Override
-	public RemoteTerminalEmulator<TpccTransactionType> createRte(SutConnection conn, StatisticMgr statMgr) {
+	public RemoteTerminalEmulator<TpccTransactionType> createRte(SutConnection conn, StatisticMgr statMgr,
+			long rteSleepTime) {
 		RemoteTerminalEmulator<TpccTransactionType> rte;
 		
 		// Hotspot workloads
@@ -58,25 +59,26 @@ private static Logger logger = Logger.getLogger(TpccStandardRteGenerator.class.g
 		// - Client X (X != 0) pins its first Y RTEs to warehouse X of server 0.
 		// - Y decides how hot server 0 is.
 		if (nodeId == 0) {
-			rte = selectNormally(conn, statMgr);
+			rte = selectNormally(conn, statMgr, rteSleepTime);
 		} else {
 			if (rtesTargetHotspot < HOT_RTE_END_ID) { // Y
-				rte = selectHotspot(conn, statMgr, nodeId % HOTSPOT_WAREHOUSE_COUNT + 1);
+				rte = selectHotspot(conn, statMgr, rteSleepTime, nodeId % HOTSPOT_WAREHOUSE_COUNT + 1);
 				rtesTargetHotspot++;
 				if (rtesTargetHotspot == HOT_RTE_END_ID) {
 					nextDid = 1;
 				}
 			} else {
-				rte = selectNormally(conn, statMgr);
+				rte = selectNormally(conn, statMgr, rteSleepTime);
 			}
 		}
 		
 		return rte;
 	}
 	
-	private RemoteTerminalEmulator<TpccTransactionType> selectNormally(SutConnection conn, StatisticMgr statMgr) {
+	private RemoteTerminalEmulator<TpccTransactionType> selectNormally(SutConnection conn, StatisticMgr statMgr,
+			long rteSleepTime) {
 		RemoteTerminalEmulator<TpccTransactionType> rte =
-				new ElasqlTpccRte(conn, statMgr, startWid + nextWidOffset, nextDid);
+				new ElasqlTpccRte(conn, statMgr, rteSleepTime, startWid + nextWidOffset, nextDid);
 		
 		// Find the next id
 		nextWidOffset++;
@@ -91,9 +93,10 @@ private static Logger logger = Logger.getLogger(TpccStandardRteGenerator.class.g
 		return rte;
 	}
 	
-	private RemoteTerminalEmulator<TpccTransactionType> selectHotspot(SutConnection conn, StatisticMgr statMgr, int hotspotWarehouse) {
+	private RemoteTerminalEmulator<TpccTransactionType> selectHotspot(SutConnection conn, StatisticMgr statMgr,
+			long rteSleepTime, int hotspotWarehouse) {
 		RemoteTerminalEmulator<TpccTransactionType> rte =
-				new ElasqlTpccRte(conn, statMgr, hotspotWarehouse, nextDid);
+				new ElasqlTpccRte(conn, statMgr, rteSleepTime, hotspotWarehouse, nextDid);
 		
 		// Find the next id
 		nextDid++;

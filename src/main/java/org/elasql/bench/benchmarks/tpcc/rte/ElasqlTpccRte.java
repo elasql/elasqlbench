@@ -35,8 +35,9 @@ public class ElasqlTpccRte extends RemoteTerminalEmulator<TpccTransactionType> {
 	private static Random txnTypeRandom;
 	private Map<TpccTransactionType, ElasqlTpccTxExecutor> executors;
 
-	public ElasqlTpccRte(SutConnection conn, StatisticMgr statMgr, int homeWarehouseId, int homeDistrictId) {
-		super(conn, statMgr);
+	public ElasqlTpccRte(SutConnection conn, StatisticMgr statMgr, long sleepTime,
+			int homeWarehouseId, int homeDistrictId) {
+		super(conn, statMgr, sleepTime);
 		
 		if (logger.isLoggable(Level.FINE))
 			logger.fine(String.format("TPCC RTE for warehouse %d, district %d is created.",

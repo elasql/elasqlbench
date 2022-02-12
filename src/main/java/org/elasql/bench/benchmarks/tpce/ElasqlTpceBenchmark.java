@@ -32,7 +32,8 @@ public class ElasqlTpceBenchmark extends TpceBenchmark {
 	}
 	
 	@Override
-	public RemoteTerminalEmulator<TpceTransactionType> createRte(SutConnection conn, StatisticMgr statMgr) {
-		return new TpceRte(conn, statMgr, dataMgr);
+	public RemoteTerminalEmulator<TpceTransactionType> createRte(SutConnection conn, StatisticMgr statMgr,
+			long rteSleepTime) {
+		return new TpceRte(conn, statMgr, rteSleepTime, dataMgr);
 	}
 }

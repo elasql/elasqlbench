@@ -72,7 +72,8 @@ public class ElasqlTpccBenchmark extends TpccBenchmark {
 	}
 	
 	@Override
-	public RemoteTerminalEmulator<TpccTransactionType> createRte(SutConnection conn, StatisticMgr statMgr) {
-		return rteGenerator.createRte(conn, statMgr);
+	public RemoteTerminalEmulator<TpccTransactionType> createRte(SutConnection conn, StatisticMgr statMgr,
+			long rteSleepTime) {
+		return rteGenerator.createRte(conn, statMgr, rteSleepTime);
 	}
 }

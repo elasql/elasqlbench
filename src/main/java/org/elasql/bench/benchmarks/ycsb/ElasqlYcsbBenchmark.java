@@ -17,7 +17,8 @@ public class ElasqlYcsbBenchmark extends YcsbBenchmark {
 	}
 	
 	@Override
-	public RemoteTerminalEmulator<YcsbTransactionType> createRte(SutConnection conn, StatisticMgr statMgr) {
-		return new ElasqlYcsbRte(conn, statMgr, nodeId, rteId++);
+	public RemoteTerminalEmulator<YcsbTransactionType> createRte(SutConnection conn, StatisticMgr statMgr,
+			long rteSleepTime) {
+		return new ElasqlYcsbRte(conn, statMgr, rteSleepTime, nodeId, rteId++);
 	}
 }

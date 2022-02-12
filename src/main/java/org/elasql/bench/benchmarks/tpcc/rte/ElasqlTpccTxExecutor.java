@@ -15,6 +15,7 @@
  *******************************************************************************/
 package org.elasql.bench.benchmarks.tpcc.rte;
 
+import org.elasql.bench.ElasqlBenchParameters;
 import org.elasql.bench.remote.sp.ElasqlBenchSpResultSet;
 import org.elasql.bench.util.NodeStatisticsRecorder;
 import org.elasql.storage.metadata.PartitionMetaMgr;
@@ -76,7 +77,7 @@ public class ElasqlTpccTxExecutor extends TransactionExecutor<TpccTransactionTyp
 			}
 
 			// display output
-			if (TransactionExecutor.DISPLAY_RESULT)
+			if (ElasqlBenchParameters.SHOW_TXN_RESPONSE_ON_CONSOLE)
 				System.out.println(pg.getTxnType() + " " + result.outputMsg());
 
 			// thinking

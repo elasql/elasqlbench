@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 
 import org.elasql.bench.benchmarks.ycsb.ElasqlYcsbConstants;
 import org.elasql.util.PeriodicalJob;
-import org.vanilladb.bench.BenchmarkerParameters;
+import org.elasql.bench.ElasqlBenchParameters;
 import org.vanilladb.bench.benchmarks.ycsb.YcsbConstants;
 import org.vanilladb.bench.benchmarks.ycsb.YcsbTransactionType;
 import org.vanilladb.bench.benchmarks.ycsb.rte.YcsbLatestGenerator;
@@ -80,7 +80,7 @@ public class SingleTableMultiTenantParamGen implements TxParamGenerator<YcsbTran
 			return;
 		reporterEnabled = true;
 		
-		new PeriodicalJob(5000, BenchmarkerParameters.BENCHMARK_INTERVAL, new Runnable() {
+		new PeriodicalJob(5000, ElasqlBenchParameters.BENCHMARK_INTERVAL, new Runnable() {
 			@Override
 			public void run() {
 				// Wait for the start time set
