@@ -19,7 +19,6 @@ import org.elasql.server.Elasql;
 import org.elasql.server.Elasql.ServiceType;
 import org.vanilladb.bench.BenchTransactionType;
 import org.vanilladb.bench.Benchmark;
-import org.vanilladb.bench.BenchmarkerParameters;
 import org.vanilladb.bench.StatisticMgr;
 import org.vanilladb.bench.remote.SutConnection;
 import org.vanilladb.bench.remote.SutDriver;
@@ -77,13 +76,15 @@ public class ElasqlBench implements DirectMessageListener {
 				logger.info("database check passed.");
 
 			if (logger.isLoggable(Level.INFO))
-				logger.info("creating " + BenchmarkerParameters.NUM_RTES + " emulators...");
+				logger.info("creating " + ElasqlBenchParameters.NUM_RTES + " emulators...");
 			
 			int rteCount = benchmarker.getNumOfRTEs();
 			RemoteTerminalEmulator<?>[] emulators = new RemoteTerminalEmulator[rteCount];
-			emulators[0] = benchmarker.createRte(conn, statMgr); // Reuse the connection
+			emulators[0] = benchmarker.createRte(conn, statMgr,
+					ElasqlBenchParameters.RTE_SLEEP_TIME); // Reuse the connection
 			for (int i = 1; i < emulators.length; i++)
-				emulators[i] = benchmarker.createRte(getConnection(), statMgr);
+				emulators[i] = benchmarker.createRte(getConnection(), statMgr,
+						ElasqlBenchParameters.RTE_SLEEP_TIME);
 
 			if (logger.isLoggable(Level.INFO))
 				logger.info("waiting for connections...");
@@ -100,12 +101,12 @@ public class ElasqlBench implements DirectMessageListener {
 				emulators[i].start();
 
 			// Waits for the warming up finishes
-			Thread.sleep(BenchmarkerParameters.WARM_UP_INTERVAL);
+			Thread.sleep(ElasqlBenchParameters.WARM_UP_INTERVAL);
 
 			if (logger.isLoggable(Level.INFO))
 				logger.info("warm up period finished.");
 
-			if (BenchmarkerParameters.PROFILING_ON_SERVER && nodeId == 0) {
+			if (ElasqlBenchParameters.PROFILING_ON_SERVER && nodeId == 0) {
 				if (logger.isLoggable(Level.INFO))
 					logger.info("starting the profiler on the server-side");
 				
@@ -120,7 +121,7 @@ public class ElasqlBench implements DirectMessageListener {
 				emulators[i].startRecordStatistic();
 
 			// waiting
-			Thread.sleep(BenchmarkerParameters.BENCHMARK_INTERVAL);
+			Thread.sleep(ElasqlBenchParameters.BENCHMARK_INTERVAL);
 
 			if (logger.isLoggable(Level.INFO))
 				logger.info("benchmark preiod finished. Stoping RTEs...");
@@ -129,7 +130,7 @@ public class ElasqlBench implements DirectMessageListener {
 			for (int i = 0; i < emulators.length; i++)
 				emulators[i].stopBenchmark();
 
-			if (BenchmarkerParameters.PROFILING_ON_SERVER && nodeId == 0) {
+			if (ElasqlBenchParameters.PROFILING_ON_SERVER && nodeId == 0) {
 				if (logger.isLoggable(Level.INFO))
 					logger.info("stoping the profiler on the server-side");
 
@@ -166,18 +167,11 @@ public class ElasqlBench implements DirectMessageListener {
 	}
 	
 	private SutDriver newDriver(int nodeId) {
-		// Create a driver for connection
-		switch (BenchmarkerParameters.CONNECTION_MODE) {
-		case JDBC:
-			throw new UnsupportedOperationException("ElaSQL does not support JDBC");
-		case SP:
-			return new ElasqlBenchSpDriver(nodeId, this);
-		}
-		return null;
+		return new ElasqlBenchSpDriver(nodeId, this);
 	}
 	
 	private Benchmark newBenchmarker(int nodeId) {
-		switch (BenchmarkerParameters.BENCH_TYPE) {
+		switch (ElasqlBenchParameters.BENCH_TYPE) {
 		case MICRO:
 			return new ElasqlMicroBenchmark();
 		case TPCC:
@@ -196,7 +190,12 @@ public class ElasqlBench implements DirectMessageListener {
 		Set<BenchTransactionType> txnTypes = benchmarker.getBenchmarkingTxTypes();
 		String reportPostfix = benchmarker.getBenchmarkName();
 		reportPostfix += String.format("-%d", nodeId);
-		return new StatisticMgr(txnTypes, reportPostfix);
+		return new StatisticMgr(
+				txnTypes,
+				ElasqlBenchParameters.REPORT_OUTPUT_DIRECTORY,
+				reportPostfix,
+				ElasqlBenchParameters.REPORT_TIMELINE_GRANULARITY
+		);
 	}
 	
 	private SutConnection getConnection() throws SQLException {

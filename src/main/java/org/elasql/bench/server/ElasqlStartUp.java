@@ -34,7 +34,7 @@ import org.elasql.procedure.naive.NaiveStoredProcedureFactory;
 import org.elasql.procedure.tpart.TPartStoredProcedureFactory;
 import org.elasql.server.Elasql;
 import org.elasql.storage.metadata.PartitionPlan;
-import org.vanilladb.bench.BenchmarkerParameters;
+import org.elasql.bench.ElasqlBenchParameters;
 import org.vanilladb.bench.server.SutStartUp;
 
 public class ElasqlStartUp implements SutStartUp {
@@ -100,7 +100,7 @@ public class ElasqlStartUp implements SutStartUp {
 	
 	private NaiveStoredProcedureFactory getNaiveSpFactory() {
 		NaiveStoredProcedureFactory factory = null;
-		switch (BenchmarkerParameters.BENCH_TYPE) {
+		switch (ElasqlBenchParameters.BENCH_TYPE) {
 		case MICRO:
 			throw new UnsupportedOperationException("No Micro for now");
 		case TPCC:
@@ -117,7 +117,7 @@ public class ElasqlStartUp implements SutStartUp {
 	
 	private CalvinStoredProcedureFactory getCalvinSpFactory() {
 		CalvinStoredProcedureFactory factory = null;
-		switch (BenchmarkerParameters.BENCH_TYPE) {
+		switch (ElasqlBenchParameters.BENCH_TYPE) {
 		case MICRO:
 			if (logger.isLoggable(Level.INFO))
 				logger.info("using Micro-benchmark stored procedures for Calvin");
@@ -150,7 +150,7 @@ public class ElasqlStartUp implements SutStartUp {
 	
 	private TPartStoredProcedureFactory getTPartSpFactory() {
 		TPartStoredProcedureFactory factory = null;
-		switch (BenchmarkerParameters.BENCH_TYPE) {
+		switch (ElasqlBenchParameters.BENCH_TYPE) {
 		case MICRO:
 			if (logger.isLoggable(Level.INFO))
 				logger.info("using Micro-benchmark stored procedures for T-Part");
@@ -176,7 +176,7 @@ public class ElasqlStartUp implements SutStartUp {
 	
 	private PartitionPlan getPartitionPlan() {
 		PartitionPlan partPlan = null;
-		switch (BenchmarkerParameters.BENCH_TYPE) {
+		switch (ElasqlBenchParameters.BENCH_TYPE) {
 		case MICRO:
 			partPlan = new MicroBenchPartitionPlan();
 			break;
@@ -205,7 +205,7 @@ public class ElasqlStartUp implements SutStartUp {
 	
 	private MigrationComponentFactory getMigrationComponentFactory() {
 		MigrationComponentFactory comFactory = null;
-		switch (BenchmarkerParameters.BENCH_TYPE) {
+		switch (ElasqlBenchParameters.BENCH_TYPE) {
 		case MICRO:
 			comFactory = new DummyMigrationComponentFactory("No implementation for migration on the micro benchmarks");
 			break;

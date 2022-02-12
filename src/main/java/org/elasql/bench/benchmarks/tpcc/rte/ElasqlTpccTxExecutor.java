@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.elasql.bench.benchmarks.tpcc.rte;
 
+import org.elasql.bench.ElasqlBenchParameters;
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccParameters;
 import org.elasql.bench.remote.sp.ElasqlBenchSpResultSet;
 import org.elasql.bench.util.NodeStatisticsRecorder;
 import org.elasql.storage.metadata.PartitionMetaMgr;
@@ -24,18 +26,12 @@ import org.vanilladb.bench.benchmarks.tpcc.rte.TpccTxParamGenerator;
 import org.vanilladb.bench.remote.SutConnection;
 import org.vanilladb.bench.rte.TransactionExecutor;
 import org.vanilladb.bench.rte.jdbc.JdbcExecutor;
-import org.vanilladb.bench.util.BenchProperties;
 
 public class ElasqlTpccTxExecutor extends TransactionExecutor<TpccTransactionType> {
-
-	private final static boolean ENABLE_THINK_AND_KEYING_TIME;
 	
 	private static NodeStatisticsRecorder recorder;
 
 	static {
-		ENABLE_THINK_AND_KEYING_TIME = BenchProperties.getLoader()
-				.getPropertyAsBoolean(ElasqlTpccTxExecutor.class.getName() + ".ENABLE_THINK_AND_KEYING_TIME", false);
-		
 		recorder = new NodeStatisticsRecorder(PartitionMetaMgr.NUM_PARTITIONS, System.currentTimeMillis(),
 				5000);
 		recorder.start();
@@ -52,7 +48,7 @@ public class ElasqlTpccTxExecutor extends TransactionExecutor<TpccTransactionTyp
 	public TxnResultSet execute(SutConnection conn) {
 		try {
 			// keying
-			if (ENABLE_THINK_AND_KEYING_TIME) {
+			if (ElasqlTpccParameters.ENABLE_THINK_AND_KEYING_TIME) {
 				// wait for a keying time and generate parameters
 				long t = tpccPg.getKeyingTime();
 				Thread.sleep(t);
@@ -76,11 +72,11 @@ public class ElasqlTpccTxExecutor extends TransactionExecutor<TpccTransactionTyp
 			}
 
 			// display output
-			if (TransactionExecutor.DISPLAY_RESULT)
+			if (ElasqlBenchParameters.SHOW_TXN_RESPONSE_ON_CONSOLE)
 				System.out.println(pg.getTxnType() + " " + result.outputMsg());
 
 			// thinking
-			if (ENABLE_THINK_AND_KEYING_TIME) {
+			if (ElasqlTpccParameters.ENABLE_THINK_AND_KEYING_TIME) {
 				// wait for a think time
 				long t = tpccPg.getThinkTime();
 				Thread.sleep(t);

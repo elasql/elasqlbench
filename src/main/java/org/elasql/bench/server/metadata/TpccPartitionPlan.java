@@ -1,6 +1,6 @@
 package org.elasql.bench.server.metadata;
 
-import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants;
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccParameters;
 import org.elasql.server.Elasql;
 import org.elasql.sql.PartitioningKey;
 import org.elasql.sql.PrimaryKey;
@@ -53,11 +53,11 @@ public class TpccPartitionPlan extends PartitionPlan {
 	}
 	
 	public int numOfWarehouses() {
-		return ElasqlTpccConstants.WAREHOUSE_PER_PART * PartitionMetaMgr.NUM_PARTITIONS;
+		return ElasqlTpccParameters.WAREHOUSE_PER_PART * PartitionMetaMgr.NUM_PARTITIONS;
 	}
 	
 	public int getPartition(int wid) {
-		return (wid - 1) / ElasqlTpccConstants.WAREHOUSE_PER_PART;
+		return (wid - 1) / ElasqlTpccParameters.WAREHOUSE_PER_PART;
 	}
 	
 	@Override
@@ -88,7 +88,7 @@ public class TpccPartitionPlan extends PartitionPlan {
 	
 	@Override
 	public String toString() {
-		return String.format("TPC-C range partition (each range has %d warehouses)", ElasqlTpccConstants.WAREHOUSE_PER_PART);
+		return String.format("TPC-C range partition (each range has %d warehouses)", ElasqlTpccParameters.WAREHOUSE_PER_PART);
 	}
 
 	@Override

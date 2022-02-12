@@ -21,8 +21,8 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccParameters;
 import org.vanilladb.bench.StatisticMgr;
-import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
 import org.vanilladb.bench.remote.SutConnection;
 import org.vanilladb.bench.rte.RemoteTerminalEmulator;
@@ -35,8 +35,9 @@ public class ElasqlTpccRte extends RemoteTerminalEmulator<TpccTransactionType> {
 	private static Random txnTypeRandom;
 	private Map<TpccTransactionType, ElasqlTpccTxExecutor> executors;
 
-	public ElasqlTpccRte(SutConnection conn, StatisticMgr statMgr, int homeWarehouseId, int homeDistrictId) {
-		super(conn, statMgr);
+	public ElasqlTpccRte(SutConnection conn, StatisticMgr statMgr, long sleepTime,
+			int homeWarehouseId, int homeDistrictId) {
+		super(conn, statMgr, sleepTime);
 		
 		if (logger.isLoggable(Level.FINE))
 			logger.fine(String.format("TPCC RTE for warehouse %d, district %d is created.",
@@ -54,14 +55,14 @@ public class ElasqlTpccRte extends RemoteTerminalEmulator<TpccTransactionType> {
 	}
 	
 	protected TpccTransactionType getNextTxType() {
-		int index = txnTypeRandom.nextInt(TpccConstants.FREQUENCY_TOTAL);
-		if (index < TpccConstants.RANGE_NEW_ORDER)
+		int index = txnTypeRandom.nextInt(ElasqlTpccParameters.FREQUENCY_TOTAL);
+		if (index < ElasqlTpccParameters.RANGE_NEW_ORDER)
 			return TpccTransactionType.NEW_ORDER;
-		else if (index < TpccConstants.RANGE_PAYMENT)
+		else if (index < ElasqlTpccParameters.RANGE_PAYMENT)
 			return TpccTransactionType.PAYMENT;
-		else if (index < TpccConstants.RANGE_ORDER_STATUS)
+		else if (index < ElasqlTpccParameters.RANGE_ORDER_STATUS)
 			return TpccTransactionType.ORDER_STATUS;
-		else if (index < TpccConstants.RANGE_DELIVERY)
+		else if (index < ElasqlTpccParameters.RANGE_DELIVERY)
 			return TpccTransactionType.DELIVERY;
 		else
 			return TpccTransactionType.STOCK_LEVEL;

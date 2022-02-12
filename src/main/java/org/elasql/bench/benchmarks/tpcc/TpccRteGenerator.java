@@ -9,6 +9,7 @@ public interface TpccRteGenerator {
 	
 	int getNumOfRTEs();
 	
-	RemoteTerminalEmulator<TpccTransactionType> createRte(SutConnection conn, StatisticMgr statMgr);
+	RemoteTerminalEmulator<TpccTransactionType> createRte(SutConnection conn, StatisticMgr statMgr,
+			long rteSleepTime);
 	
 }
