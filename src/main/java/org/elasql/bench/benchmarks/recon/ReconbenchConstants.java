@@ -17,13 +17,13 @@ package org.elasql.bench.benchmarks.recon;
 
 import org.elasql.bench.util.ElasqlBenchProperties;
 
-public class ElasqlReconbenchConstants {
+public class ReconbenchConstants {
 
 	public static final int NUM_ITEMS_PER_NODE;
 	
 	static {
 		NUM_ITEMS_PER_NODE = ElasqlBenchProperties.getLoader().getPropertyAsInteger(
-				ElasqlReconbenchConstants.class.getName() + ".NUM_ITEMS_PER_NODE", 100000);
+				ReconbenchConstants.class.getName() + ".NUM_ITEMS_PER_NODE", 100000);
 	}
 
 }

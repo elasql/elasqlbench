@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import org.elasql.bench.benchmarks.recon.ElasqlReconbenchConstants;
+import org.elasql.bench.benchmarks.recon.ReconbenchConstants;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.AllExecute2pcProcedure;
 import org.elasql.server.Elasql;
@@ -25,8 +25,8 @@ public class ReconCheckDatabaseProc extends AllExecute2pcProcedure<StoredProcedu
 		if (logger.isLoggable(Level.INFO))
 			logger.info("Checking database for the recon benchmarks...");
 
-		int startId = Elasql.serverId() * ElasqlReconbenchConstants.NUM_ITEMS_PER_NODE + 1;
-		int endId = (Elasql.serverId() + 1) * ElasqlReconbenchConstants.NUM_ITEMS_PER_NODE;
+		int startId = Elasql.serverId() * ReconbenchConstants.NUM_ITEMS_PER_NODE + 1;
+		int endId = (Elasql.serverId() + 1) * ReconbenchConstants.NUM_ITEMS_PER_NODE;
 		// Checking item records
 		if (!checkItemTable(startId, endId))
 			abort("checking database fails");

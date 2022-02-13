@@ -15,9 +15,9 @@
  *******************************************************************************/
 package org.elasql.bench.benchmarks.recon.rte;
 
-import org.vanilladb.bench.benchmarks.recon.ReconbenchTransactionType;
+import org.elasql.bench.benchmarks.recon.ReconbenchTransactionType;
 
-public class ReconParamGen extends ElasqlReconbenchParamGen {
+public class ReconParamGen extends ReconbenchParamGen {
 	
 	@Override
 	public ReconbenchTransactionType getTxnType() {

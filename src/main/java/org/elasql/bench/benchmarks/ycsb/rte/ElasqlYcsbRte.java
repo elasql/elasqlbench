@@ -14,8 +14,9 @@ public class ElasqlYcsbRte extends RemoteTerminalEmulator<YcsbTransactionType> {
 	
 	private YcsbTxExecutor executor;
 	
-	public ElasqlYcsbRte(SutConnection conn, StatisticMgr statMgr, int nodeId, int rteId) {
-		super(conn, statMgr);
+	public ElasqlYcsbRte(SutConnection conn, StatisticMgr statMgr, long sleepTime,
+			int nodeId, int rteId) {
+		super(conn, statMgr, sleepTime);
 		executor = new YcsbTxExecutor(getParamGen(nodeId, rteId));
 	}
 	

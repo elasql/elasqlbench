@@ -19,16 +19,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.elasql.bench.benchmarks.recon.ElasqlReconbenchConstants;
+import org.elasql.bench.benchmarks.recon.ReconbenchConstants;
+import org.elasql.bench.benchmarks.recon.ReconbenchTransactionType;
 import org.elasql.bench.util.ElasqlBenchProperties;
 import org.elasql.storage.metadata.PartitionMetaMgr;
-import org.vanilladb.bench.benchmarks.recon.ReconbenchTransactionType;
 import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
 import org.vanilladb.bench.rte.TxParamGenerator;
 import org.vanilladb.bench.util.BenchProperties;
 import org.vanilladb.bench.util.RandomNonRepeatGenerator;
 
-public abstract class ElasqlReconbenchParamGen implements TxParamGenerator<ReconbenchTransactionType> {
+public abstract class ReconbenchParamGen implements TxParamGenerator<ReconbenchTransactionType> {
 	
 	// Transaaction Type
 	private static final double DIST_TX_RATE;
@@ -64,35 +64,35 @@ public abstract class ElasqlReconbenchParamGen implements TxParamGenerator<Recon
 
 	static {
 		DIST_TX_RATE = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlReconbenchParamGen.class.getName() + ".DIST_TX_RATE", 0.0);
+				.getPropertyAsDouble(ReconbenchParamGen.class.getName() + ".DIST_TX_RATE", 0.0);
 		RW_TX_RATE = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlReconbenchParamGen.class.getName() + ".RW_TX_RATE", 0.0);
+				.getPropertyAsDouble(ReconbenchParamGen.class.getName() + ".RW_TX_RATE", 0.0);
 		SKEW_TX_RATE = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlReconbenchParamGen.class.getName() + ".SKEW_TX_RATE", 0.0);
+				.getPropertyAsDouble(ReconbenchParamGen.class.getName() + ".SKEW_TX_RATE", 0.0);
 		LONG_READ_TX_RATE = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlReconbenchParamGen.class.getName() + ".LONG_READ_TX_RATE", 0.0);
+				.getPropertyAsDouble(ReconbenchParamGen.class.getName() + ".LONG_READ_TX_RATE", 0.0);
 		
 		TOTAL_READ_COUNT = ElasqlBenchProperties.getLoader()
-				.getPropertyAsInteger(ElasqlReconbenchParamGen.class.getName() + ".TOTAL_READ_COUNT", 10);
+				.getPropertyAsInteger(ReconbenchParamGen.class.getName() + ".TOTAL_READ_COUNT", 10);
 		LOCAL_HOT_COUNT = ElasqlBenchProperties.getLoader()
-				.getPropertyAsInteger(ElasqlReconbenchParamGen.class.getName() + ".LOCAL_HOT_COUNT", 1);
+				.getPropertyAsInteger(ReconbenchParamGen.class.getName() + ".LOCAL_HOT_COUNT", 1);
 		REMOTE_HOT_COUNT = ElasqlBenchProperties.getLoader()
-				.getPropertyAsInteger(ElasqlReconbenchParamGen.class.getName() + ".REMOTE_HOT_COUNT", 0);
+				.getPropertyAsInteger(ReconbenchParamGen.class.getName() + ".REMOTE_HOT_COUNT", 0);
 		REMOTE_COLD_COUNT = ElasqlBenchProperties.getLoader()
-				.getPropertyAsInteger(ElasqlReconbenchParamGen.class.getName() + ".REMOTE_COLD_COUNT", 5);
+				.getPropertyAsInteger(ReconbenchParamGen.class.getName() + ".REMOTE_COLD_COUNT", 5);
 		WRITE_RATIO_IN_RW_TX = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlReconbenchParamGen.class.getName() + ".WRITE_RATIO_IN_RW_TX", 0.5);
+				.getPropertyAsDouble(ReconbenchParamGen.class.getName() + ".WRITE_RATIO_IN_RW_TX", 0.5);
 		HOT_CONFLICT_RATE = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlReconbenchParamGen.class.getName() + ".HOT_CONFLICT_RATE", 0.01);
+				.getPropertyAsDouble(ReconbenchParamGen.class.getName() + ".HOT_CONFLICT_RATE", 0.01);
 		SKEW_PERCENTAGE = ElasqlBenchProperties.getLoader()
-				.getPropertyAsDouble(ElasqlReconbenchParamGen.class.getName() + ".SKEW_PERCENTAGE", 0.2);
+				.getPropertyAsDouble(ReconbenchParamGen.class.getName() + ".SKEW_PERCENTAGE", 0.2);
 		
-		DATA_SIZE_PER_PART = ElasqlReconbenchConstants.NUM_ITEMS_PER_NODE;
+		DATA_SIZE_PER_PART = ReconbenchConstants.NUM_ITEMS_PER_NODE;
 		HOT_DATA_SIZE_PER_PART = (int) (1.0 / HOT_CONFLICT_RATE);
 		COLD_DATA_SIZE_PER_PART = DATA_SIZE_PER_PART - HOT_DATA_SIZE_PER_PART;
 		
 		INDEX_UPDATE_COUNT = BenchProperties.getLoader()
-				.getPropertyAsInteger(ElasqlReconbenchParamGen.class.getName() + ".INDEX_UPDATE_COUNT", 2);
+				.getPropertyAsInteger(ReconbenchParamGen.class.getName() + ".INDEX_UPDATE_COUNT", 2);
 		
 	}
 

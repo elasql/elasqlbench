@@ -1,6 +1,6 @@
 package org.elasql.bench.server.metadata;
 
-import org.elasql.bench.benchmarks.recon.ElasqlReconbenchConstants;
+import org.elasql.bench.benchmarks.recon.ReconbenchConstants;
 import org.elasql.server.Elasql;
 import org.elasql.sql.PartitioningKey;
 import org.elasql.sql.PrimaryKey;
@@ -38,7 +38,7 @@ public class ReconBenchPartitionPlan extends PartitionPlan {
 	}
 	
 	public int getPartition(int id) {
-		return (id - 1) / ElasqlReconbenchConstants.NUM_ITEMS_PER_NODE;
+		return (id - 1) / ReconbenchConstants.NUM_ITEMS_PER_NODE;
 	}
 	
 	public int getPartition(PrimaryKey key) {

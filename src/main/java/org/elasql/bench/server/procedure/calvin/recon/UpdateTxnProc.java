@@ -19,11 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.elasql.bench.server.param.recon.UpdateTxProcParamHelper;
 import org.elasql.cache.CachedRecord;
 import org.elasql.procedure.calvin.CalvinStoredProcedure;
 import org.elasql.schedule.calvin.ReadWriteSetAnalyzer;
 import org.elasql.sql.PrimaryKey;
-import org.vanilladb.bench.server.param.recon.UpdateTxProcParamHelper;
 import org.vanilladb.core.sql.IntegerConstant;
 
 public class UpdateTxnProc extends CalvinStoredProcedure<UpdateTxProcParamHelper> {

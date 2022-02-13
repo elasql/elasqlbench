@@ -25,7 +25,7 @@ public class TpccScaleoutTestRteGenerator implements TpccRteGenerator {
 			TpccScaleoutTestRteGenerator gen = new TpccScaleoutTestRteGenerator(nodeId);
 			System.out.print(String.format("Node %d with %d RTEs: ", nodeId, gen.getNumOfRTEs()));
 			for (int rteId = 0; rteId < gen.getNumOfRTEs(); rteId++) {
-				gen.createRte(null, null);
+				gen.createRte(null, null, 0);
 				System.out.print(String.format("[W: %d, D: %d] ", gen.warehouseId, gen.districtId));
 			}
 			System.out.println();
@@ -49,7 +49,8 @@ public class TpccScaleoutTestRteGenerator implements TpccRteGenerator {
 	int districtId;
 
 	@Override
-	public RemoteTerminalEmulator<TpccTransactionType> createRte(SutConnection conn, StatisticMgr statMgr) {
+	public RemoteTerminalEmulator<TpccTransactionType> createRte(SutConnection conn, StatisticMgr statMgr,
+			long rteSleepTime) {
 		if (nodeId < NUM_OF_NON_EMPTY_PARTS) {
 			warehouseId = nextRteId / RTE_PER_NORMAL_WAREHOUSE +
 					TpccScaleoutBeforePartPlan.NORMAL_WAREHOUSE_PER_PART * nodeId + 1;
@@ -60,6 +61,6 @@ public class TpccScaleoutTestRteGenerator implements TpccRteGenerator {
 			districtId = nextRteId % RTE_PER_HOT_WAREHOUSE % TpccConstants.DISTRICTS_PER_WAREHOUSE + 1;
 		}
 		nextRteId++;
-		return new ElasqlTpccRte(conn, statMgr, warehouseId, districtId);
+		return new ElasqlTpccRte(conn, statMgr, rteSleepTime, warehouseId, districtId);
 	}
 }
