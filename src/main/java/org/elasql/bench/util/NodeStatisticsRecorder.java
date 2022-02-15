@@ -2,7 +2,7 @@ package org.elasql.bench.util;
 
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.vanilladb.bench.BenchmarkerParameters;
+import org.elasql.bench.ElasqlBenchParameters;
 
 public class NodeStatisticsRecorder extends Thread {
 
@@ -31,7 +31,7 @@ public class NodeStatisticsRecorder extends Thread {
 		this.startTime = startTime;
 		this.recordInterval = recordInterval;
 		
-		this.totalTime = BenchmarkerParameters.WARM_UP_INTERVAL + BenchmarkerParameters.BENCHMARK_INTERVAL + recordInterval;
+		this.totalTime = ElasqlBenchParameters.WARM_UP_INTERVAL + ElasqlBenchParameters.BENCHMARK_INTERVAL + recordInterval;
 		this.statistics = new NodeStatistics[nodeCount];
 		this.nodeLocks = new ReentrantLock[nodeCount];
 		for (int i = 0; i < nodeCount; i++) {

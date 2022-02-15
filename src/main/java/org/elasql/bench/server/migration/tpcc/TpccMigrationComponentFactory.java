@@ -1,6 +1,6 @@
 package org.elasql.bench.server.migration.tpcc;
 
-import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants;
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccParameters;
 import org.elasql.bench.server.metadata.migration.scaleout.TpccScaleoutAfterPartPlan;
 import org.elasql.bench.server.metadata.migration.scaleout.TpccScaleoutBeforePartPlan;
 import org.elasql.bench.server.migration.DummyKeyIterator;
@@ -15,7 +15,7 @@ public class TpccMigrationComponentFactory extends MigrationComponentFactory {
 
 	@Override
 	public MigrationPlan newPredefinedMigrationPlan() {
-		switch (ElasqlTpccConstants.PARTITION_STRATEGY) {
+		switch (ElasqlTpccParameters.PARTITION_STRATEGY) {
 		case MGCRAB_SCALING_OUT:
 			return new TpccMigrationPlan(new TpccScaleoutBeforePartPlan(),
 					new TpccScaleoutAfterPartPlan());

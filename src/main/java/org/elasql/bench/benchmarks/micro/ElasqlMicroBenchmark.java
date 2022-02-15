@@ -25,8 +25,9 @@ import org.vanilladb.bench.rte.RemoteTerminalEmulator;
 public class ElasqlMicroBenchmark extends MicroBenchmark {
 	
 	@Override
-	public RemoteTerminalEmulator<MicrobenchTransactionType> createRte(SutConnection conn, StatisticMgr statMgr) {
+	public RemoteTerminalEmulator<MicrobenchTransactionType> createRte(SutConnection conn, StatisticMgr statMgr,
+			long rteSleepTime) {
 		// NOTE: We use a customized version of MicroRte here
-		return new ElasqlMicrobenchRte(conn, statMgr);
+		return new ElasqlMicrobenchRte(conn, statMgr, rteSleepTime);
 	}
 }

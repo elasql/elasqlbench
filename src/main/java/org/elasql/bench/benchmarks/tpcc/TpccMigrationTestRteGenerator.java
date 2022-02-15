@@ -31,7 +31,7 @@ public class TpccMigrationTestRteGenerator implements TpccRteGenerator {
 			TpccMigrationTestRteGenerator gen = new TpccMigrationTestRteGenerator(nodeId);
 			System.out.print(String.format("Node %d with %d RTEs: ", nodeId, gen.getNumOfRTEs()));
 			for (int rteId = 0; rteId < gen.getNumOfRTEs(); rteId++) {
-				gen.createRte(null, null);
+				gen.createRte(null, null, 0);
 				System.out.print(String.format("[W: %d, D: %d] ", gen.warehouseId, gen.districtId));
 			}
 			System.out.println();
@@ -59,7 +59,8 @@ public class TpccMigrationTestRteGenerator implements TpccRteGenerator {
 	int districtId;
 
 	@Override
-	public RemoteTerminalEmulator<TpccTransactionType> createRte(SutConnection conn, StatisticMgr statMgr) {
+	public RemoteTerminalEmulator<TpccTransactionType> createRte(SutConnection conn, StatisticMgr statMgr,
+			long rteSleepTime) {
 		
 		if (nodeId < NUM_HOT_PARTS) {
 			if (nextRteId < TOTAL_RETS_FOR_NORMALS_PER_NODE) { // for normal warehouses
@@ -89,6 +90,6 @@ public class TpccMigrationTestRteGenerator implements TpccRteGenerator {
 		}
 		
 		nextRteId++;
-		return new ElasqlTpccRte(conn, statMgr, warehouseId, districtId);
+		return new ElasqlTpccRte(conn, statMgr, rteSleepTime, warehouseId, districtId);
 	}
 }
