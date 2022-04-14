@@ -15,8 +15,12 @@
  *******************************************************************************/
 package org.elasql.bench.benchmarks.tpcc.rte;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import org.elasql.bench.remote.sp.ElasqlBenchSpResultSet;
 import org.elasql.bench.util.NodeStatisticsRecorder;
+import org.elasql.cache.tpart.TPartCacheMgr;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.TxnResultSet;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
@@ -29,16 +33,22 @@ import org.vanilladb.bench.util.BenchProperties;
 public class ElasqlTpccTxExecutor extends TransactionExecutor<TpccTransactionType> {
 
 	private final static boolean ENABLE_THINK_AND_KEYING_TIME;
+	private final static int THINKTIME_REDUCTION_RATIO = 1000;
 	
 	private static NodeStatisticsRecorder recorder;
+	private static Logger logger = Logger.getLogger(ElasqlTpccTxExecutor.class.getName());
 
 	static {
 		ENABLE_THINK_AND_KEYING_TIME = BenchProperties.getLoader()
-				.getPropertyAsBoolean(ElasqlTpccTxExecutor.class.getName() + ".ENABLE_THINK_AND_KEYING_TIME", false);
+				.getPropertyAsBoolean(ElasqlTpccTxExecutor.class.getName() + ".ENABLE_THINK_AND_KEYING_TIME", true);
 		
 		recorder = new NodeStatisticsRecorder(PartitionMetaMgr.NUM_PARTITIONS, System.currentTimeMillis(),
 				5000);
 		recorder.start();
+		
+		if (logger.isLoggable(Level.INFO))
+			logger.info("ENABLE_THINK_AND_KEYING_TIME is ture or false: " + ENABLE_THINK_AND_KEYING_TIME);
+			logger.info("THINKTIME_REDUCTION_RATIO is " + THINKTIME_REDUCTION_RATIO);
 	}
 	
 	private TpccTxParamGenerator tpccPg;
@@ -52,11 +62,11 @@ public class ElasqlTpccTxExecutor extends TransactionExecutor<TpccTransactionTyp
 	public TxnResultSet execute(SutConnection conn) {
 		try {
 			// keying
-			if (ENABLE_THINK_AND_KEYING_TIME) {
-				// wait for a keying time and generate parameters
-				long t = tpccPg.getKeyingTime();
-				Thread.sleep(t);
-			}
+//			if (ENABLE_THINK_AND_KEYING_TIME) {
+//				// wait for a keying time and generate parameters
+//				long t = tpccPg.getKeyingTime();
+//				Thread.sleep(t);
+//			}
 
 			// generate parameters
 			Object[] params = pg.generateParameter();
@@ -82,7 +92,7 @@ public class ElasqlTpccTxExecutor extends TransactionExecutor<TpccTransactionTyp
 			// thinking
 			if (ENABLE_THINK_AND_KEYING_TIME) {
 				// wait for a think time
-				long t = tpccPg.getThinkTime();
+				long t = tpccPg.getThinkTime() / THINKTIME_REDUCTION_RATIO;
 				Thread.sleep(t);
 			}
 
