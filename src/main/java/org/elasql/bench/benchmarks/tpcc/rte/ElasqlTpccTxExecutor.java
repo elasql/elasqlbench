@@ -20,7 +20,6 @@ import java.util.logging.Logger;
 
 import org.elasql.bench.remote.sp.ElasqlBenchSpResultSet;
 import org.elasql.bench.util.NodeStatisticsRecorder;
-import org.elasql.cache.tpart.TPartCacheMgr;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.TxnResultSet;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
@@ -34,23 +33,26 @@ public class ElasqlTpccTxExecutor extends TransactionExecutor<TpccTransactionTyp
 
 	private final static boolean ENABLE_THINK_AND_KEYING_TIME;
 	private final static int THINKTIME_REDUCTION_RATIO = 1000;
-	
+
 	private static NodeStatisticsRecorder recorder;
 	private static Logger logger = Logger.getLogger(ElasqlTpccTxExecutor.class.getName());
 
 	static {
 		ENABLE_THINK_AND_KEYING_TIME = BenchProperties.getLoader()
-				.getPropertyAsBoolean(ElasqlTpccTxExecutor.class.getName() + ".ENABLE_THINK_AND_KEYING_TIME", true);
-		
-		recorder = new NodeStatisticsRecorder(PartitionMetaMgr.NUM_PARTITIONS, System.currentTimeMillis(),
-				5000);
+				.getPropertyAsBoolean(ElasqlTpccTxExecutor.class.getName() + ".ENABLE_THINK_AND_KEYING_TIME", false);
+
+		recorder = new NodeStatisticsRecorder(PartitionMetaMgr.NUM_PARTITIONS, System.currentTimeMillis(), 5000);
 		recorder.start();
-		
-		if (logger.isLoggable(Level.INFO))
+
+		if (logger.isLoggable(Level.INFO)) {
 			logger.info("ENABLE_THINK_AND_KEYING_TIME is ture or false: " + ENABLE_THINK_AND_KEYING_TIME);
-			logger.info("THINKTIME_REDUCTION_RATIO is " + THINKTIME_REDUCTION_RATIO);
+
+			if (ENABLE_THINK_AND_KEYING_TIME) {
+				logger.info("THINKTIME_REDUCTION_RATIO is " + THINKTIME_REDUCTION_RATIO);
+			}
+		}
 	}
-	
+
 	private TpccTxParamGenerator tpccPg;
 
 	public ElasqlTpccTxExecutor(TpccTxParamGenerator pg) {
@@ -73,13 +75,13 @@ public class ElasqlTpccTxExecutor extends TransactionExecutor<TpccTransactionTyp
 
 			// send txn request and start measure txn response time
 			long txnRT = System.nanoTime();
-			
+
 			ElasqlBenchSpResultSet result = (ElasqlBenchSpResultSet) executeTxn(conn, params);
 
 			// measure txn Sresponse time
 			long txnEndTime = System.nanoTime();
 			txnRT = txnEndTime - txnRT;
-			
+
 			int sender = result.getSender();
 			if (sender >= 0 && result.isCommitted()) {
 				recorder.addTxResult(sender, txnRT / 1000);
@@ -96,14 +98,13 @@ public class ElasqlTpccTxExecutor extends TransactionExecutor<TpccTransactionTyp
 				Thread.sleep(t);
 			}
 
-			return new TxnResultSet(pg.getTxnType(), txnRT, txnEndTime,
-					result.isCommitted(), result.outputMsg());
+			return new TxnResultSet(pg.getTxnType(), txnRT, txnEndTime, result.isCommitted(), result.outputMsg());
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e.getMessage());
 		}
 	}
-	
+
 	@Override
 	protected JdbcExecutor<TpccTransactionType> getJdbcExecutor() {
 		throw new UnsupportedOperationException("no JDCB implementation for TPC-C");
