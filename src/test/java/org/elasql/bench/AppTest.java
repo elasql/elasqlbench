@@ -15,6 +15,8 @@
  *******************************************************************************/
 package org.elasql.bench;
 
+import org.vanilladb.bench.util.RandomValueGenerator;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -44,6 +46,16 @@ public class AppTest extends TestCase {
 	 * Rigourous Test :-)
 	 */
 	public void testApp() {
+		RandomValueGenerator rvg = new RandomValueGenerator();
+		
+		int counter = 0;
+		for (int i = 0; i < 10000; i++) {
+			if (rvg.randomChooseFromDistribution(0, 1) == 0) {
+				counter += 1;
+			}
+		}
+		System.out.print("counter: " + counter);
+		
 		assertTrue(true);
 	}
 }
