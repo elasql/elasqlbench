@@ -21,6 +21,7 @@ import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.elasql.bench.util.ElasqlBenchProperties;
 import org.vanilladb.bench.StatisticMgr;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
@@ -30,6 +31,12 @@ import org.vanilladb.bench.rte.TransactionExecutor;
 
 public class ElasqlTpccRte extends RemoteTerminalEmulator<TpccTransactionType> {
 	private static Logger logger = Logger.getLogger(ElasqlTpccRte.class.getName());
+	
+	public static final int TYPE; 
+	static {
+		TYPE = ElasqlBenchProperties.getLoader().getPropertyAsInteger(
+				HybridPaymentParamGen.class.getName() + ".TYPE", 3);
+	}
 	
 	private int homeWid;
 	private static Random txnTypeRandom;
@@ -45,8 +52,10 @@ public class ElasqlTpccRte extends RemoteTerminalEmulator<TpccTransactionType> {
 		homeWid = homeWarehouseId;
 		txnTypeRandom = new Random();
 		executors = new HashMap<TpccTransactionType, ElasqlTpccTxExecutor>();
-		executors.put(TpccTransactionType.NEW_ORDER, new ElasqlTpccTxExecutor(new NewOrderParamGen(homeWid, homeDistrictId)));
-		executors.put(TpccTransactionType.PAYMENT, new ElasqlTpccTxExecutor(new PaymentParamGen(homeWid)));
+//		executors.put(TpccTransactionType.NEW_ORDER, new ElasqlTpccTxExecutor(new NewOrderParamGen(homeWid, homeDistrictId)));
+//		executors.put(TpccTransactionType.PAYMENT, new ElasqlTpccTxExecutor(new PaymentParamGen(homeWid)));
+		executors.put(TpccTransactionType.NEW_ORDER, new ElasqlTpccTxExecutor(new HybridNewOrderParamGen(homeWid, homeDistrictId)));
+		executors.put(TpccTransactionType.PAYMENT, new ElasqlTpccTxExecutor(new HybridPaymentParamGen(homeWid)));
 		// TODO: Not implemented
 //		executors.put(TpccTransactionType.ORDER_STATUS, new TpccTxExecutor(new OrderStatusParamGen(homeWid)));
 //		executors.put(TpccTransactionType.DELIVERY, new TpccTxExecutor(new DeliveryParamGen(homeWid)));
