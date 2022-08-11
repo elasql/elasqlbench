@@ -18,6 +18,7 @@ package org.elasql.bench.benchmarks.tpcc.rte;
 import java.util.Random;
 
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
 import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
@@ -27,9 +28,9 @@ public class HybridPaymentParamGen implements TpccTxParamGenerator {
 	
 	private static final int WID_CHANGE_PERIOD_MS = 25;
 	private static final int TYPE = ElasqlTpccRte.TYPE; 
-	// 0: standard, 1: time dependent, 2: hybrid (2 hotspot in a window), 3: hybrid
+	// 0: standard, 1: time dependent, 2: hybrid (2 hotspot in a window), 3: hybrid, 4: dynamic
 	private static final double ORIGINAL_RTE_PERCENTAGE = 0.5; // for type 2
-	private static final double SKEW_RATIO = 0.5;
+	private static final double SKEW_RATIO = 0.8;
 	
 	private int homeWid;
 	private TpccValueGenerator valueGen = new TpccValueGenerator();
@@ -116,6 +117,10 @@ public class HybridPaymentParamGen implements TpccTxParamGenerator {
 				}
 			}
 			return previosWareHouse;
+		case 4:
+			int startWid = ParamGenHelper.getPartId() * ElasqlTpccConstants.WAREHOUSE_PER_PART + 1;
+			int widOffset = random.nextInt(ElasqlTpccConstants.WAREHOUSE_PER_PART);
+			return (startWid + widOffset);
 		default: 
 			throw new UnsupportedOperationException(); 
 		}

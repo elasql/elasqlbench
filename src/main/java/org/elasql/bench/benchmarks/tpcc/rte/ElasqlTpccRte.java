@@ -35,7 +35,7 @@ public class ElasqlTpccRte extends RemoteTerminalEmulator<TpccTransactionType> {
 	public static final int TYPE; 
 	static {
 		TYPE = ElasqlBenchProperties.getLoader().getPropertyAsInteger(
-				HybridPaymentParamGen.class.getName() + ".TYPE", 3);
+				ElasqlTpccRte.class.getName() + ".TYPE", 3);
 	}
 	
 	private int homeWid;
