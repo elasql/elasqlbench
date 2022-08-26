@@ -72,8 +72,8 @@ public class HybridNewOrderParamGen implements TpccTxParamGenerator {
 		// Note: We change olCount to 10, instead of a random number in 5~15
 		// so that when we generate migration keys we will not have to scan the db
 		// to ensure how many order line there are for each order.
-//		int olCount = valueGen.number(5, 15);
-		int olCount = 10;
+		int olCount = valueGen.number(5, 15);
+//		int olCount = 10;
 		pars[3] = olCount;
 
 		for (int i = 0; i < olCount; i++) {
@@ -89,8 +89,11 @@ public class HybridNewOrderParamGen implements TpccTxParamGenerator {
 
 			// TODO: Verify this
 			// ol_supply_w_id. 1% of items are supplied by remote warehouse
-			if (valueGen.rng().nextDouble() < 0.05 && numOfWarehouses > 1) {
-				pars[++j] = valueGen.numberExcluding(1, numOfWarehouses, homeWid);
+			if (valueGen.rng().nextDouble() < 0.01 && numOfWarehouses > 1) {
+				if (TYPE == 4)
+					pars[++j] = selectWarehouseByGoogleWorkloads();
+				else
+					pars[++j] = valueGen.numberExcluding(1, numOfWarehouses, homeWid);
 				allLocal = false;
 			} else
 				pars[++j] = homeWid;
@@ -135,11 +138,15 @@ public class HybridNewOrderParamGen implements TpccTxParamGenerator {
 			}
 			return previosWareHouse;
 		case 4:
-			int startWid = ParamGenHelper.getPartId() * ElasqlTpccConstants.WAREHOUSE_PER_PART + 1;
-			int widOffset = random.nextInt(ElasqlTpccConstants.WAREHOUSE_PER_PART);
-			return (startWid + widOffset);
+			return selectWarehouseByGoogleWorkloads();
 		default: 
 			throw new UnsupportedOperationException(); 
 		}
+	}
+	
+	private int selectWarehouseByGoogleWorkloads() {
+		int startWid = ParamGenHelper.getPartId() * ElasqlTpccConstants.WAREHOUSE_PER_PART + 1;
+		int widOffset = random.nextInt(ElasqlTpccConstants.WAREHOUSE_PER_PART);
+		return (startWid + widOffset);
 	}
 }

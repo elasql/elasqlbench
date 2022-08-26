@@ -17,6 +17,12 @@ public class ParamGenHelper {
 	
 	static {
 		WORKLOAD = ElasqlYcsbConstants.loadGoogleWorkloadTrace(PartitionMetaMgr.NUM_PARTITIONS);
+		
+//		for (int i = 0; i < WORKLOAD.length; i++) {
+//			for (int j = 0; j < WORKLOAD[i].length; j++) {
+//				WORKLOAD[i][j] = Math.pow(WORKLOAD[i][j], 2);
+//			}
+//		}
 	}
 	
 	public static int getCurrentReplayPoint() {
