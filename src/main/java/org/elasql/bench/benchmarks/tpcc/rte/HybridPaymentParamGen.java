@@ -65,9 +65,13 @@ public class HybridPaymentParamGen implements TpccTxParamGenerator {
 		 * is a randomly selected remote warehouse 15% of the time.
 		 */
 		if (valueGen.rng().nextDouble() >= 0.85 && numOfWarehouses > 1) {
-			if (TYPE == 4)
-				pars[2] = selectWarehouseByGoogleWorkloads();
-			else
+			if (TYPE == 4) {
+				int remoteWid = homeWid;
+				while (remoteWid == homeWid) {
+					remoteWid = selectWarehouseByGoogleWorkloads();
+				}
+				pars[2] = remoteWid;
+			} else
 				pars[2] = valueGen.numberExcluding(1, numOfWarehouses, homeWid);
 			pars[3] = valueGen.number(1, 10);
 		} else {
