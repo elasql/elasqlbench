@@ -68,7 +68,7 @@ public class HybridPaymentParamGen implements TpccTxParamGenerator {
 			if (TYPE == 4) {
 				int remoteWid = homeWid;
 				while (remoteWid == homeWid) {
-					remoteWid = selectWarehouseByGoogleWorkloads();
+					remoteWid = selectRemoteWarehouseByGoogleWorkloads();
 				}
 				pars[2] = remoteWid;
 			} else
@@ -125,14 +125,20 @@ public class HybridPaymentParamGen implements TpccTxParamGenerator {
 			}
 			return previosWareHouse;
 		case 4:
-			return selectWarehouseByGoogleWorkloads();
+			return selectMainWarehouseByGoogleWorkloads();
 		default: 
 			throw new UnsupportedOperationException(); 
 		}
 	}
 	
-	private int selectWarehouseByGoogleWorkloads() {
-		int startWid = ParamGenHelper.getPartId() * ElasqlTpccConstants.WAREHOUSE_PER_PART + 1;
+	private int selectMainWarehouseByGoogleWorkloads() {
+		int startWid = ParamGenHelper.getMainPartId() * ElasqlTpccConstants.WAREHOUSE_PER_PART + 1;
+		int widOffset = random.nextInt(ElasqlTpccConstants.WAREHOUSE_PER_PART);
+		return (startWid + widOffset);
+	}
+	
+	private int selectRemoteWarehouseByGoogleWorkloads() {
+		int startWid = ParamGenHelper.getRemotePartId() * ElasqlTpccConstants.WAREHOUSE_PER_PART + 1;
 		int widOffset = random.nextInt(ElasqlTpccConstants.WAREHOUSE_PER_PART);
 		return (startWid + widOffset);
 	}
