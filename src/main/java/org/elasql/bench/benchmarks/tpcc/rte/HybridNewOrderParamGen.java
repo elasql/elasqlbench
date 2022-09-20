@@ -19,6 +19,9 @@ import java.util.Random;
 
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants;
+import org.elasql.bench.server.metadata.migration.TpccBeforePartPlan;
+import org.elasql.storage.metadata.PartitionMetaMgr;
+import org.elasql.util.ElasqlProperties;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
 import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
@@ -37,6 +40,11 @@ public class HybridNewOrderParamGen implements TpccTxParamGenerator {
 	private int numOfWarehouses = ElasqlTpccBenchmark.getNumOfWarehouses();
 
 	private Random random = new Random(0);
+	
+	private final static double REMOTE_RATE;
+	static {
+		REMOTE_RATE = ElasqlProperties.getLoader().getPropertyAsDouble(HybridNewOrderParamGen.class.getName() + ".REMOTE_RATE", 0.05);
+	}
 	
 	public HybridNewOrderParamGen(int homeWarehouseId, int homeDistrictId) {
 		homeWid = homeWarehouseId;
@@ -89,7 +97,7 @@ public class HybridNewOrderParamGen implements TpccTxParamGenerator {
 
 			// TODO: Verify this
 			// ol_supply_w_id. 1% of items are supplied by remote warehouse
-			if (valueGen.rng().nextDouble() < 0.01 && numOfWarehouses > 1) {
+			if (valueGen.rng().nextDouble() < REMOTE_RATE && numOfWarehouses > 1) {
 				if (TYPE == 4) {
 					int remoteWid = homeWid;
 					while (remoteWid == homeWid) {
@@ -128,8 +136,11 @@ public class HybridNewOrderParamGen implements TpccTxParamGenerator {
 		case 2: // skewness must > 0
 			if (random.nextDouble() < ORIGINAL_RTE_PERCENTAGE) 
 				return this.homeWid;
-			else
-				return (int) (System.currentTimeMillis() / WID_CHANGE_PERIOD_MS % numOfWarehouses) + 1; 
+			else {
+				int wid = this.homeWid % TpccBeforePartPlan.NORMAL_WAREHOUSE_PER_PART;
+				int nodeId = (int) (System.currentTimeMillis() / WID_CHANGE_PERIOD_MS % PartitionMetaMgr.NUM_PARTITIONS);
+				return wid + nodeId * TpccBeforePartPlan.NORMAL_WAREHOUSE_PER_PART + 1; 
+			}			
 		case 3: // skewness must > 0
 			int currentWareHouse = (int) (System.currentTimeMillis() / WID_CHANGE_PERIOD_MS % numOfWarehouses) + 1;
 			if (currentWareHouse != previousTime) {

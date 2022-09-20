@@ -19,6 +19,8 @@ import java.util.Random;
 
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants;
+import org.elasql.bench.server.metadata.migration.TpccBeforePartPlan;
+import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
 import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
@@ -111,8 +113,11 @@ public class HybridPaymentParamGen implements TpccTxParamGenerator {
 		case 2: // skewness must > 0
 			if (random.nextDouble() < ORIGINAL_RTE_PERCENTAGE) 
 				return this.homeWid;
-			else
-				return (int) (System.currentTimeMillis() / WID_CHANGE_PERIOD_MS % numOfWarehouses) + 1; 
+			else {
+				int wid = this.homeWid % TpccBeforePartPlan.NORMAL_WAREHOUSE_PER_PART;
+				int nodeId = (int) (System.currentTimeMillis() / WID_CHANGE_PERIOD_MS % PartitionMetaMgr.NUM_PARTITIONS);
+				return wid + nodeId * TpccBeforePartPlan.NORMAL_WAREHOUSE_PER_PART + 1; 
+			}			
 		case 3: // skewness must > 0
 			int currentWareHouse = (int) (System.currentTimeMillis() / WID_CHANGE_PERIOD_MS % numOfWarehouses) + 1;
 			if (currentWareHouse != previousTime) {
