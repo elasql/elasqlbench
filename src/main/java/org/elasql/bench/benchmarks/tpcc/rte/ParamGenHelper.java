@@ -23,10 +23,37 @@ public class ParamGenHelper {
 	
 	private static final AtomicLong GLOBAL_START_TIME = new AtomicLong(0);
 	// To delay replaying the workload (in milliseconds)
-	private static final long DELAY_START_TIME = 90_000;
+	private static final long DELAY_START_TIME = 00_000;
 	
 	static {
-		WORKLOAD = ElasqlYcsbConstants.loadGoogleWorkloadTrace(PartitionMetaMgr.NUM_PARTITIONS);
+//		WORKLOAD = ElasqlYcsbConstants.loadGoogleWorkloadTrace(PartitionMetaMgr.NUM_PARTITIONS);
+		
+		double[][] dummyWorkload = new double[360][];
+		for (int time = 0; time < 120; time++) {
+			double[] distribution = new double[4];
+			distribution[0] = 0.85;
+			distribution[1] = 0.05;
+			distribution[2] = 0.05;
+			distribution[3] = 0.05;
+			dummyWorkload[time] = distribution;
+		}
+		for (int time = 120; time < 240; time++) {
+			double[] distribution = new double[4];
+			distribution[0] = 0.05;
+			distribution[1] = 0.85;
+			distribution[2] = 0.05;
+			distribution[3] = 0.05;
+			dummyWorkload[time] = distribution;
+		}
+		for (int time = 240; time < 360; time++) {
+			double[] distribution = new double[4];
+			distribution[0] = 0.05;
+			distribution[1] = 0.05;
+			distribution[2] = 0.85;
+			distribution[3] = 0.05;
+			dummyWorkload[time] = distribution;
+		}
+		WORKLOAD = dummyWorkload;
 		
 		// Generate short-term skewness from the Google workload
 		SHORT_TERM_SKEWNESS = new int[WORKLOAD.length][SHORT_TERM_WINDOW_COUNT];
