@@ -1,17 +1,13 @@
 package org.elasql.bench.benchmarks.ycsb.rte;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.elasql.bench.benchmarks.ycsb.ElasqlYcsbConstants;
+import org.elasql.bench.workloads.GoogleWorkload;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.util.PeriodicalJob;
 import org.vanilladb.bench.BenchmarkerParameters;
@@ -50,29 +46,21 @@ public class SingleTableGoogleParamGen implements TxParamGenerator<YcsbTransacti
 	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
 	private static final int DATABASE_SIZE = ElasqlYcsbConstants.INIT_RECORD_PER_PART * NUM_PARTITIONS;
 	
-	private static final double[][] WORKLOAD;
-	private static final int LONG_TERM_WINDOW_SIZE = 1000; // in milliseconds
-	private static final int SHORT_TERM_WINDOW_SIZE = 20; // in milliseconds
-	private static final int SHORT_TERM_WINDOW_COUNT = LONG_TERM_WINDOW_SIZE / SHORT_TERM_WINDOW_SIZE;
-	private static final int[][] SHORT_TERM_SKEWNESS;
+	private static final int WORKLOAD_WINDOW_SIZE = 1000; // in milliseconds
+	private static final GoogleWorkload WORKLOAD = new GoogleWorkload(WORKLOAD_WINDOW_SIZE);
+	
 	private static final AtomicLong GLOBAL_START_TIME = new AtomicLong(0);
 	
 	// To delay replaying the workload (in milliseconds)
-	private static final long DELAY_START_TIME = 90_000;
+	private static final long GOOGLE_START_TIME = 90_000;
+	private static final long GOOGLE_END_TIME = GOOGLE_START_TIME + WORKLOAD_WINDOW_SIZE * WORKLOAD.getLength();
 	
 	static {
-		WORKLOAD = ElasqlYcsbConstants.loadGoogleWorkloadTrace(PartitionMetaMgr.NUM_PARTITIONS);
 		TWO_SIDED_ZIP_TEMPLATE = new AtomicReference<TwoSidedSkewGenerator>(
 				new TwoSidedSkewGenerator(DATABASE_SIZE, ElasqlYcsbConstants.ZIPFIAN_PARAMETER));
 		ZIP_TEMPLATE = new AtomicReference<YcsbLatestGenerator>(
 				new YcsbLatestGenerator(ElasqlYcsbConstants.INIT_RECORD_PER_PART,
 						ElasqlYcsbConstants.ZIPFIAN_PARAMETER));
-		
-		// Generate short-term skewness from the Google workload
-		SHORT_TERM_SKEWNESS = new int[WORKLOAD.length][SHORT_TERM_WINDOW_COUNT];
-		for (int timeIdx = 0; timeIdx < WORKLOAD.length; timeIdx++) {
-			SHORT_TERM_SKEWNESS[timeIdx] = generateShortTermSequence(WORKLOAD[timeIdx], SHORT_TERM_WINDOW_COUNT);
-		}
 		
 		if (logger.isLoggable(Level.INFO)) {
 			String recordStr = "";
@@ -100,12 +88,12 @@ public class SingleTableGoogleParamGen implements TxParamGenerator<YcsbTransacti
 					return;
 				}
 				
-				int replayPoint = getCurrentReplayPoint();
+				long elapsedTime = getElapsedTimeMs();
 
-				if (replayPoint >= 0 && replayPoint < WORKLOAD.length) {
-					System.out.println(String.format("Replaying. Current replay point: %d", replayPoint));
+				if (elapsedTime >= GOOGLE_START_TIME && elapsedTime <= GOOGLE_END_TIME) {
+					System.out.println(String.format("Elapsed time: %d (Replaying the Google workload)", elapsedTime));
 				} else {
-					System.out.println(String.format("Not replaying. Current replay point: %d", replayPoint));
+					System.out.println(String.format("Elapsed time: %d (Uniform workload)", elapsedTime));
 				}
 			}
 		}).start();
@@ -123,81 +111,8 @@ public class SingleTableGoogleParamGen implements TxParamGenerator<YcsbTransacti
 		return (System.nanoTime() - startTime) / 1_000_000; // ns -> ms
 	}
 	
-	private static int getCurrentReplayPoint() {
-		long replayTime = getElapsedTimeMs() - DELAY_START_TIME;
-		if (replayTime < 0) {
-			return (int) (replayTime / LONG_TERM_WINDOW_SIZE - 1);
-		} else {
-			return (int) (replayTime / LONG_TERM_WINDOW_SIZE);
-		}
-	}
-	
-	// XXX: Debug
-//	private static AtomicInteger lastLtIdx = new AtomicInteger(-1);
-//	private static AtomicInteger lastStIdx = new AtomicInteger(-1);
-	
-	private static int getCurrentFocusPartId() {
-		long elapsedTime = getElapsedTimeMs() - DELAY_START_TIME;
-		int longTermIdx = (int) (elapsedTime / LONG_TERM_WINDOW_SIZE);
-		int timeSlotId = (int) (elapsedTime % LONG_TERM_WINDOW_SIZE / SHORT_TERM_WINDOW_SIZE);
-		
-		// XXX: Debug: show long term distribution
-//		int lastLtId = lastLtIdx.get();
-//		if (lastLtId != longTermIdx) {
-//			if (lastLtIdx.compareAndSet(lastLtId, longTermIdx)) {
-//				System.out.println(String.format("Time: %d ms, Long-Term %d, Dist: %s", elapsedTime, longTermIdx, Arrays.toString(WORKLOAD[longTermIdx])));
-//			}
-//		}
-		
-		// XXX: Debug: show current short-term focus
-//		int lastStId = lastStIdx.get();
-//		if (lastStId != timeSlotId) {
-//			if (lastStIdx.compareAndSet(lastStId, timeSlotId)) {
-//				System.out.println(String.format("Time: %d ms, Short-Term %d, Part Id: %d", elapsedTime, timeSlotId, SHORT_TERM_SKEWNESS[longTermIdx][timeSlotId]));
-//			}
-//		}
-		
-		return SHORT_TERM_SKEWNESS[longTermIdx][timeSlotId];
-	}
-	
-	private static int[] generateShortTermSequence(double[] longTermDistribution, int seqLength) {
-		// Calculate the sum
-		double sum = 0.0;
-		for (int i = 0; i < longTermDistribution.length; i++) {
-			sum += longTermDistribution[i];
-		}
-
-		// Normalize the distribution to counts
-		int[] counts = new int[longTermDistribution.length];
-		for (int i = 0; i < counts.length; i++) {
-			counts[i] = (int) (longTermDistribution[i] / sum * seqLength);
-		}
-		
-		// Generate the sequence
-		List<Integer> seqeuence = new ArrayList<Integer>(seqLength);
-		for (int partId = 0; partId < counts.length; partId++) {
-			Integer boxedPartId = partId;
-			for (int i = 0; i < counts[partId]; i++)
-				seqeuence.add(boxedPartId);
-		}
-		
-		// Fill up the rest space (if there is any) with the last partition id
-		while (seqeuence.size() < seqLength)
-			seqeuence.add(counts.length - 1);
-		
-		// Shuffle to create randomness (deterministic)
-		Collections.shuffle(seqeuence, new Random(12345678));
-		
-		// Save as an integer array
-		int[] intArray = seqeuence.stream().mapToInt(Integer::intValue).toArray();
-		
-		return intArray;
-	}
-	
 	private TwoSidedSkewGenerator twoSidedZipGenerator;
 	private YcsbLatestGenerator zipfianGenerator;
-	private int[] shortTermTimeSlotSequence;
-	private int currentReplayPoint = -1;
 	
 	public SingleTableGoogleParamGen() {
 		this.twoSidedZipGenerator = new TwoSidedSkewGenerator(TWO_SIDED_ZIP_TEMPLATE.get());
@@ -213,24 +128,22 @@ public class SingleTableGoogleParamGen implements TxParamGenerator<YcsbTransacti
 	public Object[] generateParameter() {
 		RandomValueGenerator rvg = new RandomValueGenerator();
 		
-		// Check the current time point
-		int replayPoint = getCurrentReplayPoint();
-		boolean isReplaying = false;
-		if (replayPoint >= 0 && replayPoint < WORKLOAD.length) {
-			isReplaying = true;
-		}
+		// Check the current time
+		long elapsedTime = getElapsedTimeMs();
+		boolean isReplayingGoogle = false;
+		if (elapsedTime >= GOOGLE_START_TIME && elapsedTime <= GOOGLE_END_TIME)
+			isReplayingGoogle = true;
 
 		// Decide the types of transactions
 		boolean isReadWriteTx = (rvg.randomChooseFromDistribution(RW_TX_RATE, 1 - RW_TX_RATE) == 0);
 		boolean isDistTx = (rvg.randomChooseFromDistribution(DIST_TX_RATE, 1 - DIST_TX_RATE) == 0);
-		if (NUM_PARTITIONS < 2 || !isReplaying)
+		if (NUM_PARTITIONS < 2 || !isReplayingGoogle)
 			isDistTx = false;
 		
 		// Select a partition based on the distribution of the workload at the given time
 		int mainPartId;
-		if (isReplaying) { // Replay time
-//			mainPartId = rvg.randomChooseFromDistribution(WORKLOAD[replayPoint]);
-			mainPartId = getCurrentFocusPartId();
+		if (isReplayingGoogle) { // Replay time
+			mainPartId = WORKLOAD.randomlySelectPartId((int) (elapsedTime - GOOGLE_START_TIME));
 		} else { // Non-replay time
 			mainPartId = rvg.number(0, NUM_PARTITIONS - 1);
 		}
@@ -269,7 +182,7 @@ public class SingleTableGoogleParamGen implements TxParamGenerator<YcsbTransacti
 		
 		// Remote reads
 		if (isDistTx && remoteRecordCount > 0)
-			chooseGlobalRecords(replayPoint, remoteRecordCount, ids);
+			chooseGlobalRecords(elapsedTime, remoteRecordCount, ids);
 		
 		// Add the ids to the param list
 		for (Long id : ids)
@@ -309,16 +222,17 @@ public class SingleTableGoogleParamGen implements TxParamGenerator<YcsbTransacti
 		}
 	}
 	
-	private void chooseGlobalRecords(int replayTime, int count, ArrayList<Long> ids) {
+	private void chooseGlobalRecords(long elapsedTime, int count, ArrayList<Long> ids) {
 		// Choose the center
 		int center = DATABASE_SIZE / 2;
-		if (replayTime >= 0 && replayTime < WORKLOAD.length) {
+		if (elapsedTime >= GOOGLE_START_TIME && elapsedTime <= GOOGLE_END_TIME) {
 			// Note that it might be overflowed here.
 			// The center of the 2-sided distribution changes
 			// as the time increases. It moves from 0 to DATA_SIZE
 			// and bounces back when it hits the end of the range. 
-			int windowSize = WORKLOAD.length / GLOBAL_SKEW_REPEAT;
-			int timeOffset = replayTime % (2 * windowSize);
+			int windowSize = WORKLOAD.getLength() / GLOBAL_SKEW_REPEAT;
+			int googleTimeIdx = (int) ((elapsedTime - GOOGLE_START_TIME) / WORKLOAD_WINDOW_SIZE);
+			int timeOffset = googleTimeIdx % (2 * windowSize);
 			if (timeOffset >= windowSize)
 				timeOffset = 2 * windowSize - timeOffset;
 			center = DATABASE_SIZE / windowSize;

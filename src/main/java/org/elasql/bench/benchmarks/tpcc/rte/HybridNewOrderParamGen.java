@@ -15,12 +15,7 @@
  *******************************************************************************/
 package org.elasql.bench.benchmarks.tpcc.rte;
 
-import java.util.Random;
-
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
-import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants;
-import org.elasql.bench.server.metadata.migration.TpccBeforePartPlan;
-import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.elasql.util.ElasqlProperties;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
@@ -29,25 +24,19 @@ import org.vanilladb.bench.benchmarks.tpcc.rte.TpccTxParamGenerator;
 
 public class HybridNewOrderParamGen implements TpccTxParamGenerator {
 	
-	private static final int WID_CHANGE_PERIOD_MS = 25;
-	private static final int TYPE = ElasqlTpccRte.TYPE; 
-	// 0: standard, 1: time dependent, 2: hybrid (2 hotspot in a window), 3: hybrid, 4: dynamic
-	private static final double ORIGINAL_RTE_PERCENTAGE = 0.5; // for type 2
-	private static final double SKEW_RATIO = 0.8;
+	private static final double REMOTE_RATE;
 	
-	private int homeWid, homeDid;
-	private TpccValueGenerator valueGen = new TpccValueGenerator();
-	private int numOfWarehouses = ElasqlTpccBenchmark.getNumOfWarehouses();
-
-	private Random random = new Random(0);
-	
-	private final static double REMOTE_RATE;
 	static {
 		REMOTE_RATE = ElasqlProperties.getLoader().getPropertyAsDouble(HybridNewOrderParamGen.class.getName() + ".REMOTE_RATE", 0.05);
 	}
 	
+	private int homeDid;
+	private TpccValueGenerator valueGen = new TpccValueGenerator();
+	private WarehouseSelector warehouseSelector;
+	private int numOfWarehouses = ElasqlTpccBenchmark.getNumOfWarehouses();
+	
 	public HybridNewOrderParamGen(int homeWarehouseId, int homeDistrictId) {
-		homeWid = homeWarehouseId;
+		warehouseSelector = new WarehouseSelector(homeWarehouseId);
 		homeDid = homeDistrictId;
 	}
 
@@ -68,10 +57,10 @@ public class HybridNewOrderParamGen implements TpccTxParamGenerator {
 		 */
 		// if (RemoteTerminalEmulator.IS_BATCH_REQUEST)
 		// wid = rg.randomChooseFromDistribution(WAREHOUSE_DISTRIBUTION);
-
+		
 		boolean allLocal = true;
 		// pars = {wid, did, cid, olCount, items[15][3], allLocal}
-		int homeWid = getHomeWid();
+		int homeWid = warehouseSelector.getHomeWid();
 
 		Object[] pars = new Object[50];
 		pars[0] = homeWid;
@@ -98,14 +87,7 @@ public class HybridNewOrderParamGen implements TpccTxParamGenerator {
 			// TODO: Verify this
 			// ol_supply_w_id. 1% of items are supplied by remote warehouse
 			if (valueGen.rng().nextDouble() < REMOTE_RATE && numOfWarehouses > 1) {
-				if (TYPE == 4) {
-					int remoteWid = homeWid;
-					while (remoteWid == homeWid) {
-						remoteWid = selectRemoteWarehouseByGoogleWorkloads();
-					}
-					pars[++j] = remoteWid;
-				} else
-					pars[++j] = valueGen.numberExcluding(1, numOfWarehouses, homeWid);
+				pars[++j] = warehouseSelector.getRemoteWid();
 				allLocal = false;
 			} else
 				pars[++j] = homeWid;
@@ -122,52 +104,5 @@ public class HybridNewOrderParamGen implements TpccTxParamGenerator {
 	public long getThinkTime() {
 		double r = valueGen.rng().nextDouble();
 		return (long) -Math.log(r) * TpccConstants.THINKTIME_NEW_ORDER * 1000;
-	}
-	
-	private int previousTime = -1;
-	private int previosWareHouse = -1;
-	
-	private int getHomeWid() {
-		switch (TYPE) { 
-		case 0: 
-			return this.homeWid; 
-		case 1: 
-			return (int) (System.currentTimeMillis() / WID_CHANGE_PERIOD_MS % numOfWarehouses) + 1; 
-		case 2: // skewness must > 0
-			if (random.nextDouble() < ORIGINAL_RTE_PERCENTAGE) 
-				return this.homeWid;
-			else {
-				int wid = this.homeWid % TpccBeforePartPlan.NORMAL_WAREHOUSE_PER_PART;
-				int nodeId = (int) (System.currentTimeMillis() / WID_CHANGE_PERIOD_MS % PartitionMetaMgr.NUM_PARTITIONS);
-				return wid + nodeId * TpccBeforePartPlan.NORMAL_WAREHOUSE_PER_PART + 1; 
-			}			
-		case 3: // skewness must > 0
-			int currentWareHouse = (int) (System.currentTimeMillis() / WID_CHANGE_PERIOD_MS % numOfWarehouses) + 1;
-			if (currentWareHouse != previousTime) {
-				previousTime = currentWareHouse;
-				if (random.nextDouble() < SKEW_RATIO) {
-					previosWareHouse = this.homeWid;
-				} else {
-					previosWareHouse = currentWareHouse;
-				}
-			}
-			return previosWareHouse;
-		case 4:
-			return selectMainWarehouseByGoogleWorkloads();
-		default: 
-			throw new UnsupportedOperationException(); 
-		}
-	}
-	
-	private int selectMainWarehouseByGoogleWorkloads() {
-		int startWid = ParamGenHelper.getMainPartId() * ElasqlTpccConstants.WAREHOUSE_PER_PART + 1;
-		int widOffset = random.nextInt(ElasqlTpccConstants.WAREHOUSE_PER_PART);
-		return (startWid + widOffset);
-	}
-	
-	private int selectRemoteWarehouseByGoogleWorkloads() {
-		int startWid = ParamGenHelper.getRemotePartId() * ElasqlTpccConstants.WAREHOUSE_PER_PART + 1;
-		int widOffset = random.nextInt(ElasqlTpccConstants.WAREHOUSE_PER_PART);
-		return (startWid + widOffset);
 	}
 }
