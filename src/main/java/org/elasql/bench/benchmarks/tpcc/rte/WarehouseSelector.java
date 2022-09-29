@@ -20,6 +20,7 @@ public class WarehouseSelector {
 	private static final double SKEW_RATIO = 0.8;
 	
 	private static final long GOOGLE_START_TIME = 60_000;
+	private static long GOOGLE_END_TIME = GOOGLE_START_TIME;
 	private static final int GOOGLE_WINDOW_SIZE = 1_000;
 	
 	private static MultiTrendHotPartitionWorkload hotPartWorkload = null;
@@ -34,11 +35,10 @@ public class WarehouseSelector {
 			break;
 		case 5:
 			googleWorkload = new GoogleWorkload(GOOGLE_WINDOW_SIZE);
+			GOOGLE_END_TIME = GOOGLE_START_TIME + GOOGLE_WINDOW_SIZE * googleWorkload.getLength();
 			break;
 		}
 	}
-	
-	private static final long GOOGLE_END_TIME = GOOGLE_START_TIME + GOOGLE_WINDOW_SIZE * googleWorkload.getLength();
 	
 	private static long getElapsedTimeMs() {
 		long startTime = GLOBAL_START_TIME.get();
