@@ -16,4 +16,8 @@ public class MultiTrendGoogleWorkload {
 	public int randomlySelectPartId(long currentTime) {
 		return multiTrendWorkload.randomlySelectPartId(currentTime);
 	}
+	
+	public int getLength() {
+		return multiTrendWorkload.getLongTermLength();
+	}
 }

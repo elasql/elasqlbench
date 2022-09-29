@@ -1,10 +1,5 @@
 package org.elasql.bench.benchmarks.ycsb;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-
 import org.elasql.bench.util.ElasqlBenchProperties;
 
 public class ElasqlYcsbConstants {
@@ -51,10 +46,6 @@ public class ElasqlYcsbConstants {
 	
 	// Zipfian
 	public static final double ZIPFIAN_PARAMETER;
-	
-	// Google
-	public static final String GOOGLE_TRACE_FILE;
-	public static final int GOOGLE_TRACE_LENGTH;
 	
 	// Hot Counter
 	public static final int HOT_COUNT_PER_PART;
@@ -125,42 +116,11 @@ public class ElasqlYcsbConstants {
 				.getPropertyAsInteger(ElasqlYcsbConstants.class.getName() + ".RECORD_COUNT_MEAN", 20);
 		RECORD_COUNT_STD = ElasqlBenchProperties.getLoader()
 				.getPropertyAsInteger(ElasqlYcsbConstants.class.getName() + ".RECORD_COUNT_STD", 10);
-		GOOGLE_TRACE_FILE = ElasqlBenchProperties.getLoader()
-				.getPropertyAsString(ElasqlYcsbConstants.class.getName() + ".GOOGLE_TRACE_FILE", "");
-		GOOGLE_TRACE_LENGTH = ElasqlBenchProperties.getLoader()
-				.getPropertyAsInteger(ElasqlYcsbConstants.class.getName() + ".GOOGLE_TRACE_LENGTH", 0);
 		HOT_COUNT_PER_PART = ElasqlBenchProperties.getLoader()
 				.getPropertyAsInteger(ElasqlYcsbConstants.class.getName() + ".HOT_COUNT_PER_PART", 1);
 		HOT_UPDATE_RATE_IN_RW_TX = ElasqlBenchProperties.getLoader()
 				.getPropertyAsDouble(ElasqlYcsbConstants.class.getName() + ".HOT_UPDATE_RATE_IN_RW_TX", 0.1);
 		DYNAMIC_RECORD_COUNT_RANGE = ElasqlBenchProperties.getLoader()
 				.getPropertyAsInteger(ElasqlYcsbConstants.class.getName() + ".DYNAMIC_RECORD_COUNT_RANGE", 5);
-	}
-	
-	public static double[][] loadGoogleWorkloadTrace(int numberOfPartitions) {
-		// Check file existence
-		File file = new File(GOOGLE_TRACE_FILE);
-		if (!file.exists())
-			throw new RuntimeException(String.format("Path '%s' does not exist", GOOGLE_TRACE_FILE));
-		if (!file.isFile())
-			throw new RuntimeException(String.format("Path '%s' is not a file", GOOGLE_TRACE_FILE));
-		
-		// Load the data
-		double[][] workload = new double[GOOGLE_TRACE_LENGTH][numberOfPartitions];
-		try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-			// Data Format: Each row is a workload of a node, each value is the
-			for (int partId = 0; partId < numberOfPartitions; partId++) {
-				String line = reader.readLine();
-				String[] loads = line.split(",");
-				for (int time = 0; time < GOOGLE_TRACE_LENGTH; time++) {
-					workload[time][partId] = Double.parseDouble(loads[time]);
-				}
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new RuntimeException(e);
-		}
-		
-		return workload;
 	}
 }

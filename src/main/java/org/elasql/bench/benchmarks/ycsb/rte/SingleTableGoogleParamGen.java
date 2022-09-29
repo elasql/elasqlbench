@@ -47,12 +47,14 @@ public class SingleTableGoogleParamGen implements TxParamGenerator<YcsbTransacti
 	private static final int DATABASE_SIZE = ElasqlYcsbConstants.INIT_RECORD_PER_PART * NUM_PARTITIONS;
 	
 	private static final int WORKLOAD_WINDOW_SIZE = 1000; // in milliseconds
+//	private static final int WORKLOAD_WINDOW_SIZE = 3000; // in milliseconds
 	private static final GoogleWorkload WORKLOAD = new GoogleWorkload(WORKLOAD_WINDOW_SIZE);
+//	private static final MultiTrendGoogleWorkload WORKLOAD = new MultiTrendGoogleWorkload(WORKLOAD_WINDOW_SIZE, 20);
 	
 	private static final AtomicLong GLOBAL_START_TIME = new AtomicLong(0);
 	
 	// To delay replaying the workload (in milliseconds)
-	private static final long GOOGLE_START_TIME = 90_000;
+	private static final long GOOGLE_START_TIME = 60_000;
 	private static final long GOOGLE_END_TIME = GOOGLE_START_TIME + WORKLOAD_WINDOW_SIZE * WORKLOAD.getLength();
 	
 	static {
@@ -73,10 +75,8 @@ public class SingleTableGoogleParamGen implements TxParamGenerator<YcsbTransacti
 			}
 			logger.info(String.format("Use single-table Google YCSB generators "
 					+ "(Read-write tx ratio: %f, distributed tx ratio: %f, "
-					+ "%s, data size: %d, google trace file: %s, google trace length: %d)",
-					RW_TX_RATE, DIST_TX_RATE, recordStr, DATABASE_SIZE,
-					ElasqlYcsbConstants.GOOGLE_TRACE_FILE,
-					ElasqlYcsbConstants.GOOGLE_TRACE_LENGTH));
+					+ "%s, data size: %d)",
+					RW_TX_RATE, DIST_TX_RATE, recordStr, DATABASE_SIZE));
 		}
 		
 		// Debug: trace the current replay time
@@ -90,10 +90,12 @@ public class SingleTableGoogleParamGen implements TxParamGenerator<YcsbTransacti
 				
 				long elapsedTime = getElapsedTimeMs();
 
-				if (elapsedTime >= GOOGLE_START_TIME && elapsedTime <= GOOGLE_END_TIME) {
-					System.out.println(String.format("Elapsed time: %d (Replaying the Google workload)", elapsedTime));
+				if (elapsedTime >= GOOGLE_START_TIME && elapsedTime < GOOGLE_END_TIME) {
+					System.out.println(String.format("Elapsed time: %f seconds (Replaying the Google workload)", 
+							(elapsedTime / 1000.0)));
 				} else {
-					System.out.println(String.format("Elapsed time: %d (Uniform workload)", elapsedTime));
+					System.out.println(String.format("Elapsed time: %f seconds (Uniform workload)",
+							(elapsedTime / 1000.0)));
 				}
 			}
 		}).start();
@@ -131,7 +133,7 @@ public class SingleTableGoogleParamGen implements TxParamGenerator<YcsbTransacti
 		// Check the current time
 		long elapsedTime = getElapsedTimeMs();
 		boolean isReplayingGoogle = false;
-		if (elapsedTime >= GOOGLE_START_TIME && elapsedTime <= GOOGLE_END_TIME)
+		if (elapsedTime >= GOOGLE_START_TIME && elapsedTime < GOOGLE_END_TIME)
 			isReplayingGoogle = true;
 
 		// Decide the types of transactions
@@ -144,6 +146,7 @@ public class SingleTableGoogleParamGen implements TxParamGenerator<YcsbTransacti
 		int mainPartId;
 		if (isReplayingGoogle) { // Replay time
 			mainPartId = WORKLOAD.randomlySelectPartId((int) (elapsedTime - GOOGLE_START_TIME));
+//			mainPartId = WORKLOAD.getShortTermFocusedPart((int) (elapsedTime - GOOGLE_START_TIME));
 		} else { // Non-replay time
 			mainPartId = rvg.number(0, NUM_PARTITIONS - 1);
 		}
@@ -217,15 +220,16 @@ public class SingleTableGoogleParamGen implements TxParamGenerator<YcsbTransacti
 	private void chooseRecordsInPart(int partId, int count, ArrayList<Long> ids) {
 		for (int i = 0; i < count; i++) {
 			long id = chooseKeyInPart(partId);
-			while (!ids.add(id))
+			while (ids.contains(id))
 				id = chooseKeyInPart(partId);
+			ids.add(id);
 		}
 	}
 	
 	private void chooseGlobalRecords(long elapsedTime, int count, ArrayList<Long> ids) {
 		// Choose the center
 		int center = DATABASE_SIZE / 2;
-		if (elapsedTime >= GOOGLE_START_TIME && elapsedTime <= GOOGLE_END_TIME) {
+		if (elapsedTime >= GOOGLE_START_TIME && elapsedTime < GOOGLE_END_TIME) {
 			// Note that it might be overflowed here.
 			// The center of the 2-sided distribution changes
 			// as the time increases. It moves from 0 to DATA_SIZE
@@ -242,8 +246,9 @@ public class SingleTableGoogleParamGen implements TxParamGenerator<YcsbTransacti
 		// Use a global Zipfian distribution to select records
 		for (int i = 0; i < count; i++) {
 			long id = twoSidedZipGenerator.nextValue(center);
-			while (!ids.add(id))
+			while (ids.contains(id))
 				id = twoSidedZipGenerator.nextValue(center);
+			ids.add(id);
 		}
 	}
 	

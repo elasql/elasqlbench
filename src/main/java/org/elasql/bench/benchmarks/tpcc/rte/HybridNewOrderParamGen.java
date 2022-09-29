@@ -87,7 +87,7 @@ public class HybridNewOrderParamGen implements TpccTxParamGenerator {
 			// TODO: Verify this
 			// ol_supply_w_id. 1% of items are supplied by remote warehouse
 			if (valueGen.rng().nextDouble() < REMOTE_RATE && numOfWarehouses > 1) {
-				pars[++j] = warehouseSelector.getRemoteWid();
+				pars[++j] = warehouseSelector.getRemoteWid(homeWid);
 				allLocal = false;
 			} else
 				pars[++j] = homeWid;

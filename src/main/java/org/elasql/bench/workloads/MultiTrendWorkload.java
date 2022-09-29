@@ -88,4 +88,8 @@ public class MultiTrendWorkload {
 		int longTermIdx = (int) (currentTime / longTermWindowSize);
 		return rvg.randomChooseFromDistribution(longTermWorkload[longTermIdx]);
 	}
+	
+	public int getLongTermLength() {
+		return longTermWorkload.length;
+	}
 }

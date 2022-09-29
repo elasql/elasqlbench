@@ -15,6 +15,7 @@ public class MultiTrendHotPartitionWorkload {
 	
 	public static final double[][] generateHotPartitionWorkload() {
 		double[][] workload = new double[WORKLOAD_LENGTH][];
+		
 		for (int timeIdx = 0; timeIdx < WORKLOAD_LENGTH; timeIdx++) {
 			int hotPart = timeIdx / HOT_PARTITION_CHANGE_PERIOD % NUM_PARTITIONS;
 			double[] distribution = new double[NUM_PARTITIONS];

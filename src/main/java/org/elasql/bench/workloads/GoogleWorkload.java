@@ -4,8 +4,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.elasql.bench.benchmarks.ycsb.ElasqlYcsbConstants;
+import org.elasql.bench.benchmarks.ycsb.rte.SingleTableGoogleParamGen;
 import org.elasql.bench.util.ElasqlBenchProperties;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.util.RandomValueGenerator;
@@ -17,7 +19,8 @@ import org.vanilladb.bench.util.RandomValueGenerator;
  * @author Yu-Shan Lin
  */
 public class GoogleWorkload {
-	
+	private static Logger logger = Logger.getLogger(SingleTableGoogleParamGen.class.getName());
+		
 	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
 	
 	private static final String WORKLOAD_FILE;
@@ -27,7 +30,7 @@ public class GoogleWorkload {
 		WORKLOAD_FILE = ElasqlBenchProperties.getLoader()
 				.getPropertyAsString(GoogleWorkload.class.getName() + ".WORKLOAD_FILE", "");
 		WORKLOAD_LENGTH = ElasqlBenchProperties.getLoader()
-				.getPropertyAsInteger(ElasqlYcsbConstants.class.getName() + ".WORKLOAD_LENGTH", 0);
+				.getPropertyAsInteger(GoogleWorkload.class.getName() + ".WORKLOAD_LENGTH", 0);
 	}
 	
 	public static double[][] loadGoogleWorkload() {
@@ -53,6 +56,11 @@ public class GoogleWorkload {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
+		
+		if (logger.isLoggable(Level.INFO))
+			logger.info(String.format(
+					"Google workload trace with legnth = %d and %d machines are loaded",
+					WORKLOAD_LENGTH, NUM_PARTITIONS));
 		
 		return workload;
 	}

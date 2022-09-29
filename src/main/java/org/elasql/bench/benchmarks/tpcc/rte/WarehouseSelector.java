@@ -19,21 +19,26 @@ public class WarehouseSelector {
 	private static final double ORIGINAL_RTE_PERCENTAGE = 0.5; // for type 2
 	private static final double SKEW_RATIO = 0.8;
 	
+	private static final long GOOGLE_START_TIME = 60_000;
+	private static final int GOOGLE_WINDOW_SIZE = 1_000;
+	
 	private static MultiTrendHotPartitionWorkload hotPartWorkload = null;
 	private static GoogleWorkload googleWorkload = null;
 	
 	private static final AtomicLong GLOBAL_START_TIME = new AtomicLong(0);
-	
+		
 	static {
 		switch (WORKLOAD_TYPE) {
 		case 4:
 			hotPartWorkload = new MultiTrendHotPartitionWorkload();
 			break;
 		case 5:
-			googleWorkload = new GoogleWorkload(1_000);
+			googleWorkload = new GoogleWorkload(GOOGLE_WINDOW_SIZE);
 			break;
 		}
 	}
+	
+	private static final long GOOGLE_END_TIME = GOOGLE_START_TIME + GOOGLE_WINDOW_SIZE * googleWorkload.getLength();
 	
 	private static long getElapsedTimeMs() {
 		long startTime = GLOBAL_START_TIME.get();
@@ -91,33 +96,39 @@ public class WarehouseSelector {
 			partId = hotPartWorkload.getShortTermFocusedPart(elapsedTime);
 			return selectWarehouseInPart(partId);
 		case 5: // Google
-			partId = googleWorkload.randomlySelectPartId(elapsedTime);
+			if (elapsedTime >= GOOGLE_START_TIME && elapsedTime <= GOOGLE_END_TIME)
+				partId = googleWorkload.randomlySelectPartId(elapsedTime);
+			else
+				partId = valueGen.number(0, PartitionMetaMgr.NUM_PARTITIONS - 1);
 			return selectWarehouseInPart(partId);
 		default: 
 			throw new UnsupportedOperationException(); 
 		}
 	}
 	
-	public int getRemoteWid() {
+	public int getRemoteWid(int homeWid) {
 		int partId;
 		long elapsedTime = getElapsedTimeMs();
-		int remoteWid = defaultHomeWid;
+		int remoteWid = homeWid;
 		
 		switch (WORKLOAD_TYPE) {
 		case 4: // Hot Partition
-			while (remoteWid == defaultHomeWid) {
+			while (remoteWid == homeWid) {
 				partId = hotPartWorkload.randomlySelectPartId(elapsedTime);
 				remoteWid = selectWarehouseInPart(partId);
 			}
 			return remoteWid;
 		case 5: // Google
-			while (remoteWid == defaultHomeWid) {
-				partId = googleWorkload.randomlySelectPartId(elapsedTime);
+			while (remoteWid == homeWid) {
+				if (elapsedTime >= GOOGLE_START_TIME && elapsedTime <= GOOGLE_END_TIME)
+					partId = googleWorkload.randomlySelectPartId(elapsedTime);
+				else
+					partId = valueGen.number(0, PartitionMetaMgr.NUM_PARTITIONS - 1);
 				remoteWid = selectWarehouseInPart(partId);
 			}
 			return remoteWid;
 		default: 
-			return valueGen.numberExcluding(1, numOfWarehouses, defaultHomeWid);
+			return valueGen.numberExcluding(1, numOfWarehouses, homeWid);
 		}
 	}
 	
