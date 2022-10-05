@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants;
 import org.elasql.bench.server.metadata.migration.TpccBeforePartPlan;
-import org.elasql.bench.workloads.GoogleWorkload;
+import org.elasql.bench.workloads.MultiTrendGoogleWorkload;
 import org.elasql.bench.workloads.MultiTrendHotPartitionWorkload;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
@@ -21,10 +21,11 @@ public class WarehouseSelector {
 	
 	private static final long GOOGLE_START_TIME = 60_000;
 	private static long GOOGLE_END_TIME = GOOGLE_START_TIME;
-	private static final int GOOGLE_WINDOW_SIZE = 1_000;
+	private static final int GOOGLE_WINDOW_SIZE = 5_000;
 	
 	private static MultiTrendHotPartitionWorkload hotPartWorkload = null;
-	private static GoogleWorkload googleWorkload = null;
+//	private static GoogleWorkload googleWorkload = null;
+	private static MultiTrendGoogleWorkload googleWorkload = null;
 	
 	private static final AtomicLong GLOBAL_START_TIME = new AtomicLong(0);
 		
@@ -34,7 +35,8 @@ public class WarehouseSelector {
 			hotPartWorkload = new MultiTrendHotPartitionWorkload();
 			break;
 		case 5:
-			googleWorkload = new GoogleWorkload(GOOGLE_WINDOW_SIZE);
+//			googleWorkload = new GoogleWorkload(GOOGLE_WINDOW_SIZE);
+			googleWorkload = new MultiTrendGoogleWorkload(GOOGLE_WINDOW_SIZE, 50);
 			GOOGLE_END_TIME = GOOGLE_START_TIME + GOOGLE_WINDOW_SIZE * googleWorkload.getLength();
 			break;
 		}
@@ -96,8 +98,8 @@ public class WarehouseSelector {
 			partId = hotPartWorkload.getShortTermFocusedPart(elapsedTime);
 			return selectWarehouseInPart(partId);
 		case 5: // Google
-			if (elapsedTime >= GOOGLE_START_TIME && elapsedTime <= GOOGLE_END_TIME)
-				partId = googleWorkload.randomlySelectPartId(elapsedTime);
+			if (elapsedTime >= GOOGLE_START_TIME && elapsedTime < GOOGLE_END_TIME)
+				partId = googleWorkload.randomlySelectPartId(elapsedTime - GOOGLE_START_TIME);
 			else
 				partId = valueGen.number(0, PartitionMetaMgr.NUM_PARTITIONS - 1);
 			return selectWarehouseInPart(partId);
@@ -120,8 +122,8 @@ public class WarehouseSelector {
 			return remoteWid;
 		case 5: // Google
 			while (remoteWid == homeWid) {
-				if (elapsedTime >= GOOGLE_START_TIME && elapsedTime <= GOOGLE_END_TIME)
-					partId = googleWorkload.randomlySelectPartId(elapsedTime);
+				if (elapsedTime >= GOOGLE_START_TIME && elapsedTime < GOOGLE_END_TIME)
+					partId = googleWorkload.randomlySelectPartId(elapsedTime - GOOGLE_START_TIME);
 				else
 					partId = valueGen.number(0, PartitionMetaMgr.NUM_PARTITIONS - 1);
 				remoteWid = selectWarehouseInPart(partId);
