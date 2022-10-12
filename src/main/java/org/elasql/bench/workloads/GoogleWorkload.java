@@ -18,7 +18,7 @@ import org.vanilladb.bench.util.RandomValueGenerator;
  * 
  * @author Yu-Shan Lin
  */
-public class GoogleWorkload {
+public class GoogleWorkload implements Workload {
 	private static Logger logger = Logger.getLogger(SingleTableGoogleParamGen.class.getName());
 		
 	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
@@ -73,13 +73,24 @@ public class GoogleWorkload {
 		this.windowSize = windowSize;
 	}
 	
-	public int randomlySelectPartId(long currentTime) {
+	public int selectPartition(long currentTimeMs) {
 		RandomValueGenerator rvg = new RandomValueGenerator();
-		int timeIdx = (int) (currentTime / windowSize);
+		int timeIdx = (int) (currentTimeMs / windowSize);
 		return rvg.randomChooseFromDistribution(workload[timeIdx]);
 	}
-	
-	public int getLength() {
-		return WORKLOAD_LENGTH;
+
+	@Override
+	public int selectMainPartition(long currentTimeMs) {
+		return selectPartition(currentTimeMs);
+	}
+
+	@Override
+	public int selectRemotePartition(long currentTimeMs) {
+		return selectPartition(currentTimeMs);
+	}
+
+	@Override
+	public int getWorkloadLengthMs() {
+		return WORKLOAD_LENGTH * windowSize;
 	}
 }

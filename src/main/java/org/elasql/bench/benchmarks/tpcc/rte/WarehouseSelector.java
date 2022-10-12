@@ -8,6 +8,7 @@ import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants;
 import org.elasql.bench.server.metadata.migration.TpccBeforePartPlan;
 import org.elasql.bench.workloads.MultiTrendGoogleWorkload;
 import org.elasql.bench.workloads.MultiTrendHotPartitionWorkload;
+import org.elasql.bench.workloads.Workload;
 import org.elasql.storage.metadata.PartitionMetaMgr;
 import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
 
@@ -19,26 +20,27 @@ public class WarehouseSelector {
 	private static final double ORIGINAL_RTE_PERCENTAGE = 0.5; // for type 2
 	private static final double SKEW_RATIO = 0.8;
 	
-	private static final long GOOGLE_START_TIME = 60_000;
-	private static long GOOGLE_END_TIME = GOOGLE_START_TIME;
+	private static final long WARMUP_TIME = 60_000; // in milliseconds
+	private static final long WORKLOAD_END_TIME;
+	
 	private static final int GOOGLE_WINDOW_SIZE = 5_000;
 	
-	private static MultiTrendHotPartitionWorkload hotPartWorkload = null;
-//	private static GoogleWorkload googleWorkload = null;
-	private static MultiTrendGoogleWorkload googleWorkload = null;
+	private static Workload workload = null;
 	
 	private static final AtomicLong GLOBAL_START_TIME = new AtomicLong(0);
 		
 	static {
 		switch (WORKLOAD_TYPE) {
-		case 4:
-			hotPartWorkload = new MultiTrendHotPartitionWorkload();
+		case 4: // Hot Partition
+			workload = new MultiTrendHotPartitionWorkload();
+			WORKLOAD_END_TIME = WARMUP_TIME + workload.getWorkloadLengthMs();
 			break;
-		case 5:
-//			googleWorkload = new GoogleWorkload(GOOGLE_WINDOW_SIZE);
-			googleWorkload = new MultiTrendGoogleWorkload(GOOGLE_WINDOW_SIZE, 50);
-			GOOGLE_END_TIME = GOOGLE_START_TIME + GOOGLE_WINDOW_SIZE * googleWorkload.getLength();
+		case 5: // Google
+			workload = new MultiTrendGoogleWorkload(GOOGLE_WINDOW_SIZE, 50);
+			WORKLOAD_END_TIME = WARMUP_TIME + workload.getWorkloadLengthMs();
 			break;
+		default:
+			WORKLOAD_END_TIME = WARMUP_TIME;
 		}
 	}
 	
@@ -94,12 +96,10 @@ public class WarehouseSelector {
 				}
 			}
 			return previosWareHouse;
-		case 4: // Hot Partition
-			partId = hotPartWorkload.getShortTermFocusedPart(elapsedTime);
-			return selectWarehouseInPart(partId);
-		case 5: // Google
-			if (elapsedTime >= GOOGLE_START_TIME && elapsedTime < GOOGLE_END_TIME)
-				partId = googleWorkload.randomlySelectPartId(elapsedTime - GOOGLE_START_TIME);
+		case 4:
+		case 5:
+			if (elapsedTime > WARMUP_TIME && elapsedTime < WORKLOAD_END_TIME)
+				partId = workload.selectMainPartition(elapsedTime - WARMUP_TIME);
 			else
 				partId = valueGen.number(0, PartitionMetaMgr.NUM_PARTITIONS - 1);
 			return selectWarehouseInPart(partId);
@@ -114,16 +114,11 @@ public class WarehouseSelector {
 		int remoteWid = homeWid;
 		
 		switch (WORKLOAD_TYPE) {
-		case 4: // Hot Partition
+		case 4:
+		case 5:
 			while (remoteWid == homeWid) {
-				partId = hotPartWorkload.randomlySelectPartId(elapsedTime);
-				remoteWid = selectWarehouseInPart(partId);
-			}
-			return remoteWid;
-		case 5: // Google
-			while (remoteWid == homeWid) {
-				if (elapsedTime >= GOOGLE_START_TIME && elapsedTime < GOOGLE_END_TIME)
-					partId = googleWorkload.randomlySelectPartId(elapsedTime - GOOGLE_START_TIME);
+				if (elapsedTime > WARMUP_TIME && elapsedTime < WORKLOAD_END_TIME)
+					partId = workload.selectRemotePartition(elapsedTime - WARMUP_TIME);
 				else
 					partId = valueGen.number(0, PartitionMetaMgr.NUM_PARTITIONS - 1);
 				remoteWid = selectWarehouseInPart(partId);

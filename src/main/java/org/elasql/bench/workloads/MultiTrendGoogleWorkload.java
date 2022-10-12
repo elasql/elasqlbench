@@ -1,6 +1,6 @@
 package org.elasql.bench.workloads;
 
-public class MultiTrendGoogleWorkload {
+public class MultiTrendGoogleWorkload implements Workload {
 	
 	private MultiTrendWorkload multiTrendWorkload;
 	
@@ -8,16 +8,19 @@ public class MultiTrendGoogleWorkload {
 		double[][] googleWorkload = GoogleWorkload.loadGoogleWorkload();
 		multiTrendWorkload = new MultiTrendWorkload(googleWorkload, longTermWindowSize, shortTermWindowSize);
 	}
-	
-	public int getShortTermFocusedPart(long currentTime) {
-		return multiTrendWorkload.getShortTermFocusedPart(currentTime);
+
+	@Override
+	public int selectMainPartition(long currentTimeMs) {
+		return multiTrendWorkload.selectMainPartition(currentTimeMs);
 	}
-	
-	public int randomlySelectPartId(long currentTime) {
-		return multiTrendWorkload.randomlySelectPartId(currentTime);
+
+	@Override
+	public int selectRemotePartition(long currentTimeMs) {
+		return multiTrendWorkload.selectRemotePartition(currentTimeMs);
 	}
-	
-	public int getLength() {
-		return multiTrendWorkload.getLongTermLength();
+
+	@Override
+	public int getWorkloadLengthMs() {
+		return multiTrendWorkload.getWorkloadLengthMs();
 	}
 }

@@ -55,7 +55,7 @@ public class SingleTableGoogleParamGen implements TxParamGenerator<YcsbTransacti
 	
 	// To delay replaying the workload (in milliseconds)
 	private static final long GOOGLE_START_TIME = 60_000;
-	private static final long GOOGLE_END_TIME = GOOGLE_START_TIME + WORKLOAD_WINDOW_SIZE * WORKLOAD.getLength();
+	private static final long GOOGLE_END_TIME = GOOGLE_START_TIME + WORKLOAD.getWorkloadLengthMs();
 	
 	static {
 		TWO_SIDED_ZIP_TEMPLATE = new AtomicReference<TwoSidedSkewGenerator>(
@@ -145,8 +145,7 @@ public class SingleTableGoogleParamGen implements TxParamGenerator<YcsbTransacti
 		// Select a partition based on the distribution of the workload at the given time
 		int mainPartId;
 		if (isReplayingGoogle) { // Replay time
-			mainPartId = WORKLOAD.randomlySelectPartId((int) (elapsedTime - GOOGLE_START_TIME));
-//			mainPartId = WORKLOAD.getShortTermFocusedPart((int) (elapsedTime - GOOGLE_START_TIME));
+			mainPartId = WORKLOAD.selectMainPartition(elapsedTime - GOOGLE_START_TIME);
 		} else { // Non-replay time
 			mainPartId = rvg.number(0, NUM_PARTITIONS - 1);
 		}
@@ -234,7 +233,7 @@ public class SingleTableGoogleParamGen implements TxParamGenerator<YcsbTransacti
 			// The center of the 2-sided distribution changes
 			// as the time increases. It moves from 0 to DATA_SIZE
 			// and bounces back when it hits the end of the range. 
-			int windowSize = WORKLOAD.getLength() / GLOBAL_SKEW_REPEAT;
+			int windowSize = WORKLOAD.getWorkloadLengthMs() / WORKLOAD_WINDOW_SIZE / GLOBAL_SKEW_REPEAT;
 			int googleTimeIdx = (int) ((elapsedTime - GOOGLE_START_TIME) / WORKLOAD_WINDOW_SIZE);
 			int timeOffset = googleTimeIdx % (2 * windowSize);
 			if (timeOffset >= windowSize)

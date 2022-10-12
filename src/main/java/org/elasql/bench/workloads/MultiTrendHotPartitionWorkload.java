@@ -2,12 +2,12 @@ package org.elasql.bench.workloads;
 
 import org.elasql.storage.metadata.PartitionMetaMgr;
 
-public class MultiTrendHotPartitionWorkload {
+public class MultiTrendHotPartitionWorkload implements Workload {
 	
 	private static final int LONG_TERM_WINDOW_SIZE = 1000; // in milliseconds
 	private static final int SHORT_TERM_WINDOW_SIZE = 20; // in milliseconds
 	
-	private static final int HOT_PARTITION_CHANGE_PERIOD = 120; // in window counts
+	private static final int HOT_PARTITION_CHANGE_PERIOD = 150; // in window counts
 	private static final int WORKLOAD_LENGTH = 1200;
 	private static final double HOTNESS = 0.85;
 	
@@ -38,12 +38,19 @@ public class MultiTrendHotPartitionWorkload {
 		double[][] workload = generateHotPartitionWorkload();
 		multiTrendWorkload = new MultiTrendWorkload(workload, LONG_TERM_WINDOW_SIZE, SHORT_TERM_WINDOW_SIZE);
 	}
-	
-	public int getShortTermFocusedPart(long currentTime) {
-		return multiTrendWorkload.getShortTermFocusedPart(currentTime);
+
+	@Override
+	public int selectMainPartition(long currentTimeMs) {
+		return multiTrendWorkload.selectMainPartition(currentTimeMs);
 	}
-	
-	public int randomlySelectPartId(long currentTime) {
-		return multiTrendWorkload.randomlySelectPartId(currentTime);
+
+	@Override
+	public int selectRemotePartition(long currentTimeMs) {
+		return multiTrendWorkload.selectRemotePartition(currentTimeMs);
+	}
+
+	@Override
+	public int getWorkloadLengthMs() {
+		return WORKLOAD_LENGTH * LONG_TERM_WINDOW_SIZE;
 	}
 }

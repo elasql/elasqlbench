@@ -16,7 +16,7 @@ import org.vanilladb.bench.util.RandomValueGenerator;
  * 
  * @author Yu-Shan Lin
  */
-public class MultiTrendWorkload {
+public class MultiTrendWorkload implements Workload {
 	
 	private static int[] generateShortTermSequence(double[] longTermDistribution, int seqLength) {
 		// Calculate the sum
@@ -76,20 +76,22 @@ public class MultiTrendWorkload {
 			shortTermFcousParts[timeIdx] = generateShortTermSequence(longTermWorkload[timeIdx], shortTermWindowCount);
 		}
 	}
-	
-	public int getShortTermFocusedPart(long currentTime) {
-		int longTermIdx = (int) (currentTime / longTermWindowSize);
-		int timeSlotId = (int) (currentTime % longTermWindowSize / shortTermWindowSize);
+
+	@Override
+	public int selectMainPartition(long currentTimeMs) {
+		int longTermIdx = (int) (currentTimeMs / longTermWindowSize);
+		int timeSlotId = (int) (currentTimeMs % longTermWindowSize / shortTermWindowSize);
 		return shortTermFcousParts[longTermIdx][timeSlotId];
 	}
-	
-	public int randomlySelectPartId(long currentTime) {
+
+	@Override
+	public int selectRemotePartition(long currentTimeMs) {
 		RandomValueGenerator rvg = new RandomValueGenerator();
-		int longTermIdx = (int) (currentTime / longTermWindowSize);
+		int longTermIdx = (int) (currentTimeMs / longTermWindowSize);
 		return rvg.randomChooseFromDistribution(longTermWorkload[longTermIdx]);
 	}
 	
-	public int getLongTermLength() {
-		return longTermWorkload.length;
+	public int getWorkloadLengthMs() {
+		return longTermWorkload.length * longTermWindowSize;
 	}
 }
