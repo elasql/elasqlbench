@@ -9,7 +9,7 @@ public class MultiTrendHotPartitionWorkload implements Workload {
 	
 	private static final int HOT_PARTITION_CHANGE_PERIOD = 150; // in window counts
 	private static final int WORKLOAD_LENGTH = 1200;
-	private static final double HOTNESS = 0.85;
+	private static final double HOTNESS = 0.8;
 	
 	private static final int NUM_PARTITIONS = PartitionMetaMgr.NUM_PARTITIONS;
 	

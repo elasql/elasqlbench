@@ -77,7 +77,7 @@ public class NewOrderParamGen implements TpccTxParamGenerator {
 
 			// TODO: Verify this
 			// ol_supply_w_id. 1% of items are supplied by remote warehouse
-			if (valueGen.rng().nextDouble() < 0.05 && numOfWarehouses > 1) {
+			if (valueGen.rng().nextDouble() < 0.01 && numOfWarehouses > 1) {
 				pars[++j] = valueGen.numberExcluding(1, numOfWarehouses, homeWid);
 				allLocal = false;
 			} else
