@@ -7,7 +7,7 @@ public class MultiTrendHotPartitionWorkload implements Workload {
 	private static final int LONG_TERM_WINDOW_SIZE = 1000; // in milliseconds
 	private static final int SHORT_TERM_WINDOW_SIZE = 20; // in milliseconds
 	
-	private static final int HOT_PARTITION_CHANGE_PERIOD = 150; // in window counts
+	private static final int HOT_PARTITION_CHANGE_PERIOD = 120; // in window counts
 	private static final int WORKLOAD_LENGTH = 1200;
 	private static final double HOTNESS = 0.8;
 	
