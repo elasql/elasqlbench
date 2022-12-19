@@ -16,6 +16,7 @@
 package org.elasql.bench.benchmarks.tpcc.rte;
 
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
 import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
@@ -79,7 +80,7 @@ public class TimeDependentNewOrderParamGen implements TpccTxParamGenerator {
 
 			// TODO: Verify this
 			// ol_supply_w_id. 1% of items are supplied by remote warehouse
-			if (valueGen.rng().nextDouble() < 0.05 && numOfWarehouses > 1) {
+			if (valueGen.rng().nextDouble() < ElasqlTpccConstants.NEW_ORDER_REMOTE_WAREHOUSE_PROB && numOfWarehouses > 1) {
 				pars[++j] = valueGen.numberExcluding(1, numOfWarehouses, homeWid);
 				allLocal = false;
 			} else

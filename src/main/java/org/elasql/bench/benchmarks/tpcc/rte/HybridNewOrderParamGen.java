@@ -16,19 +16,13 @@
 package org.elasql.bench.benchmarks.tpcc.rte;
 
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
-import org.elasql.util.ElasqlProperties;
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
 import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
 import org.vanilladb.bench.benchmarks.tpcc.rte.TpccTxParamGenerator;
 
 public class HybridNewOrderParamGen implements TpccTxParamGenerator {
-	
-	private static final double REMOTE_RATE;
-	
-	static {
-		REMOTE_RATE = ElasqlProperties.getLoader().getPropertyAsDouble(HybridNewOrderParamGen.class.getName() + ".REMOTE_RATE", 0.05);
-	}
 	
 	private int homeDid;
 	private TpccValueGenerator valueGen = new TpccValueGenerator();
@@ -86,7 +80,7 @@ public class HybridNewOrderParamGen implements TpccTxParamGenerator {
 
 			// TODO: Verify this
 			// ol_supply_w_id. 1% of items are supplied by remote warehouse
-			if (valueGen.rng().nextDouble() < REMOTE_RATE && numOfWarehouses > 1) {
+			if (valueGen.rng().nextDouble() < ElasqlTpccConstants.NEW_ORDER_REMOTE_WAREHOUSE_PROB && numOfWarehouses > 1) {
 				pars[++j] = warehouseSelector.getRemoteWid(homeWid);
 				allLocal = false;
 			} else

@@ -16,6 +16,7 @@
 package org.elasql.bench.benchmarks.tpcc.rte;
 
 import org.elasql.bench.benchmarks.tpcc.ElasqlTpccBenchmark;
+import org.elasql.bench.benchmarks.tpcc.ElasqlTpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccConstants;
 import org.vanilladb.bench.benchmarks.tpcc.TpccTransactionType;
 import org.vanilladb.bench.benchmarks.tpcc.TpccValueGenerator;
@@ -54,7 +55,7 @@ public class TimeDependentPaymentParamGen implements TpccTxParamGenerator {
 		 * Customer resident warehouse is the home warehouse 85% of the time and
 		 * is a randomly selected remote warehouse 15% of the time.
 		 */
-		if (valueGen.rng().nextDouble() >= 0.85 && numOfWarehouses > 1) {
+		if (valueGen.rng().nextDouble() < ElasqlTpccConstants.PAYMENT_REMOTE_WAREHOUSE_PROB && numOfWarehouses > 1) {
 			pars[2] = valueGen.numberExcluding(1, numOfWarehouses, homeWid);
 			pars[3] = valueGen.number(1, 10);
 		} else {

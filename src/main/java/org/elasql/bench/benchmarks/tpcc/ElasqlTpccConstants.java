@@ -10,6 +10,9 @@ public class ElasqlTpccConstants {
 	public static final TpccPartitionStategy PARTITION_STRATEGY;
 	public static final int WAREHOUSE_PER_PART;
 	
+	public static final double NEW_ORDER_REMOTE_WAREHOUSE_PROB;
+	public static final double PAYMENT_REMOTE_WAREHOUSE_PROB;
+	
 	static {
 		int strategy = ElasqlBenchProperties.getLoader().getPropertyAsInteger(
 				ElasqlTpccConstants.class.getName() + ".PARTITION_STRATEGY", 1);
@@ -26,5 +29,9 @@ public class ElasqlTpccConstants {
 		}
 		WAREHOUSE_PER_PART = ElasqlBenchProperties.getLoader().getPropertyAsInteger(
 				ElasqlTpccConstants.class.getName() + ".WAREHOUSE_PER_PART", 1);
+		NEW_ORDER_REMOTE_WAREHOUSE_PROB = ElasqlBenchProperties.getLoader().getPropertyAsDouble(
+				ElasqlTpccConstants.class.getName() + ".NEW_ORDER_REMOTE_WAREHOUSE_PROB", 0.01);
+		PAYMENT_REMOTE_WAREHOUSE_PROB = ElasqlBenchProperties.getLoader().getPropertyAsDouble(
+				ElasqlTpccConstants.class.getName() + ".PAYMENT_REMOTE_WAREHOUSE_PROB", 0.15);
 	}
 }
